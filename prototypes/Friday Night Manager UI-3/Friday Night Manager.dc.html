@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+html,body{margin:0;padding:0;background:#0f1419;color:#E6EAF0;font-family:Inter,system-ui,sans-serif}
+*{box-sizing:border-box}
+a{color:#E3B341;text-decoration:none}a:hover{color:#F2DFAE}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#2A333E;border-radius:6px;border:2px solid #0f1419}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+</helmet>
+<div style="--ac: {{ ac }};height:100vh;min-width:1240px;display:flex;flex-direction:column;background:#0f1419;color:#E6EAF0;font-family:Inter,system-ui,sans-serif;overflow:hidden">
+
+  <div style="height:58px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 16px;background:#12181f;border-bottom:1px solid #232c36">
+    <div style="width:36px;height:36px;border-radius:8px;background:var(--ac,#B91C1C);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;color:#fff;flex-shrink:0">{{ initial }}</div>
+    <div style="line-height:1.15">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:17px;letter-spacing:.05em">{{ schoolUpper }} {{ mascotUpper }}</div>
+      <div style="font-size:11px;color:#8B95A3">Head Coach · Varsity Football</div>
+    </div>
+    <div style="flex:1;text-align:center;font-size:13.5px;color:#AEB8C4"><span style="font-weight:600;color:#E6EAF0">Oct 14, 2026</span><span style="color:#66707c"> · </span>Week 8</div>
+    <button onClick="{{ goMatch }}" style="background:var(--ac,#B91C1C);color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:10px 24px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:.08em;cursor:pointer;box-shadow:0 2px 12px rgba(185,28,28,.3)" style-hover="filter:brightness(1.18)">CONTINUE ▶</button>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+    <div style="width:206px;flex-shrink:0;background:#12181f;border-right:1px solid #232c36;padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow:auto">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="10">
+        <div onClick="{{ n.go }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;background:{{ n.bg }};color:{{ n.fg }};border:1px solid {{ n.bd }};font-size:13.5px;font-weight:500" style-hover="background:#1b232d">
+          <svg width="17" height="17" viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0"><path d="{{ n.icon }}"></path></svg>
+          <span style="flex:1">{{ n.label }}</span>
+          <sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><span style="background:{{ n.badgeBg }};color:{{ n.badgeFg }};font-size:10px;font-weight:700;border-radius:99px;padding:2px 7px;letter-spacing:.04em">{{ n.badge }}</span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex:1;min-width:0;position:relative;overflow:hidden">
+
+      <sc-if value="{{ isInbox }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Inbox" style="display:flex;height:100%">
+        <div style="width:380px;flex-shrink:0;border-right:1px solid #232c36;overflow:auto;background:#10161d">
+          <div style="display:flex;align-items:baseline;gap:10px;padding:16px 16px 12px 16px;border-bottom:1px solid #232c36;position:sticky;top:0;background:#10161d;z-index:2">
+            <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;letter-spacing:.06em">INBOX</span>
+            <span style="font-size:12px;color:#8B95A3">3 unread</span>
+          </div>
+          <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="7">
+            <div onClick="{{ m.open }}" style="padding:11px 14px 11px 12px;border-bottom:1px solid #1a222b;cursor:pointer;background:{{ m.bg }};border-left:2px solid {{ m.edge }}" style-hover="background:#161d25">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:9.5px;font-weight:700;letter-spacing:.08em;color:{{ m.chipC }};border:1px solid {{ m.chipC }};border-radius:4px;padding:1px 5px;opacity:.9">{{ m.type }}</span>
+                <span style="font-size:12px;font-weight:600;color:#AEB8C4;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.from }}</span>
+                <span style="font-size:11px;color:#66707c">{{ m.time }}</span>
+                <sc-if value="{{ m.dot }}" hint-placeholder-val="{{ false }}"><span style="width:7px;height:7px;border-radius:99px;background:var(--ac,#B91C1C)"></span></sc-if>
+              </div>
+              <div style="font-size:13px;margin-top:4px;font-weight:{{ m.wgt }};color:{{ m.subC }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.subj }}</div>
+              <div style="font-size:12px;color:#66707c;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.preview }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="flex:1;overflow:auto;padding:30px 38px">
+          <div style="max-width:760px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:10px;font-weight:700;letter-spacing:.08em;color:{{ open.chipC }};border:1px solid {{ open.chipC }};border-radius:4px;padding:2px 7px">{{ open.type }}</span>
+              <span style="font-size:12px;color:#66707c">{{ open.time }} · Oct 14, 2026</span>
+            </div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:29px;letter-spacing:.02em;line-height:1.1">{{ open.subj }}</div>
+            <div style="font-size:13px;color:#8B95A3;margin:8px 0 20px 0;padding-bottom:16px;border-bottom:1px solid #232c36">From: <span style="color:#C3CBD6;font-weight:500">{{ open.from }}</span></div>
+            <sc-for list="{{ open.body }}" as="p" hint-placeholder-count="3">
+              <p style="font-size:14px;line-height:1.7;color:#C3CBD6;margin:0 0 14px 0;text-wrap:pretty">{{ p }}</p>
+            </sc-for>
+            <div style="display:flex;gap:10px;margin-top:26px;padding-top:20px;border-top:1px solid #232c36">
+              <sc-for list="{{ openActions }}" as="a" hint-placeholder-count="2">
+                <button style="background:{{ a.bg }};color:{{ a.fg }};border:1px solid {{ a.bd }};border-radius:7px;padding:8px 16px;font-size:13px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer" style-hover="filter:brightness(1.2)">{{ a.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSquad }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Squad" style="height:100%;display:flex;flex-direction:column">
+        <div style="padding:16px 20px 12px 20px;border-bottom:1px solid #232c36;display:flex;align-items:center;gap:18px;flex-shrink:0">
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:.05em">SQUAD · VARSITY ROSTER</div>
+            <div style="font-size:12px;color:#8B95A3;margin-top:1px">{{ rosterCount }} players shown · sorted by {{ sortLabel }}</div>
+          </div>
+          <div style="flex:1;display:flex;gap:8px;justify-content:flex-end">
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="5">
+              <button onClick="{{ c.go }}" style="background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }};border-radius:99px;padding:6px 14px;font-size:12.5px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer" style-hover="border-color:#8B95A3">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;min-height:0">
+          <div style="flex:1;overflow:auto;min-width:0">
+            <div style="display:grid;grid-template-columns:minmax(150px,1.6fr) 40px 50px 50px 56px 56px 56px 60px 50px 56px 122px;align-items:center;padding:0 14px;height:36px;border-bottom:1px solid #232c36;position:sticky;top:0;background:#12181f;z-index:2;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:#8B95A3;user-select:none">
+              <div onClick="{{ sortBy.name }}" style="cursor:pointer">PLAYER{{ ar.name }}</div>
+              <div onClick="{{ sortBy.num }}" style="cursor:pointer">#{{ ar.num }}</div>
+              <div onClick="{{ sortBy.gr }}" style="cursor:pointer">GR{{ ar.gr }}</div>
+              <div>POS</div>
+              <div onClick="{{ sortBy.spd }}" style="cursor:pointer;text-align:center">SPD{{ ar.spd }}</div>
+              <div onClick="{{ sortBy.str }}" style="cursor:pointer;text-align:center">STR{{ ar.str }}</div>
+              <div onClick="{{ sortBy.awr }}" style="cursor:pointer;text-align:center">AWR{{ ar.awr }}</div>
+              <div onClick="{{ sortBy.ovr }}" style="cursor:pointer;text-align:center">OVR{{ ar.ovr }}</div>
+              <div style="text-align:center">MOR</div>
+              <div onClick="{{ sortBy.gpa }}" style="cursor:pointer;text-align:center">GPA{{ ar.gpa }}</div>
+              <div>STATUS</div>
+            </div>
+            <sc-for list="{{ players }}" as="p" hint-placeholder-count="15">
+              <div onClick="{{ p.sel }}" style="display:grid;grid-template-columns:minmax(150px,1.6fr) 40px 50px 50px 56px 56px 56px 60px 50px 56px 122px;align-items:center;padding:0 14px;height:38px;border-bottom:1px solid #1a222b;cursor:pointer;background:{{ p.rowBg }};font-size:13px" style-hover="background:#161d25">
+                <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }} <span style="color:#E3B341;font-size:11px">{{ p.star }}</span></div>
+                <div style="color:#66707c;font-variant-numeric:tabular-nums">{{ p.num }}</div>
+                <div><span style="font-size:10px;font-weight:700;letter-spacing:.05em;color:{{ p.grC }};background:#1B232D;border:1px solid #2A3441;border-radius:5px;padding:2px 6px">{{ p.gr }}</span></div>
+                <div style="color:#AEB8C4;font-weight:500">{{ p.pos }}</div>
+                <div style="text-align:center"><span style="display:inline-block;min-width:34px;padding:2px 0;border-radius:5px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ p.spdC }};background:{{ p.spdB }}">{{ p.spd }}</span></div>
+                <div style="text-align:center"><span style="display:inline-block;min-width:34px;padding:2px 0;border-radius:5px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ p.strC }};background:{{ p.strB }}">{{ p.str }}</span></div>
+                <div style="text-align:center"><span style="display:inline-block;min-width:34px;padding:2px 0;border-radius:5px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ p.awrC }};background:{{ p.awrB }}">{{ p.awr }}</span></div>
+                <div style="text-align:center"><span style="display:inline-block;min-width:36px;padding:3px 0;border-radius:6px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ p.ovrC }};background:{{ p.ovrB }};border:1px solid {{ p.ovrC }}">{{ p.ovr }}</span></div>
+                <div style="text-align:center;font-weight:700;color:{{ p.moC }}">{{ p.moG }}</div>
+                <div style="text-align:center;font-weight:600;font-variant-numeric:tabular-nums;color:{{ p.gpaC }}">{{ p.gpaF }}</div>
+                <div><span style="font-size:10px;font-weight:700;letter-spacing:.05em;color:{{ p.stC }};background:{{ p.stBg }};border:1px solid {{ p.stBd }};border-radius:5px;padding:2px 7px;white-space:nowrap">{{ p.stL }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="width:300px;flex-shrink:0;border-left:1px solid #232c36;background:#12181f;overflow:auto;padding:18px;box-shadow:-8px 0 24px rgba(0,0,0,.25)">
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3;margin-bottom:14px">PLAYER CARD</div>
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:56px;height:66px;border-radius:6px;flex-shrink:0;background:repeating-linear-gradient(45deg,#1b232d 0 6px,#161d25 6px 12px);border:1px solid #2A3441;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:8.5px;color:#66707c;text-align:center">photo</div>
+              <div>
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;letter-spacing:.02em;line-height:1">{{ sel.name }}</div>
+                <div style="font-size:12px;color:#8B95A3;margin-top:4px">#{{ sel.num }} · {{ sel.gr }} · {{ sel.pos }}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:center;margin:16px 0;padding:12px;background:#161d25;border:1px solid #232c36;border-radius:8px">
+              <div style="text-align:center">
+                <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:32px;line-height:1;color:{{ sel.ovrC }}">{{ sel.ovr }}</div>
+                <div style="font-size:9.5px;font-weight:700;letter-spacing:.08em;color:#66707c;margin-top:2px">OVERALL</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+                <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#8B95A3;width:28px">SPD</span><div style="flex:1;height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:{{ sel.spdW }};height:100%;background:{{ sel.spdC }}"></div></div><span style="font-size:11.5px;font-weight:700;width:20px;text-align:right;font-variant-numeric:tabular-nums">{{ sel.spd }}</span></div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#8B95A3;width:28px">STR</span><div style="flex:1;height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:{{ sel.strW }};height:100%;background:{{ sel.strC }}"></div></div><span style="font-size:11.5px;font-weight:700;width:20px;text-align:right;font-variant-numeric:tabular-nums">{{ sel.str }}</span></div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#8B95A3;width:28px">AWR</span><div style="flex:1;height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:{{ sel.awrW }};height:100%;background:{{ sel.awrC }}"></div></div><span style="font-size:11.5px;font-weight:700;width:20px;text-align:right;font-variant-numeric:tabular-nums">{{ sel.awr }}</span></div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+              <div style="background:#161d25;border:1px solid #232c36;border-radius:8px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:700;color:{{ sel.gpaC }}">{{ sel.gpaF }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:1px">GPA</div></div>
+              <div style="background:#161d25;border:1px solid #232c36;border-radius:8px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:700;color:{{ sel.moC }}">{{ sel.moG }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:1px">MORALE</div></div>
+              <div style="background:#161d25;border:1px solid #232c36;border-radius:8px;padding:8px;text-align:center"><div style="font-size:11px;font-weight:700;color:{{ sel.stC }};padding-top:2px">{{ sel.stL }}</div><div style="font-size:9px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:3px">STATUS</div></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ goProfile }}" style="flex:1;background:var(--ac,#B91C1C);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:9px 0;font-size:12.5px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer" style-hover="filter:brightness(1.18)">Full Profile</button>
+              <button style="flex:1;background:transparent;color:#C3CBD6;border:1px solid #2A3441;border-radius:7px;padding:9px 0;font-size:12.5px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer" style-hover="border-color:#8B95A3">Bench</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Player Profile" style="height:100%;overflow:auto">
+        <div style="padding:18px 28px 0 28px">
+          <div onClick="{{ goSquad }}" style="font-size:12px;color:#8B95A3;cursor:pointer;margin-bottom:14px;display:inline-block" style-hover="color:#E6EAF0">← Back to Squad</div>
+          <div style="display:flex;gap:20px;align-items:flex-end;position:relative">
+            <div style="width:92px;height:110px;border-radius:8px;flex-shrink:0;background:repeating-linear-gradient(45deg,#1b232d 0 7px,#161d25 7px 14px);border:1px solid #2A3441;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:#66707c;text-align:center;line-height:1.5">yearbook<br>photo</div>
+            <div style="padding-bottom:2px">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:40px;letter-spacing:.02em;line-height:.95">MARCUS REED</div>
+              <div style="font-size:13px;color:#AEB8C4;margin-top:7px;font-weight:500">JR · QUARTERBACK · 6'1" · 185 LBS</div>
+              <div style="display:flex;gap:8px;margin-top:11px">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#E3B341;border:1px solid rgba(227,179,65,.45);background:rgba(227,179,65,.08);border-radius:5px;padding:3px 9px">★ TEAM CAPTAIN</span>
+                <span style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#9FB6C9;border:1px solid #2A3441;background:#1B232D;border-radius:5px;padding:3px 9px">TWO-SPORT ATHLETE</span>
+                <span style="font-size:10px;font-weight:700;letter-spacing:.08em;color:#9FB6C9;border:1px solid #2A3441;background:#1B232D;border-radius:5px;padding:3px 9px">CLUTCH</span>
+              </div>
+            </div>
+            <div style="position:absolute;right:8px;bottom:0;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:88px;line-height:.8;color:transparent;-webkit-text-stroke:2px #2A3441">#7</div>
+          </div>
+          <div style="display:flex;gap:2px;margin-top:20px;border-bottom:1px solid #232c36">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+              <div onClick="{{ t.go }}" style="padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;color:{{ t.fg }};border-bottom:2px solid {{ t.bd }};margin-bottom:-1px" style-hover="color:#E6EAF0">{{ t.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ isOverviewTab }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:400px 1fr;gap:20px;padding:20px 28px 28px 28px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:16px">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3;margin-bottom:10px">PHYSICAL</div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Speed</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:78%;height:100%;background:#D9A62E"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">78</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲2</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Acceleration</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:82%;height:100%;background:#3FB950"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">82</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲1</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Strength</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:62%;height:100%;background:#E5534B"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">62</span><span style="font-size:11px;color:#66707c;text-align:center">—</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Agility</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:80%;height:100%;background:#3FB950"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">80</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲1</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Stamina</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:74%;height:100%;background:#D9A62E"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">74</span><span style="font-size:11px;font-weight:600;color:#E5534B;text-align:center">▼1</span></div>
+            </div>
+            <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:16px">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3;margin-bottom:10px">TECHNICAL</div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Throw Power</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:76%;height:100%;background:#D9A62E"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">76</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲1</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Throw Accuracy</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:82%;height:100%;background:#3FB950"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">82</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲3</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Ball Carrying</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:70%;height:100%;background:#D9A62E"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">70</span><span style="font-size:11px;color:#66707c;text-align:center">—</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Play Action</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:79%;height:100%;background:#D9A62E"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">79</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲1</span></div>
+            </div>
+            <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:16px">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3;margin-bottom:10px">MENTAL</div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Awareness</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:88%;height:100%;background:#3FB950"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">88</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲2</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Decision Making</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:85%;height:100%;background:#3FB950"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">85</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲1</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Composure</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:81%;height:100%;background:#3FB950"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">81</span><span style="font-size:11px;color:#66707c;text-align:center">—</span></div>
+              <div style="display:grid;grid-template-columns:1fr 110px 32px 30px;align-items:center;gap:10px;padding:5px 0"><span style="font-size:12.5px;color:#AEB8C4">Leadership</span><div style="height:5px;background:#232c36;border-radius:3px;overflow:hidden"><div style="width:90%;height:100%;background:#3FB950"></div></div><span style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">90</span><span style="font-size:11px;font-weight:600;color:#3FB950;text-align:center">▲1</span></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+            <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:16px;display:flex;flex-direction:column;align-items:center">
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3;align-self:flex-start;margin-bottom:6px">ATTRIBUTE RADAR</div>
+              <svg width="212" height="212" viewBox="0 0 200 200">
+                <polygon points="100,20 169.3,60 169.3,140 100,180 30.7,140 30.7,60" style="fill:none;stroke:#232c36;stroke-width:1"></polygon>
+                <polygon points="100,45 147.6,72.5 147.6,127.5 100,155 52.4,127.5 52.4,72.5" style="fill:none;stroke:#232c36;stroke-width:1"></polygon>
+                <polygon points="100,70 126,85 126,115 100,130 74,115 74,85" style="fill:none;stroke:#232c36;stroke-width:1"></polygon>
+                <line x1="100" y1="20" x2="100" y2="180" style="stroke:#1c242d;stroke-width:1"></line>
+                <line x1="169.3" y1="60" x2="30.7" y2="140" style="stroke:#1c242d;stroke-width:1"></line>
+                <line x1="30.7" y1="60" x2="169.3" y2="140" style="stroke:#1c242d;stroke-width:1"></line>
+                <polygon points="100,37.6 156.8,67.2 161,135.2 100,164 47.3,130.4 57,75.2" style="fill:color-mix(in srgb, var(--ac,#B91C1C) 30%, transparent);stroke:var(--ac,#B91C1C);stroke-width:2"></polygon>
+                <text x="100" y="12" style="fill:#8B95A3;font-size:10px;font-weight:700;text-anchor:middle;font-family:Inter,sans-serif">SPD</text>
+                <text x="182" y="58" style="fill:#8B95A3;font-size:10px;font-weight:700;text-anchor:middle;font-family:Inter,sans-serif">ACC</text>
+                <text x="182" y="148" style="fill:#8B95A3;font-size:10px;font-weight:700;text-anchor:middle;font-family:Inter,sans-serif">AWR</text>
+                <text x="100" y="196" style="fill:#8B95A3;font-size:10px;font-weight:700;text-anchor:middle;font-family:Inter,sans-serif">AGI</text>
+                <text x="18" y="148" style="fill:#8B95A3;font-size:10px;font-weight:700;text-anchor:middle;font-family:Inter,sans-serif">THP</text>
+                <text x="18" y="58" style="fill:#8B95A3;font-size:10px;font-weight:700;text-anchor:middle;font-family:Inter,sans-serif">STR</text>
+              </svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:16px">
+                <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3;margin-bottom:12px">SEASON · 2026 (7 GP)</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 8px">
+                  <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1">1,842</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:2px">PASS YDS</div></div>
+                  <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1">118/184</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:2px">CMP/ATT</div></div>
+                  <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1;color:#3FB950">18</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:2px">PASS TD</div></div>
+                  <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1;color:#E5534B">5</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:2px">INT</div></div>
+                  <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1">64.1%</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:2px">COMP</div></div>
+                  <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;line-height:1;color:#E3B341">112.4</div><div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#66707c;margin-top:2px">RATING</div></div>
+                </div>
+              </div>
+              <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:16px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3">COLLEGE INTEREST</span>
+                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;color:#E3B341">68%</span>
+                </div>
+                <div style="height:8px;background:#232c36;border-radius:4px;overflow:hidden"><div style="width:68%;height:100%;background:linear-gradient(90deg,#8a6a1f,#E3B341);border-radius:4px"></div></div>
+                <div style="font-size:11.5px;color:#8B95A3;margin-top:9px">Watching: <span style="color:#C3CBD6;font-weight:500">State U · Western Tech</span> — scout attending Friday</div>
+              </div>
+              <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:16px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3">GPA · 6 CHECKPOINTS</span>
+                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;color:#3FB950">3.4</span>
+                </div>
+                <svg width="100%" height="44" viewBox="0 0 220 44" preserveAspectRatio="none">
+                  <line x1="0" y1="30" x2="220" y2="30" style="stroke:#232c36;stroke-width:1;stroke-dasharray:3 3"></line>
+                  <polyline points="4,26 46,22 88,24 130,15 172,10 216,12" style="fill:none;stroke:#3FB950;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"></polyline>
+                  <circle cx="216" cy="12" r="3" style="fill:#3FB950"></circle>
+                </svg>
+                <div style="display:flex;justify-content:space-between;font-size:9px;color:#66707c;font-weight:600;letter-spacing:.04em"><span>SPR Q3</span><span>SPR Q4</span><span>SUM</span><span>Q1 P1</span><span>Q1 P2</span><span>NOW</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+        <sc-if value="{{ isTabStub }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:60px;text-align:center;color:#66707c;font-size:13px">{{ tabStub }}</div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isTactics }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Tactics / Depth Chart" style="height:100%;overflow:auto;padding:18px 24px 24px 24px">
+        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:14px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:22px;letter-spacing:.05em">TACTICS · DEPTH CHART</div>
+          <div style="font-size:12px;color:#8B95A3">Offense · {{ schemeName }} — 11 personnel</div>
+          <div style="flex:1"></div>
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:.06em;color:#E5534B;border:1px solid rgba(229,83,75,.45);background:rgba(229,83,75,.08);border-radius:5px;padding:3px 9px">1 INELIGIBLE STARTER</span>
+        </div>
+        <div style="display:flex;gap:18px;align-items:stretch">
+          <div style="flex:1;min-width:0;position:relative;height:440px;border-radius:10px;overflow:hidden;background:linear-gradient(180deg,#15301e,#112719);border:1px solid #274632">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0 43px,rgba(255,255,255,.05) 43px 44px)"></div>
+            <div style="position:absolute;left:0;right:0;top:38%;height:2px;background:rgba(255,255,255,.28)"></div>
+            <div style="position:absolute;left:12px;top:calc(38% - 22px);font-size:9.5px;font-weight:700;letter-spacing:.1em;color:rgba(255,255,255,.4)">LINE OF SCRIMMAGE · WST 43</div>
+            <sc-for list="{{ slots }}" as="s" hint-placeholder-count="11">
+              <div style="position:absolute;left:{{ s.x }}%;top:{{ s.y }}%;transform:translate(-50%,-50%);background:rgba(16,22,29,.92);border:1.5px solid {{ s.bd }};border-radius:7px;padding:5px 8px 6px 8px;text-align:center;min-width:66px;box-shadow:{{ s.sh }}">
+                <div style="font-size:8.5px;font-weight:700;letter-spacing:.1em;color:#66707c">{{ s.pos }}</div>
+                <div style="font-size:11.5px;font-weight:600;white-space:nowrap;margin:1px 0 2px 0">{{ s.n }}</div>
+                <span style="display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:0 5px;color:{{ s.oc }};background:{{ s.ob }}">{{ s.o }}</span>
+                <sc-if value="{{ s.warn }}" hint-placeholder-val="{{ false }}"><div style="font-size:8px;font-weight:700;letter-spacing:.08em;color:#E5534B;margin-top:3px;max-width:66px;line-height:1.35;white-space:normal;margin-left:auto;margin-right:auto">ACADEMICALLY INELIGIBLE</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="width:268px;flex-shrink:0;background:#12181f;border:1px solid #232c36;border-radius:10px;padding:14px;display:flex;flex-direction:column">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+              <span style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3">BENCH · OFFENSE</span>
+              <span style="font-size:10px;color:#66707c">drag onto a slot</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ bench }}" as="b" hint-placeholder-count="7">
+                <div draggable="true" style="display:flex;align-items:center;gap:9px;background:#161d25;border:1px solid #232c36;border-radius:7px;padding:8px 10px;cursor:grab" style-hover="border-color:var(--ac,#B91C1C)">
+                  <span style="color:#3a4552;font-size:12px;letter-spacing:1px">⠿</span>
+                  <span style="font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#8B95A3;background:#1B232D;border:1px solid #2A3441;border-radius:4px;padding:2px 6px;min-width:30px;text-align:center">{{ b.pos }}</span>
+                  <span style="flex:1;font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.n }}</span>
+                  <sc-if value="{{ b.inj }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:700;color:#E5534B">INJ</span></sc-if>
+                  <span style="font-size:11.5px;font-weight:700;color:{{ b.oc }};font-variant-numeric:tabular-nums">{{ b.o }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:18px">
+          <sc-for list="{{ schemes }}" as="sc" hint-placeholder-count="3">
+            <div onClick="{{ sc.go }}" style="background:{{ sc.bg }};border:1.5px solid {{ sc.bd }};border-radius:10px;padding:14px 16px;cursor:pointer" style-hover="border-color:#8B95A3">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;letter-spacing:.04em">{{ sc.name }}</span>
+                <sc-if value="{{ sc.on }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;font-weight:700;letter-spacing:.08em;color:#fff;background:var(--ac,#B91C1C);border-radius:4px;padding:2px 6px">ACTIVE</span></sc-if>
+              </div>
+              <div style="font-size:12px;color:#8B95A3;line-height:1.5;margin-top:5px;text-wrap:pretty">{{ sc.desc }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
+          <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:14px 16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3">TEMPO</span><span style="font-size:12px;font-weight:700">62</span></div>
+            <div style="position:relative;height:6px;background:#232c36;border-radius:3px"><div style="width:62%;height:100%;background:var(--ac,#B91C1C);border-radius:3px"></div><div style="position:absolute;top:-4px;left:calc(62% - 7px);width:14px;height:14px;border-radius:99px;background:#E6EAF0;border:3px solid var(--ac,#B91C1C);cursor:pointer"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#66707c;margin-top:8px"><span>Slow</span><span>Up-tempo</span></div>
+          </div>
+          <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:14px 16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3">AGGRESSIVENESS</span><span style="font-size:12px;font-weight:700">55</span></div>
+            <div style="position:relative;height:6px;background:#232c36;border-radius:3px"><div style="width:55%;height:100%;background:var(--ac,#B91C1C);border-radius:3px"></div><div style="position:absolute;top:-4px;left:calc(55% - 7px);width:14px;height:14px;border-radius:99px;background:#E6EAF0;border:3px solid var(--ac,#B91C1C);cursor:pointer"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#66707c;margin-top:8px"><span>Conservative</span><span>Aggressive</span></div>
+          </div>
+          <div style="background:#12181f;border:1px solid #232c36;border-radius:10px;padding:14px 16px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span style="font-size:10.5px;font-weight:700;letter-spacing:.1em;color:#8B95A3">RUN / PASS BALANCE</span><span style="font-size:12px;font-weight:700">48</span></div>
+            <div style="position:relative;height:6px;background:#232c36;border-radius:3px"><div style="width:48%;height:100%;background:var(--ac,#B91C1C);border-radius:3px"></div><div style="position:absolute;top:-4px;left:calc(48% - 7px);width:14px;height:14px;border-radius:99px;background:#E6EAF0;border:3px solid var(--ac,#B91C1C);cursor:pointer"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#66707c;margin-top:8px"><span>Run</span><span>Pass</span></div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isMatch }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Match Day" style="height:100%;display:flex;flex-direction:column;background:radial-gradient(1100px 500px at 50% -8%,#141d29 0%,#0a0e13 62%)">
+        <div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:34px;padding:16px 24px 14px 24px;border-bottom:1px solid #1c242d">
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="text-align:right">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:.08em">{{ schoolUpper }}</div>
+              <div style="font-size:10.5px;font-weight:600;letter-spacing:.06em;color:#8B95A3">6-1 · HOME <span style="color:var(--ac,#B91C1C)">●</span></div>
+            </div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:56px;line-height:1;color:#fff;text-shadow:0 0 24px color-mix(in srgb, var(--ac,#B91C1C) 55%, transparent)">{{ wScore }}</div>
+          </div>
+          <div style="text-align:center;padding:0 10px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.14em;color:#E3B341">Q3</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums">{{ mClock }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:56px;line-height:1;color:#8B95A3">{{ cScore }}</div>
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:24px;letter-spacing:.08em;color:#AEB8C4">CENTRAL</div>
+              <div style="font-size:10.5px;font-weight:600;letter-spacing:.06em;color:#8B95A3">7-0 · AWAY</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;min-height:0">
+          <div style="flex:3;min-width:0;padding:16px;display:flex">
+            <div style="position:relative;flex:1;border-radius:10px;overflow:hidden;background:#122718;border:1px solid #274632;box-shadow:inset 0 0 90px rgba(0,0,0,.5)">
+              <div style="position:absolute;left:0;top:0;bottom:0;width:8%;background:color-mix(in srgb, var(--ac,#B91C1C) 32%, #122718);border-right:2px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center"><span style="writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;letter-spacing:.35em;color:rgba(255,255,255,.75)">{{ mascotUpper }}</span></div>
+              <div style="position:absolute;right:0;top:0;bottom:0;width:8%;background:#1d2b38;border-left:2px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center"><span style="writing-mode:vertical-rl;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;letter-spacing:.35em;color:rgba(255,255,255,.55)">CENTRAL</span></div>
+              <div style="position:absolute;left:8%;right:8%;top:0;bottom:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.09) 0 2px,transparent 2px 10%)"></div>
+              <div style="position:absolute;top:0;bottom:0;width:2px;left:{{ fdX }}%;background:#E3B341;box-shadow:0 0 10px rgba(227,179,65,.8)"></div>
+              <div style="position:absolute;top:50%;height:4px;transform:translateY(-50%);left:{{ dLeft }}%;width:{{ dW }}%;background:{{ arrowBg }};border-radius:2px"></div>
+              <div style="position:absolute;top:50%;left:{{ ballX }}%;transform:translate(-50%,-50%);width:17px;height:11px;border-radius:50%;background:#8B5A2B;border:1.5px solid #E6EAF0;box-shadow:0 0 12px rgba(0,0,0,.7)"></div>
+              <div style="position:absolute;top:12px;left:12px;background:rgba(10,14,19,.88);border:1px solid #2A3441;border-radius:6px;padding:5px 11px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;letter-spacing:.06em">{{ dd }}</div>
+              <div style="position:absolute;top:12px;right:12px;background:rgba(10,14,19,.88);border:1px solid #2A3441;border-radius:6px;padding:5px 11px;display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;letter-spacing:.1em;color:{{ liveC }}"><span style="width:7px;height:7px;border-radius:99px;background:{{ liveC }};animation:{{ liveAnim }}"></span>{{ liveLabel }}</div>
+            </div>
+          </div>
+          <div style="flex:2;min-width:0;border-left:1px solid #1c242d;display:flex;flex-direction:column">
+            <div style="padding:14px 16px 12px 16px;border-bottom:1px solid #1c242d;flex-shrink:0">
+              <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.1em;color:#8B95A3;margin-bottom:7px"><span>MOMENTUM · {{ schoolUpper }}</span><span>CENTRAL</span></div>
+              <div style="position:relative;height:10px;background:#232c36;border-radius:5px;overflow:hidden">
+                <div style="width:{{ momW }};height:100%;background:linear-gradient(90deg,color-mix(in srgb, var(--ac,#B91C1C) 55%, #232c36),var(--ac,#B91C1C));border-radius:5px"></div>
+                <div style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:rgba(255,255,255,.25)"></div>
+              </div>
+            </div>
+            <div style="flex:1;overflow:auto;min-height:0">
+              <sc-for list="{{ playsV }}" as="pl" hint-placeholder-count="6">
+                <div style="display:flex;gap:10px;padding:9px 14px;border-bottom:1px solid #141b23;background:{{ pl.bg }};border-left:3px solid {{ pl.edge }}">
+                  <span style="font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12.5px;color:#66707c;min-width:32px;font-variant-numeric:tabular-nums">{{ pl.c }}</span>
+                  <span style="font-size:12.5px;line-height:1.45;color:{{ pl.fg }};font-weight:{{ pl.wt }};text-wrap:pretty">{{ pl.t }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:12px 16px 14px 16px;border-top:1px solid #1c242d;flex-shrink:0">
+              <div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:#8B95A3;margin-bottom:8px">QUICK ADJUST</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <sc-for list="{{ qts }}" as="q" hint-placeholder-count="4">
+                  <button onClick="{{ q.go }}" style="background:{{ q.bg }};color:{{ q.fg }};border:1px solid {{ q.bd }};border-radius:7px;padding:8px 0;font-size:12px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer" style-hover="border-color:#8B95A3">{{ q.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;border-top:1px solid #1c242d;background:rgba(10,14,19,.6)">
+          <sc-for list="{{ speeds }}" as="sp" hint-placeholder-count="4">
+            <button onClick="{{ sp.go }}" style="background:{{ sp.bg }};color:{{ sp.fg }};border:1px solid {{ sp.bd }};border-radius:7px;padding:7px 18px;font-size:12.5px;font-weight:600;font-family:Inter,sans-serif;cursor:pointer;min-width:84px" style-hover="border-color:#8B95A3">{{ sp.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isOther }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Module Placeholder" style="height:100%;display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center;max-width:380px">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:34px;letter-spacing:.06em;color:#3a4552">{{ otherTitle }}</div>
+          <div style="font-size:13px;color:#66707c;margin-top:8px;line-height:1.6">This module isn't part of the mock. Designed screens: Inbox, Squad, Player Profile, Tactics, and Match Day.</div>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <div style="height:30px;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 16px;background:#12181f;border-top:1px solid #232c36;font-size:11.5px;color:#8B95A3">
+    <span>Next: <span style="color:#E6EAF0;font-weight:600">vs. Central Catholic (Fri)</span></span>
+    <span style="color:#3a4552">·</span>
+    <span>Record <span style="color:#3FB950;font-weight:700">6-1</span></span>
+    <span style="color:#3a4552">·</span>
+    <span>District Rank <span style="color:#E6EAF0;font-weight:600">#2</span></span>
+    <span style="flex:1"></span>
+    <span>Team Morale <span style="color:#3FB950;font-weight:600">High</span></span>
+    <span style="color:#3a4552">·</span>
+    <span>Booster Fund <span style="color:#E3B341;font-weight:600">$12,400</span></span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;schoolColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#B91C1C&quot;,&quot;options&quot;:[&quot;#B91C1C&quot;,&quot;#1D4ED8&quot;,&quot;#166534&quot;,&quot;#6D28D9&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;School&quot;},&quot;schoolName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Westfield&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;School&quot;},&quot;mascot&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Wildcats&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;School&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.IC={
+      inbox:'M22 12h-6l-2 3h-4l-2-3H2 M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z',
+      squad:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',
+      tactics:'M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1z M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2 M9 12h6 M9 16h4',
+      schedule:'M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+      training:'M2 9v6 M6 7v10 M18 7v10 M22 9v6 M6 12h12',
+      academics:'M22 10 12 5 2 10l10 5 10-5z M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5',
+      scouting:'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.35-4.35',
+      boosters:'M12 2v20 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+      school:'M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-6h6v6',
+      match:'M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z M4 22v-7'};
+    this.P=[
+      {id:1,name:'Marcus Reed',num:7,gr:'JR',pos:'QB',spd:78,str:62,awr:88,ovr:84,mor:'hi',gpa:3.4,st:'ok',cap:1},
+      {id:2,name:'DeShawn Carter',num:22,gr:'SR',pos:'RB',spd:92,str:74,awr:71,ovr:86,mor:'hi',gpa:2.9,st:'ok'},
+      {id:3,name:'Trey Jackson',num:4,gr:'JR',pos:'CB',spd:94,str:58,awr:72,ovr:83,mor:'hi',gpa:3.0,st:'ok'},
+      {id:4,name:'Sam Okafor',num:55,gr:'SR',pos:'MLB',spd:76,str:86,awr:84,ovr:87,mor:'hi',gpa:3.5,st:'ok',cap:1},
+      {id:5,name:'Mike Sosa',num:72,gr:'SR',pos:'LT',spd:45,str:95,awr:70,ovr:82,mor:'mid',gpa:2.4,st:'risk'},
+      {id:6,name:'Jake Whitfield',num:84,gr:'SR',pos:'WR',spd:81,str:60,awr:79,ovr:80,mor:'hi',gpa:3.1,st:'ok'},
+      {id:7,name:'Caleb Nguyen',num:66,gr:'JR',pos:'C',spd:42,str:84,awr:81,ovr:78,mor:'hi',gpa:3.8,st:'ok'},
+      {id:8,name:'Isaiah Brooks',num:88,gr:'JR',pos:'TE',spd:72,str:79,awr:74,ovr:78,mor:'hi',gpa:2.7,st:'ok'},
+      {id:9,name:'Tommy Alvarez',num:11,gr:'SO',pos:'WR',spd:89,str:55,awr:68,ovr:77,mor:'mid',gpa:3.7,st:'ok'},
+      {id:10,name:'Wyatt Turner',num:63,gr:'JR',pos:'LG',spd:41,str:87,awr:69,ovr:75,mor:'lo',gpa:2.2,st:'risk'},
+      {id:11,name:'Hunter McCoy',num:33,gr:'SR',pos:'FB',spd:68,str:83,awr:66,ovr:74,mor:'mid',gpa:2.6,st:'inj'},
+      {id:12,name:'Andre Silva',num:2,gr:'SO',pos:'WR',spd:91,str:50,awr:59,ovr:73,mor:'hi',gpa:3.3,st:'ok'},
+      {id:13,name:'Dylan Pierce',num:21,gr:'FR',pos:'S',spd:87,str:61,awr:63,ovr:72,mor:'mid',gpa:3.9,st:'ok'},
+      {id:14,name:'Ryan Kowalski',num:75,gr:'SO',pos:'RT',spd:40,str:88,awr:58,ovr:71,mor:'lo',gpa:1.9,st:'inel'},
+      {id:15,name:'Colt Ramsey',num:18,gr:'SO',pos:'QB',spd:74,str:58,awr:70,ovr:69,mor:'mid',gpa:3.2,st:'ok'}];
+    this.M=[
+      {type:'ACA',from:'Guidance Office',subj:'Eligibility alert: Ryan Kowalski',time:'7:42 AM',unread:1,
+       preview:'Kowalski has fallen below the 2.0 GPA threshold and is ineligible effective immediately.',
+       body:["Coach — Ryan Kowalski's grade in Algebra II dropped to a 58 this week, putting his GPA at 1.9. Per district policy he is ineligible for Friday's game against Central Catholic, effective immediately.","He can regain eligibility at the Oct 26 grading checkpoint if his GPA climbs back above 2.0. His teacher says the problem is missed homework, not comprehension — a tutor assignment or mandatory study hall would go a long way.","You'll need to adjust the depth chart at right tackle before Friday.","— L. Whitmore, Guidance Counselor"],
+       actions:[['Assign Tutor',1],['Schedule Study Hall',0],['Open Depth Chart',0]]},
+      {type:'INJ',from:'Athletic Trainer',subj:'Injury update: Hunter McCoy (FB)',time:'6:55 AM',unread:1,
+       preview:'X-rays negative. Bruised ribs — plan on 1–2 weeks without contact.',
+       body:["X-rays came back negative — bruised ribs, no fracture. He's day-to-day, but I'd plan on 1–2 weeks and he shouldn't take contact before the Central Catholic game.","He can keep doing light conditioning. I'll re-evaluate him Monday.","— D. Ferris, ATC"],
+       actions:[['Rest 2 Weeks',1],['Adjust Depth Chart',0]]},
+      {type:'SCT',from:'Recruiting Desk',subj:'State U scout attending Friday\u2019s game',time:'Yesterday',unread:1,
+       preview:'An area scout will be in the stands Friday, primarily to watch Marcus Reed.',
+       body:["Heads up — State University is sending an area scout to Friday's game, primarily to watch Marcus Reed. Western Tech has requested game film as well.","A strong performance in a rivalry game of this profile could move Reed's college interest significantly."],
+       actions:[['Prep Highlight Tape',1],['Reply',0]]},
+      {type:'NEWS',from:'Westfield Herald',subj:'\u201CWildcats Roll Past Jefferson, 31\u201310\u201D',time:'Sun',
+       preview:'Reed threw for 284 yards and three scores as Westfield improved to 6\u20131.',
+       body:["Reed threw for 284 yards and three touchdowns as Westfield improved to 6\u20131 and kept pace in the district race. The defense forced four three-and-outs in the second half.","\u201CThis group plays for each other,\u201D the head coach said. \u201CThat's what October football is about.\u201D"],
+       actions:[['Pin to Bulletin',0]]},
+      {type:'BST',from:'Booster Club',subj:'Weight room funding vote passes 12\u20133',time:'Sat',
+       preview:'The board approved $8,500 toward new racks and platforms.',
+       body:["The board approved $8,500 toward new racks and platforms. Installation is scheduled for the bye week.","Frank wants to present the check at halftime Friday — let us know if that works.","— Westfield Gridiron Boosters"],
+       actions:[['Approve Halftime Check',1],['Send Thanks',0]]},
+      {type:'SCH',from:'District Office',subj:'Reseeding: Central Catholic moves to #1',time:'Fri',
+       preview:'Central Catholic (7\u20130) takes the top seed; Westfield (6\u20131) holds #2.',
+       body:["Updated district standings: Central Catholic (7\u20130) moves to the #1 seed; Westfield (6\u20131) holds #2. Friday's head-to-head result will likely decide the district title and home field for the first playoff round."],
+       actions:[['View Schedule',0]]},
+      {type:'ACA',from:'Guidance Office',subj:'Q1 progress reports posted',time:'Thu',
+       preview:'Three players sit below a 2.5 GPA: Sosa, Turner, Kowalski.',
+       body:["Q1 progress reports are posted. Three players sit below a 2.5 GPA: Sosa (2.4), Turner (2.2), Kowalski (1.9). Study-hall slots are open Tuesday and Thursday after sixth period."],
+       actions:[['Open Academics',1]]}];
+    this.SCRIPT=[
+      {c:'4:32',t:'Kickoff returned by Jackson to the WST 28',k:'n',dd:'1st & 10 · WST 28',b:31.5,fd:39.9,dv:31.5,m:1},
+      {c:'4:18',t:'Carter off tackle for 6',k:'n',dd:'2nd & 4 · WST 34',b:36.6,m:1},
+      {c:'3:51',t:'Reed quick out to Alvarez — gain of 9, FIRST DOWN',k:'f',dd:'1st & 10 · WST 43',b:44.1,fd:52.5,m:2},
+      {c:'3:24',t:'Play action — Reed deep to Whitfield for 38 yards!',k:'f',dd:'1st & 10 · CEN 19',b:76,fd:84.4,m:5},
+      {c:'2:58',t:'Carter up the middle, stuffed for no gain',k:'n',dd:'2nd & 10 · CEN 19',m:-2},
+      {c:'2:31',t:'Reed escapes pressure, scrambles for 11 — FIRST DOWN',k:'f',dd:'1st & 10 · CEN 8',b:85.3,fd:92,m:3},
+      {c:'2:04',t:'TOUCHDOWN WESTFIELD — Reed hits Brooks in the corner from 8 yards out',k:'td',w:6,b:95,m:8,dd:'PAT · CEN 3'},
+      {c:'2:04',t:'Extra point is good (Ramsey)',k:'n',w:1,dd:'Kickoff'},
+      {c:'1:56',t:'Kickoff sails through the end zone — touchback',k:'n',dd:'1st & 10 · CEN 25',b:71,fd:62.6,dv:71},
+      {c:'1:38',t:'Central draw play picks up 4',k:'n',dd:'2nd & 6 · CEN 29',b:67.6,m:-1},
+      {c:'1:12',t:'INTERCEPTED! Pierce jumps the deep post at the WST 44',k:'to',dd:'1st & 10 · WST 44',b:45,fd:53.4,dv:45,m:12},
+      {c:'0:47',t:'Carter behind Sosa for 5',k:'n',dd:'2nd & 5 · WST 49',b:49.2,m:1},
+      {c:'0:12',t:'Reed kneels — quarter expires',k:'n',dd:'2nd & 6 · WST 48',b:48.4},
+      {c:'0:00',t:'END OF 3RD QUARTER — Westfield 28, Central 14',k:'end',dd:'End of Q3'}];
+    this.SLOTS=[
+      {pos:'WR',n:'T. Alvarez',o:77,x:6,y:47},
+      {pos:'WR',n:'A. Silva',o:73,x:16,y:53},
+      {pos:'LT',n:'M. Sosa',o:82,x:30,y:47},
+      {pos:'LG',n:'W. Turner',o:75,x:40,y:47},
+      {pos:'C',n:'C. Nguyen',o:78,x:50,y:47},
+      {pos:'RG',n:'J. Mendes',o:70,x:60,y:47},
+      {pos:'RT',n:'R. Kowalski',o:71,x:70,y:47,warn:1},
+      {pos:'TE',n:'I. Brooks',o:78,x:81,y:47},
+      {pos:'WR',n:'J. Whitfield',o:80,x:93,y:47},
+      {pos:'QB',n:'M. Reed',o:84,x:50,y:66},
+      {pos:'RB',n:'D. Carter',o:86,x:41,y:78}];
+    this.BENCH=[
+      {pos:'QB',n:'Colt Ramsey',o:69},{pos:'RB',n:'Cody Dunn',o:68},{pos:'WR',n:'Malik Price',o:66},
+      {pos:'FB',n:'Hunter McCoy',o:74,inj:1},{pos:'TE',n:'Drew Foster',o:63},{pos:'OT',n:'Levi Webb',o:62},{pos:'OG',n:'Pete Ruiz',o:61}];
+    this.SCHEMES=[
+      ['Spread','4-wide sets that space the field. Suits Reed\u2019s accuracy and gives Carter light boxes.'],
+      ['Wing-T','Misdirection ground game. Protects a thin offensive line and shortens the game.'],
+      ['Air Raid','Pass-first, up-tempo. High ceiling — high risk with a sophomore right tackle.']];
+    const s=this.SCRIPT;
+    this.state={screen:'inbox',msg:0,filter:'All',selId:1,tab:'Overview',sortKey:'ovr',sortDir:-1,scheme:'Spread',qt:'Air It Out',speed:'1x',
+      pIdx:3,plays:[s[2],s[1],s[0]],wScore:21,cScore:14,mClock:'3:51',dd:'1st & 10 · WST 43',mom:61,ball:44.1,fd:52.5,drv:31.5};
+  }
+  componentDidMount(){this.alive=1;this.loop();}
+  componentWillUnmount(){this.alive=0;clearTimeout(this.t);}
+  loop(){if(!this.alive)return;const d={pause:600,'1x':2400,fast:900}[this.state.speed]||2400;
+    this.t=setTimeout(()=>{if(this.alive&&this.state.screen==='match'&&this.state.speed!=='pause')this.advance(1);this.loop();},d);}
+  advance(k){let{pIdx,plays,wScore,cScore,mom,ball,fd,drv,mClock,dd}=this.state;
+    while(k-->0&&pIdx<this.SCRIPT.length){const p=this.SCRIPT[pIdx++];plays=[p,...plays].slice(0,40);
+      wScore+=p.w||0;if(p.m)mom=Math.max(8,Math.min(92,mom+p.m));if(p.b!=null)ball=p.b;if(p.fd!=null)fd=p.fd;if(p.dv!=null)drv=p.dv;mClock=p.c;if(p.dd)dd=p.dd;}
+    const done=pIdx>=this.SCRIPT.length;
+    this.setState({pIdx,plays,wScore,cScore,mom,ball,fd,drv,mClock,dd,speed:done?'pause':this.state.speed});}
+  renderVals(){
+    const S=this.state,AC='var(--ac,#B91C1C)';
+    const mix=p=>'color-mix(in srgb, '+AC+' '+p+'%, transparent)';
+    const ac=this.props.schoolColor??'#B91C1C';
+    const school=this.props.schoolName??'Westfield', mascot=this.props.mascot??'Wildcats';
+    const col=v=>v>=80?['#3FB950','rgba(63,185,80,.10)']:v>=65?['#D9A62E','rgba(217,166,46,.10)']:['#E5534B','rgba(229,83,75,.10)'];
+    const grC={FR:'#8B95A3',SO:'#9FB6C9',JR:'#C9B27E',SR:'#E6EAF0'};
+    const stMap={ok:['ACTIVE','#8B95A3','transparent','#2A3441'],risk:['ACAD RISK','#D9A62E','rgba(217,166,46,.10)','rgba(217,166,46,.35)'],inj:['INJ · 1-2 WK','#E5534B','rgba(229,83,75,.10)','rgba(229,83,75,.35)'],inel:['INELIGIBLE','#fff','#E5534B','#E5534B']};
+    const morMap={hi:['\u2191','#3FB950'],mid:['\u2192','#D9A62E'],lo:['\u2193','#E5534B']};
+    const OFF=['QB','RB','FB','WR','TE','LT','LG','C','RG','RT'];
+    const NAV=[['inbox','Inbox','3'],['squad','Squad'],['tactics','Tactics'],['match','Match Day','LIVE'],['schedule','Schedule'],['training','Training'],['academics','Academics'],['scouting','Scouting'],['boosters','Boosters'],['school','School']];
+    const nav=NAV.map(([id,label,badge])=>{const on=S.screen===id||(id==='squad'&&S.screen==='profile');
+      return {id,label,badge:badge||'',icon:this.IC[id],go:()=>this.setState({screen:id}),
+        bg:on?mix(14):'transparent',fg:on?'#fff':'#AEB8C4',bd:on?mix(38):'transparent',
+        badgeBg:badge==='LIVE'?'#E3B341':AC,badgeFg:badge==='LIVE'?'#0f1419':'#fff'};});
+    const TYPEC={ACA:'#9FB6C9',INJ:'#E5534B',SCT:'#3FB950',NEWS:'#E3B341',BST:'#8B95A3',SCH:'#8B95A3'};
+    const msgs=this.M.map((m,i)=>({...m,chipC:TYPEC[m.type],open:()=>this.setState({msg:i}),
+      bg:i===S.msg?'#161d25':'transparent',edge:i===S.msg?AC:'transparent',wgt:m.unread?600:500,subC:m.unread?'#E6EAF0':'#AEB8C4',dot:!!m.unread}));
+    const om=this.M[S.msg];
+    const openActions=om.actions.map(([label,pr])=>({label,bg:pr?AC:'transparent',fg:pr?'#fff':'#C3CBD6',bd:pr?AC:'#2A3441'}));
+    let list=this.P.filter(p=>S.filter==='All'?true:S.filter==='Offense'?OFF.includes(p.pos):S.filter==='Defense'?!OFF.includes(p.pos):S.filter==='Seniors'?p.gr==='SR':(p.st==='risk'||p.st==='inel'));
+    const gRank={FR:0,SO:1,JR:2,SR:3},k=S.sortKey,d=S.sortDir;
+    list=[...list].sort((a,b)=>{const va=k==='gr'?gRank[a.gr]:a[k],vb=k==='gr'?gRank[b.gr]:b[k];
+      return (typeof va==='string'?va.localeCompare(vb):va-vb)*d;});
+    const enrich=p=>{const[sc,sb]=col(p.spd),[tc,tb]=col(p.str),[wc,wb]=col(p.awr),[oc,ob]=col(p.ovr),st=stMap[p.st],mo=morMap[p.mor];
+      return {...p,spdC:sc,spdB:sb,strC:tc,strB:tb,awrC:wc,awrB:wb,ovrC:oc,ovrB:ob,grC:grC[p.gr],
+        stL:st[0],stC:st[1],stBg:st[2],stBd:st[3],moG:mo[0],moC:mo[1],
+        gpaC:p.gpa>=3?'#3FB950':p.gpa>=2?'#D9A62E':'#E5534B',gpaF:p.gpa.toFixed(1),star:p.cap?'\u2605':'',
+        spdW:p.spd+'%',strW:p.str+'%',awrW:p.awr+'%'};};
+    const players=list.map(p=>({...enrich(p),rowBg:p.id===S.selId?mix(10):'transparent',sel:()=>this.setState({selId:p.id})}));
+    const sortLabels={name:'name',num:'number',gr:'grade',spd:'speed',str:'strength',awr:'awareness',ovr:'overall',gpa:'GPA'};
+    const sortBy={},ar={};
+    ['name','num','gr','pos','spd','str','awr','ovr','gpa'].forEach(key=>{
+      sortBy[key]=()=>this.setState(s=>s.sortKey===key?{sortDir:-s.sortDir}:{sortKey:key,sortDir:key==='name'?1:-1});
+      ar[key]=S.sortKey===key?(S.sortDir<0?' \u25BE':' \u25B4'):'';});
+    const chips=['All','Offense','Defense','Seniors','Academic Risk'].map(c=>({label:c,go:()=>this.setState({filter:c}),
+      bg:S.filter===c?AC:'transparent',fg:S.filter===c?'#fff':'#AEB8C4',bd:S.filter===c?AC:'#2A3441'}));
+    const sel=enrich(this.P.find(p=>p.id===S.selId)||this.P[0]);
+    const tabStubs={Stats:'Stats — season & career game logs, per-opponent splits.',Development:'Development — training focus, growth curves, coach reports.',Academics:'Academics — class-by-class grades and eligibility tracking.',History:'History — awards, records and past seasons.'};
+    const tabs=['Overview','Stats','Development','Academics','History'].map(t=>({label:t,go:()=>this.setState({tab:t}),
+      fg:S.tab===t?'#E6EAF0':'#8B95A3',bd:S.tab===t?AC:'transparent'}));
+    const slots=this.SLOTS.map(s2=>({...s2,bd:s2.warn?'#E5534B':'#3a4a3f',sh:s2.warn?'0 0 14px rgba(229,83,75,.45)':'0 2px 8px rgba(0,0,0,.4)',
+      oc:col(s2.o)[0],ob:col(s2.o)[1],warn:!!s2.warn}));
+    const bench=this.BENCH.map(b=>({...b,oc:col(b.o)[0],inj:!!b.inj}));
+    const schemes=this.SCHEMES.map(([name,desc])=>({name,desc,on:S.scheme===name,go:()=>this.setState({scheme:name}),
+      bg:S.scheme===name?mix(9):'#12181f',bd:S.scheme===name?AC:'#232c36'}));
+    const PK={n:['transparent','transparent','#C3CBD6',400],f:['rgba(63,185,80,.06)','#3FB950','#CFE9D4',500],td:['rgba(227,179,65,.10)','#E3B341','#F2DFAE',600],to:['rgba(229,83,75,.09)','#E5534B','#F0BEBA',600],end:['#161d25','#66707c','#E6EAF0',600]};
+    const playsV=S.plays.map(p=>{const st=PK[p.k]||PK.n;return {c:p.c,t:p.t,bg:st[0],edge:st[1],fg:st[2],wt:st[3]};});
+    const done=S.pIdx>=this.SCRIPT.length,running=!done&&S.speed!=='pause';
+    const speeds=[['pause','\u23F8 Pause'],['1x','\u25B6 1\u00D7'],['fast','\u226B Fast'],['skip','\u23ED Skip']].map(([id,label])=>({label,
+      go:id==='skip'?()=>{this.advance(this.SCRIPT.length-this.state.pIdx);}:()=>this.setState({speed:id}),
+      bg:S.speed===id?AC:'transparent',fg:S.speed===id?'#fff':'#AEB8C4',bd:S.speed===id?AC:'#2A3441'}));
+    const qts=['Air It Out','Pound the Rock','Blitz Heavy','Prevent'].map(q=>({label:q,go:()=>this.setState({qt:q}),
+      bg:S.qt===q?mix(16):'transparent',fg:S.qt===q?'#fff':'#AEB8C4',bd:S.qt===q?mix(45):'#2A3441'}));
+    const dLeft=Math.min(S.drv,S.ball),dW=Math.max(Math.abs(S.ball-S.drv),.5);
+    const arrowBg=S.ball>=S.drv?'linear-gradient(90deg,transparent,'+mix(80)+')':'linear-gradient(270deg,transparent,'+mix(80)+')';
+    const otherTitles={schedule:'SCHEDULE',training:'TRAINING',academics:'ACADEMICS',scouting:'SCOUTING',boosters:'BOOSTERS',school:'SCHOOL'};
+    return {
+      ac,initial:school.slice(0,1).toUpperCase(),schoolUpper:school.toUpperCase(),mascotUpper:mascot.toUpperCase(),
+      goMatch:()=>this.setState({screen:'match'}),goSquad:()=>this.setState({screen:'squad'}),goProfile:()=>this.setState({screen:'profile',tab:'Overview'}),
+      nav,msgs,open:{...om,chipC:TYPEC[om.type]},openActions,
+      players,rosterCount:players.length,sortLabel:sortLabels[S.sortKey]||S.sortKey,sortBy,ar,chips,sel,
+      tabs,isOverviewTab:S.tab==='Overview',isTabStub:S.tab!=='Overview',tabStub:tabStubs[S.tab]||'',
+      slots,bench,schemes,schemeName:S.scheme,
+      wScore:S.wScore,cScore:S.cScore,mClock:S.mClock,dd:S.dd,playsV,speeds,qts,
+      momW:S.mom+'%',fdX:S.fd,ballX:S.ball,dLeft,dW,arrowBg,
+      liveLabel:done?'FINAL Q3':running?'LIVE':'PAUSED',liveC:done?'#8B95A3':running?'#E3B341':'#8B95A3',
+      liveAnim:running?'livePulse 1.4s ease-in-out infinite':'none',
+      isInbox:S.screen==='inbox',isSquad:S.screen==='squad',isProfile:S.screen==='profile',isTactics:S.screen==='tactics',isMatch:S.screen==='match',
+      isOther:!!otherTitles[S.screen],otherTitle:otherTitles[S.screen]||''};
+  }
+}
+</script>
+</body>
+</html>

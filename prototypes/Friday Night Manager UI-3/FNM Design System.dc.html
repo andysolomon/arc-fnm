@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+html,body{margin:0;padding:0;background:#FAFAFA;color:#171717;font-family:Geist,Inter,system-ui,sans-serif}
+*{box-sizing:border-box}
+a{color:#0072F5;text-decoration:none}a:hover{color:#005FCC}
+</style>
+</helmet>
+<div style="max-width:1200px;margin:0 auto;padding:48px 24px 64px 24px;font-family:Geist,Inter,system-ui,sans-serif;color:#171717">
+  <div style="font-size:40px;font-weight:600;letter-spacing:-1.9px;line-height:1">Friday Night Manager — Design System</div>
+  <div style="font-size:14px;color:#4D4D4D;margin-top:10px;max-width:640px;line-height:1.6;text-wrap:pretty">Adapted from the Vercel design language: achromatic surfaces, shadow-as-border, three font weights (400/500/600, never 700), blue as the only interactive color, and status colors confined to ~8px indicator dots — never fills.</div>
+
+  <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin:44px 0 14px 0">Color</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:14px"><div style="height:44px;border-radius:6px;background:#FAFAFA;box-shadow:0 0 0 1px rgba(0,0,0,0.06)"></div><div style="font-size:12px;font-weight:500;margin-top:9px">Background</div><div style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">#FAFAFA</div></div>
+    <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:14px"><div style="height:44px;border-radius:6px;background:#F2F2F2"></div><div style="font-size:12px;font-weight:500;margin-top:9px">Recessed / tracks</div><div style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">#F2F2F2</div></div>
+    <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:14px"><div style="height:44px;border-radius:6px;background:#171717"></div><div style="font-size:12px;font-weight:500;margin-top:9px">Text / primary action</div><div style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">#171717</div></div>
+    <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:14px"><div style="height:44px;border-radius:6px;background:#0072F5"></div><div style="font-size:12px;font-weight:500;margin-top:9px">Interactive (only color)</div><div style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">#0072F5</div></div>
+  </div>
+  <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:16px 18px;margin-top:12px">
+    <div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px">Status — indicator dots only, never fills</div>
+    <div style="display:flex;gap:26px;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:7px;font-size:13px"><span style="width:8px;height:8px;border-radius:9999px;background:#45A557"></span>Good · win · eligible <span style="color:#8F8F8F;font-family:'Geist Mono',monospace;font-size:11px">#45A557</span></span>
+      <span style="display:inline-flex;align-items:center;gap:7px;font-size:13px"><span style="width:8px;height:8px;border-radius:9999px;background:#FF990A"></span>Caution · highlight <span style="color:#8F8F8F;font-family:'Geist Mono',monospace;font-size:11px">#FF990A</span></span>
+      <span style="display:inline-flex;align-items:center;gap:7px;font-size:13px"><span style="width:8px;height:8px;border-radius:9999px;background:#E5484D"></span>Risk · injury · loss <span style="color:#8F8F8F;font-family:'Geist Mono',monospace;font-size:11px">#E5484D</span></span>
+      <span style="display:inline-flex;align-items:center;gap:7px;font-size:13px"><span style="width:8px;height:8px;border-radius:9999px;background:#7820BC"></span>Academics <span style="color:#8F8F8F;font-family:'Geist Mono',monospace;font-size:11px">#7820BC</span></span>
+      <span style="display:inline-flex;align-items:center;gap:7px;font-size:13px"><span style="width:8px;height:8px;border-radius:9999px;background:#067A6E"></span>Scouting <span style="color:#8F8F8F;font-family:'Geist Mono',monospace;font-size:11px">#067A6E</span></span>
+      <span style="display:inline-flex;align-items:center;gap:7px;font-size:13px"><span style="width:8px;height:8px;border-radius:9999px;background:#52AEFF"></span>District <span style="color:#8F8F8F;font-family:'Geist Mono',monospace;font-size:11px">#52AEFF</span></span>
+    </div>
+  </div>
+
+  <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin:44px 0 14px 0">Typography — Geist, three weights</div>
+  <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:22px 24px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:baseline;gap:20px"><span style="font-size:48px;font-weight:600;letter-spacing:-2.28px;line-height:1">Scoreboard 28</span><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">48/600 · ls -2.28px — scores, hero numbers</span></div>
+    <div style="display:flex;align-items:baseline;gap:20px"><span style="font-size:28px;font-weight:600;letter-spacing:-1.12px">Marcus Reed</span><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">28/600 · ls -1.12px — page & entity titles</span></div>
+    <div style="display:flex;align-items:baseline;gap:20px"><span style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Squad · Varsity Roster</span><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">16/600 — section headers</span></div>
+    <div style="display:flex;align-items:baseline;gap:20px"><span style="font-size:13px;color:#4D4D4D">Reed quick out to Alvarez — gain of 9, first down.</span><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">13-14/400 — body, table cells</span></div>
+    <div style="display:flex;align-items:baseline;gap:20px"><span style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Player Card</span><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">11/500 · #8F8F8F — overline labels</span></div>
+    <div style="display:flex;align-items:baseline;gap:20px"><span style="font-size:12px;font-family:'Geist Mono',monospace">1st &amp; 10 · WST 43 — 4:32</span><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">Geist Mono — clocks, jersey #s, yard lines</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px;align-items:start">
+    <div>
+      <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin-bottom:14px">Buttons</div>
+      <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:14px"><button style="background:#171717;color:#fff;border:none;border-radius:6px;height:36px;padding:0 16px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer">Assign Tutor</button><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">primary — #171717, radius 6</span></div>
+        <div style="display:flex;align-items:center;gap:14px"><button style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:36px;padding:0 16px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer">Schedule Study Hall</button><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">secondary — shadow border</span></div>
+        <div style="display:flex;align-items:center;gap:14px"><button style="background:#fff;color:#171717;border:none;box-shadow:0 0 0 2px #fff,0 0 0 4px #0072F5;border-radius:6px;height:36px;padding:0 16px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer">Focused</button><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">double-ring focus — 2px #fff + 4px blue</span></div>
+        <div style="display:flex;align-items:center;gap:14px"><button style="background:#171717;color:#fff;border:none;border-radius:9999px;height:30px;padding:0 14px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer">All</button><button style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;height:30px;padding:0 14px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer">Offense</button><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">filter pills — active = inverted</span></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin-bottom:14px">Badges &amp; data cells</div>
+      <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:#4D4D4D;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:3px 10px"><span style="width:7px;height:7px;border-radius:9999px;background:#45A557"></span>Active</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:#4D4D4D;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:3px 10px"><span style="width:7px;height:7px;border-radius:9999px;background:#FF990A"></span>Acad Risk</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:500;color:#E5484D;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:3px 10px"><span style="width:7px;height:7px;border-radius:9999px;background:#E5484D"></span>Ineligible</span>
+          <span style="font-size:11px;font-weight:500;color:#4D4D4D;background:#F2F2F2;border-radius:9999px;padding:3px 10px">JR</span>
+          <span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">status = dot pill · grade = gray pill</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px">
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-variant-numeric:tabular-nums"><span style="width:8px;height:8px;border-radius:9999px;background:#45A557"></span>92</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-variant-numeric:tabular-nums"><span style="width:8px;height:8px;border-radius:9999px;background:#FF990A"></span>74</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-variant-numeric:tabular-nums"><span style="width:8px;height:8px;border-radius:9999px;background:#E5484D"></span>41</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;padding:2px 8px;font-weight:500;font-size:13px;font-variant-numeric:tabular-nums"><span style="width:8px;height:8px;border-radius:9999px;background:#45A557"></span>86</span>
+          <span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">attribute scale: ≥80 green · 65–79 orange · &lt;65 red</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;max-width:180px;height:4px;background:#F2F2F2;border-radius:2px;overflow:hidden"><div style="width:68%;height:100%;background:#171717"></div></div><span style="font-size:13px;font-weight:500">68</span><span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">bars are black; color lives in the dot</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin:44px 0 14px 0">Elevation — shadow-as-border, no CSS borders</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+    <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:16px"><div style="font-size:12px;font-weight:500">Border</div><div style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace;margin-top:4px">0 0 0 1px #00000014</div></div>
+    <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:16px"><div style="font-size:12px;font-weight:500">Small — cards</div><div style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace;margin-top:4px">+ 0 2px 2px #0000000a</div></div>
+    <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04),0 8px 16px -4px rgba(0,0,0,0.04);border-radius:12px;padding:16px"><div style="font-size:12px;font-weight:500">Large — panels</div><div style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace;margin-top:4px">+ 0 8px 16px -4px #0000000a</div></div>
+  </div>
+
+  <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin:44px 0 6px 0">Decision workflow patterns</div>
+  <div style="font-size:12.5px;color:#8F8F8F;margin-bottom:14px;max-width:70ch;text-wrap:pretty">Added for the Coaching Week build. Every one of these answers a question the coach is entitled to ask: what is pending, what is it based on, what does it cost, and who decides.</div>
+
+  <div style="display:flex;flex-direction:column;gap:14px">
+
+    <div style="background:#fff;border-radius:12px;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 4px 12px rgba(0,0,0,0.05);padding:18px 20px 16px 20px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:7px;height:7px;border-radius:9999px;background:#0072F5"></span>
+        <span style="font-size:10.5px;font-weight:500;letter-spacing:.6px;color:#0072F5;text-transform:uppercase;font-family:'Geist Mono',monospace">Next decision · Monday</span>
+        <span style="flex:1"></span>
+        <span style="font-size:11.5px;color:#8F8F8F;font-family:'Geist Mono',monospace">Due Monday 4:00 PM</span>
+      </div>
+      <div style="font-size:19px;font-weight:600;letter-spacing:-0.42px;margin-top:10px">Pending Decision card</div>
+      <div style="font-size:13px;color:#4D4D4D;line-height:1.62;margin-top:7px;max-width:64ch;text-wrap:pretty">One per screen, and only one. Kicker names the day and the queue position, headline states the decision as a verb, body gives the tradeoff in two sentences, and the footer says why it is pending now. Large shadow is reserved for this card — it is the only elevated surface on a screen.</div>
+      <div style="display:flex;gap:8px;margin-top:15px">
+        <span style="background:#171717;color:#fff;border-radius:6px;height:34px;padding:0 15px;font-size:13px;font-weight:500;display:inline-flex;align-items:center">Primary action</span>
+        <span style="background:#fff;color:#4D4D4D;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:34px;padding:0 15px;font-size:13px;font-weight:500;display:inline-flex;align-items:center">Secondary</span>
+      </div>
+      <div style="margin-top:15px;padding-top:12px;box-shadow:inset 0 1px 0 rgba(0,0,0,0.07);font-size:12px;color:#8F8F8F"><span style="color:#4D4D4D;font-weight:500">Why now — </span>the next screen is built from this answer.</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start">
+
+      <div style="background:#fff;border-radius:12px;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);padding:16px">
+        <div style="font-size:13px;font-weight:500">Evidence / sample chips</div>
+        <div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">Never a bare percentage. Sample size, games, and both directions of evidence travel together.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:11px">
+          <span style="font-size:11px;font-weight:500;color:#4D4D4D;background:#FAFAFA;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:3px 9px;font-family:'Geist Mono',monospace">41 snaps</span>
+          <span style="font-size:11px;font-weight:500;color:#4D4D4D;background:#FAFAFA;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:3px 9px;font-family:'Geist Mono',monospace">3 games</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#4D4D4D;background:#FAFAFA;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:3px 9px"><span style="width:6px;height:6px;border-radius:9999px;background:#45A557"></span>9 support</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#4D4D4D;background:#FAFAFA;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:3px 9px"><span style="width:6px;height:6px;border-radius:9999px;background:#E5484D"></span>2 against</span>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);padding:16px">
+        <div style="font-size:13px;font-weight:500">Confidence indicator</div>
+        <div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">Qualitative label, always followed by the reason in plain language. No numeric certainty the data cannot carry.</div>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
+          <div><div style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:9999px;background:#45A557"></span><span style="font-size:12px;font-weight:500">Confidence · Strong</span></div><div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">41 snaps across three games; both contradictions came from a two-score deficit.</div></div>
+          <div><div style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:9999px;background:#E5484D"></span><span style="font-size:12px;font-weight:500">Confidence · Low sample</span></div><div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">Six returns exist. Three are alarming. That is not a tendency yet.</div></div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);padding:16px">
+        <div style="font-size:13px;font-weight:500">Linked-object trace</div>
+        <div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">Any derived state names its inputs on the same line it appears. No unexplained readiness, score, or recommendation.</div>
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-top:12px">
+          <span style="width:7px;height:7px;border-radius:9999px;background:#52AEFF;margin-top:5px;flex-shrink:0"></span>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:13px;font-weight:500">Puller recognition and fit integrity</span><span style="font-size:10.5px;font-weight:500;color:#4D4D4D;background:#F2F2F2;border-radius:4px;padding:1px 6px;font-family:'Geist Mono',monospace">DEF</span></div>
+            <div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">From “Power tendency” · 9 supporting clips, 2 against · 41 snaps across 3 games</div>
+            <div style="font-size:11.5px;color:#8F8F8F;margin-top:3px;line-height:1.5">2 blocks · 32 expected reps · TUE, WED</div>
+          </div>
+          <span style="font-size:11px;font-weight:500;color:#4D4D4D;white-space:nowrap;margin-top:2px">Repped</span>
+        </div>
+        <div style="font-size:11px;color:#8F8F8F;margin-top:11px;padding-top:10px;box-shadow:inset 0 1px 0 rgba(0,0,0,0.06);font-family:'Geist Mono',monospace">Unseen · Introduced · Repped · Rehearsed</div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);padding:16px">
+        <div style="font-size:13px;font-weight:500">Practice period block</div>
+        <div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">A block is only legible if it names all six of its facts. Contact level is a status dot, never a colored fill.</div>
+        <div style="margin-top:12px;background:#FAFAFA;border-radius:8px;box-shadow:0 0 0 1px rgba(0,0,0,0.08);padding:11px 12px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10.5px;font-weight:500;color:#4D4D4D;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:4px;padding:1px 6px;font-family:'Geist Mono',monospace">TUE · 10 min</span><span style="flex:1"></span><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:#4D4D4D"><span style="width:7px;height:7px;border-radius:9999px;background:#E5484D"></span>Full pads</span></div>
+          <div style="font-size:12.5px;font-weight:500;margin-top:7px">Inside run — puller fits</div>
+          <div style="font-size:11.5px;color:#8F8F8F;margin-top:3px">Defense front seven · 18 expected reps · Coach Tillman</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);padding:16px">
+        <div style="font-size:13px;font-weight:500">Hard constraint</div>
+        <div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">Somebody else decided this. The pattern names the authority and offers no override — only the football response.</div>
+        <div style="margin-top:12px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:7px;height:7px;border-radius:9999px;background:#E5484D"></span><span style="font-size:12.5px;font-weight:500;flex:1">Ryan Kowalski · RT</span><span style="font-size:10.5px;font-weight:500;color:#4D4D4D;background:#F2F2F2;border-radius:4px;padding:1px 6px">Ineligible</span></div>
+          <div style="font-size:11.5px;color:#8F8F8F;margin-top:5px;line-height:1.5">GPA 1.9. Out Friday. Next checkpoint Oct 26 — nothing this week changes it.</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:7px"><span style="font-size:11px;color:#8F8F8F">Authority · Guidance Office</span><span style="flex:1"></span><span style="font-size:11.5px;font-weight:500;color:#0072F5">Open Academics</span></div>
+        </div>
+        <div style="font-size:11px;color:#8F8F8F;margin-top:11px;padding-top:10px;box-shadow:inset 0 1px 0 rgba(0,0,0,0.06);font-family:'Geist Mono',monospace">Active · Limited · No Contact · Ineligible · Unavailable</div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;box-shadow:0 0 0 1.5px #FF990A,0 2px 2px rgba(0,0,0,0.04);padding:16px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:500">Accepted risk</span><span style="flex:1"></span><span style="font-size:10.5px;font-weight:500;color:#4D4D4D;background:#F2F2F2;border-radius:4px;padding:1px 6px;font-family:'Geist Mono',monospace">Chosen</span></div>
+        <div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">The only place an orange ring is permitted. It marks a decision the coach made on purpose, and it stays visible until it is reviewed.</div>
+        <div style="font-size:12.5px;font-weight:500;margin-top:11px">Return-game threat — Special Teams</div>
+        <div style="font-size:11.5px;color:#8F8F8F;margin-top:5px;line-height:1.5">No practice time goes here. It comes back up in Saturday's review whether it cost anything or not.</div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);padding:16px;grid-column:1/-1">
+        <div style="font-size:13px;font-weight:500">Decision Review row</div>
+        <div style="font-size:11.5px;color:#8F8F8F;margin-top:4px;line-height:1.5">Decision quality, execution, and outcome occupy three separate columns and are never collapsed. A sound process with a bad result must be readable as exactly that.</div>
+        <div style="margin-top:13px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;padding-top:12px;box-shadow:inset 0 1px 0 rgba(0,0,0,0.06)">
+          <div style="flex:2 1 260px;min-width:0">
+            <div style="font-size:10px;font-weight:500;letter-spacing:.5px;color:#8F8F8F;text-transform:uppercase;font-family:'Geist Mono',monospace">Decision</div>
+            <div style="font-size:12.5px;font-weight:500;margin-top:4px">Spilled the puller with the nickel over the top</div>
+            <div style="font-size:11.5px;color:#8F8F8F;margin-top:3px;line-height:1.5">Known at the time: 9 supporting clips, 2 against, no look at an odd front.</div>
+          </div>
+          <div style="flex:1 1 130px;min-width:0">
+            <div style="font-size:10px;font-weight:500;letter-spacing:.5px;color:#8F8F8F;text-transform:uppercase;font-family:'Geist Mono',monospace">Process</div>
+            <div style="display:flex;align-items:center;gap:7px;margin-top:5px"><span style="width:7px;height:7px;border-radius:9999px;background:#45A557"></span><span style="font-size:12.5px;font-weight:500">Sound</span></div>
+            <div style="font-size:11px;color:#8F8F8F;margin-top:3px">Sound · Debatable · Poor process</div>
+          </div>
+          <div style="flex:1 1 130px;min-width:0">
+            <div style="font-size:10px;font-weight:500;letter-spacing:.5px;color:#8F8F8F;text-transform:uppercase;font-family:'Geist Mono',monospace">Execution</div>
+            <div style="display:flex;align-items:center;gap:7px;margin-top:5px"><span style="width:7px;height:7px;border-radius:9999px;background:#FF990A"></span><span style="font-size:12.5px;font-weight:500">Missed the fit twice</span></div>
+          </div>
+          <div style="flex:1 1 130px;min-width:0">
+            <div style="font-size:10px;font-weight:500;letter-spacing:.5px;color:#8F8F8F;text-transform:uppercase;font-family:'Geist Mono',monospace">Outcome</div>
+            <div style="display:flex;align-items:center;gap:7px;margin-top:5px"><span style="width:7px;height:7px;border-radius:9999px;background:#E5484D"></span><span style="font-size:12.5px;font-weight:500">Two explosive runs</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin:44px 0 6px 0">Responsive &amp; interaction-complete (Phase 8)</div>
+  <div style="font-size:12.5px;color:#8F8F8F;margin-bottom:14px;max-width:70ch;text-wrap:pretty">How the prototype reflows at 1440 / 1024 / 768 / 390, and how dead-looking controls were retired.</div>
+  <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;margin-bottom:6px">
+    <div style="flex:1 1 300px;min-width:0;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:18px">
+      <div style="font-size:13px;font-weight:500">Reflow, not scaling</div>
+      <ul style="margin:8px 0 0 0;padding-left:18px;font-size:12.5px;color:#4D4D4D;line-height:1.9">
+        <li>Below 900px the sidebar becomes a scrimmed drawer and the Continue label shortens; blockers stay red.</li>
+        <li>Rails are flex-wrap rows with flex-basis, never fixed grid columns — secondary rails stack under the primary decision.</li>
+        <li>Dense tables (Squad, Academics, Schedule) sit in a contained horizontal scroller with a min-width track; the page itself never scrolls sideways.</li>
+        <li>Field diagrams keep their 520px geometry inside their own scroller so drop targets never overlap.</li>
+        <li>Display numerals use clamp() (scoreboard 30–48px); nothing is shrunk wholesale.</li>
+        <li>Inbox goes single-pane below 900px — list, then message with an “← All messages” return.</li>
+      </ul>
+    </div>
+    <div style="flex:1 1 300px;min-width:0;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:18px">
+      <div style="font-size:13px;font-weight:500">Retiring dead controls</div>
+      <ul style="margin:8px 0 0 0;padding-left:18px;font-size:12.5px;color:#4D4D4D;line-height:1.9">
+        <li>Acknowledged action — a taken message action re-labels in the past tense and greys (“Tape queued with Soto”).</li>
+        <li>Disabled-with-reason — a control either acts or states its reason in place (Full Profile outside Reed; coordinator dials set by the scheme).</li>
+        <li>Deferred state — “Later” resolves to a visible “Deferred · Nov board” status, never silence.</li>
+        <li>Selections (rows, scheme cards, RT options) are real buttons with aria-pressed and the focus ring; drags keep a click path.</li>
+        <li>Reset Week restores the full seeded baseline, scheme choices included.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin:44px 0 14px 0">Rules</div>
+  <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:20px 24px">
+    <ul style="margin:0;padding-left:18px;font-size:13px;color:#4D4D4D;line-height:2">
+      <li>Spacing on a 4px grid: 8 / 12 / 16 / 24 / 32 / 48. Separate with space, not divider lines.</li>
+      <li>Radius: 6px components · 12px cards · 9999px pills. Nothing larger on functional UI.</li>
+      <li>Weight 600 for display headings only; 500 for emphasis; never 700.</li>
+      <li>Negative letter-spacing ≈ -4% at 16px+; normal tracking at body sizes.</li>
+      <li>Blue #0072F5 = interactive/active only. Field diagrams, charts and surfaces stay achromatic.</li>
+      <li>Hover changes background/color only — no transform, no opacity fades.</li>
+      <li>Status meaning is never carried by color alone — every dot is paired with a word.</li>
+      <li>Every visible control navigates, changes state, or explains why it is disabled. Nothing decorative.</li>
+      <li>Derived values name their inputs in place. No opaque composite scores.</li>
+    </ul>
+  </div>
+  <div style="font-size:12px;color:#8F8F8F;margin-top:20px">Applied in <a href="Friday Night Manager Vercel.dc.html">Friday Night Manager Vercel</a> · source: educlopez/design-bites — vercel.com DESIGN.md</div>
+</div>
+</x-dc>
+</body>
+</html>

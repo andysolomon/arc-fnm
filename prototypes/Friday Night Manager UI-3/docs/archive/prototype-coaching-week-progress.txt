@@ -1,0 +1,574 @@
+prototype-coaching-week - First Playable Coaching Week Prototype - Progress
+Generated: 2026-07-31 17:03:49 EDT
+Last updated: 2026-08-04 (Phase 9 complete — plan and tracker archived to docs/archive/)
+
+[x] 0.0 - Phase 0 - Stabilize the existing prototype and design system
+    [x] 0.1 - Preserve current files and confirm the primary prototype source of truth
+    [x] 0.2 - Fix runtime console errors and remove the 1240px minimum-width constraint
+    [x] 0.3 - Establish desktop, compact, and narrow shell primitives
+    [x] 0.4 - Add semantic controls, focus treatment, and interaction-complete global affordances
+    [x] 0.5 - Add decision-workflow patterns to FNM Design System.dc.html
+[x] 1.0 - Phase 1 - Add the Coaching Week hub and decision queue
+    [x] 1.1 - Add Week navigation and make the Week Hub the management entry screen
+    [x] 1.2 - Build opponent stakes, Monday-Saturday timeline, and Next Decision card
+    [x] 1.3 - Add readiness, constraints, accepted-risk, staff-note, and change-summary panels
+    [x] 1.4 - Route Continue to the next unresolved mandatory decision
+    [x] 1.5 - Verify the five-second orientation acceptance test
+[x] 2.0 - Phase 2 - Turn Scouting into an Evidence-driven Film Room
+    [x] 2.1 - Seed at least 30 conditional opponent clips with tight/wide metadata
+    [x] 2.2 - Add Overview, Film Room, Hypotheses, and Assignments tabs
+    [x] 2.3 - Implement clip filters, notes, and support/contradiction relationships
+    [x] 2.4 - Implement four hypotheses with samples and confidence explanations
+    [x] 2.5 - Require three priorities and one explicit accepted risk
+[x] 3.0 - Phase 3 - Convert Tactics into an opponent-specific Game Plan
+    [x] 3.1 - Add Game Plan, Depth Chart, and Situational Policies tabs
+    [x] 3.2 - Build one active Game Plan Answer per prioritized hypothesis
+    [x] 3.3 - Link answers to personnel, staff owner, tradeoff, and practice objective
+    [x] 3.4 - Propagate scheme/personnel changes into affected objectives and constraints
+    [x] 3.5 - Keep the accepted risk visible throughout the plan
+[x] 4.0 - Phase 4 - Make Training a constrained practice allocator
+    [x] 4.1 - Replace the static week with fixed periods and eight allocatable priority blocks
+    [x] 4.2 - Connect blocks to objectives, groups, contact level, reps, and coaches
+    [x] 4.3 - Derive traceable objective readiness and unit rep imbalance
+    [x] 4.4 - Enforce availability/contact constraints and one full-pads day
+    [x] 4.5 - Implement undo, reset-to-staff-plan, draft, lock, and risk summary states
+[ ] 5.0 - Phase 5 - Add the Thursday disruption and cross-screen consequences
+    [ ] 5.1 - Trigger Kowalski ineligibility and retain McCoy no-contact restriction
+    [ ] 5.2 - Propagate authority-safe status across Inbox, Academics, Squad, Tactics, Training, and Week
+    [ ] 5.3 - Implement backup, simplified-package, alternative-answer, and accepted-readiness responses
+    [ ] 5.4 - Prevent illegal reps and Friday depth assignments
+    [ ] 5.5 - Block Continue until legal personnel and unresolved constraints are handled
+[x] 6.0 - Phase 6 - Connect preparation to key Friday situations
+    [x] 6.1 - Add pregame Decision Room and four coach-owned policies
+    [x] 6.2 - Replace the single fixed script with at least two preparation-aware branches
+    [x] 6.3 - Present 10-12 key situations with evidence, staff context, and meaningful choices
+    [x] 6.4 - Make Quick Adjust and accepted risk alter later event branches
+    [x] 6.5 - Verify prepared decisions affect uncertainty without guaranteeing outcomes
+[x] 7.0 - Phase 7 - Add post-game Decision Review and learning
+    [x] 7.1 - Add Review entry from final Match Day and Schedule
+    [x] 7.2 - Build the evidence-to-outcome decision timeline
+    [x] 7.3 - Separate decision quality, execution, and outcome with rationale
+    [x] 7.4 - Review the accepted risk and save 1-3 Lessons
+    [x] 7.5 - Add state-aware local story and completed Week Hub
+[x] 8.0 - Phase 8 - Responsive, accessible, and interaction-complete polish
+    [x] 8.1 - Validate and refine 1440px, 1024px, 768px, and 390px layouts
+    [x] 8.2 - Complete keyboard, semantics, focus, labels, and non-color status meaning
+    [x] 8.3 - Add empty, resolved, locked, invalid, and complete states
+    [x] 8.4 - Remove every dead interaction and add deterministic Reset Week
+    [x] 8.5 - Run both validation scenarios through the complete golden path
+[x] 9.0 - Phase 9 - Package the design handoff and archive the plan
+    [x] 9.1 - Document the screen/state map, seeded scenario, and branches
+    [x] 9.2 - Capture desktop and narrow screenshots for every major stage
+    [x] 9.3 - Record known limitations and production unknowns
+    [x] 9.4 - Complete final design review and acceptance
+    [x] 9.5 - Move docs/prototype-coaching-week-IMPLEMENTATION_PLAN.md + docs/prototype-coaching-week-progress.txt to docs/archive/
+
+---
+
+## Implementation log
+
+### 2026-07-31 - Phases 0, 1, 2 complete
+
+Files touched:
+- Friday Night Manager Vercel.dc.html  (primary management prototype - source of truth)
+- FNM Design System.dc.html            (added Decision workflow patterns section)
+
+Phase 0 - Stabilize
+- Removed the hard min-width:1240px shell constraint. Shell now tracks viewport width in
+  state (vw) via a resize listener; narrow (<900px) swaps the fixed 220px sidebar for an
+  accessible drawer with a scrim close button. Content rails use flex-wrap with flex-basis
+  rather than fixed grid columns, so panels reflow instead of scaling.
+- Fixed the unresolved nav SVG "path d" console error by wrapping the icon in
+  <sc-if value="{{ n.icon }}"> so the path never renders with an unresolved attribute.
+  support.js was NOT modified.
+- Nav items and all new controls are semantic <button>s with aria-current and a visible
+  focus ring (style-focus, 3px rgba(0,114,245,.35-.45)).
+- Global Continue now routes to the next unresolved mandatory decision (stage-driven),
+  labelled with its destination, instead of jumping straight to Match Day.
+- Wired previously dead Scouting affordances: "Open film room" -> Film Room tab,
+  "Reassign" -> Assignments tab.
+- Design system gained: Pending Decision card, Evidence/sample chips, Confidence
+  indicator, Linked-object trace (with the Unseen/Introduced/Repped/Rehearsed scale),
+  Practice period block, Hard constraint (with authority + status vocabulary),
+  Accepted risk, Decision Review row. Plus four new rules covering non-color status
+  meaning, no dead controls, and traceable derived values.
+
+Phase 1 - Coaching Week hub
+- New "Week" nav item, first in the list, and the initial screen (screen:'week').
+  Inbox demoted to a supporting surface.
+- Week hub contains: opponent/stakes header, Monday-Saturday stage timeline (every chip
+  navigates to that day's screen), one dominant Next Decision card with due time and a
+  "Why now" footer, preparation objectives with traceable readiness, a constraints rail
+  naming the deciding authority, an accepted-risk slot, staff notes, and
+  "What changed since yesterday" with jump links.
+- Week state model added: stage (evidence|plan|practice|disruption|friday|review),
+  selHyp, risk, answers, blocks, planLocked, rtFix. Readiness is derived from blocks,
+  never edited directly. Reset week restores the seeded baseline.
+- Nav badge on Week shows the count of unresolved hard constraints.
+
+Phase 2 - Evidence-driven Film Room
+- Scouting gained four tabs: Overview (preserved verbatim), Film Room, Hypotheses,
+  Assignments.
+- 32 seeded Central Catholic clips, each with game, situation (down/distance/hash/yard),
+  personnel, formation, motion, concept, result, angle availability, a Soto staff note,
+  and a hypothesis relationship (supports / contradicts / neutral).
+- Film Room: three filter groups (side, situation, tendency incl. "Untagged"), a live
+  sample line that reports visible clip count, games represented, and support/against
+  within the current filter; clip list with per-clip relationship dot; viewer with
+  placeholder frame, Tight/Wide toggle limited to the angles that exist for that clip,
+  full metadata grid, staff note, and an editable coach note per clip.
+- Coaches can re-tag any clip against any of the four hypotheses. Edits are marked
+  "edited" and feed back into the hypothesis support/against counts, so the sample is
+  always the user's own.
+- Hypotheses: four cards - power tendency (strong), sprint-out (moderate), Cover 3
+  leverage (strong), return game (low sample). Each shows the conditional statement,
+  snaps, games, live support/against counts, confidence with a plain-language reason,
+  what evidence is missing, and a drill-down that filters the Film Room to its clips.
+- Gate enforced: exactly three priorities, then the leftover tendency must be explicitly
+  accepted as this week's risk. Attempting a fourth priority is refused with an
+  explanation rather than silently ignored. Accepting the risk advances the week to the
+  Game Plan stage and updates the Week hub and header.
+- Assignments: three scout tasks with real staff choices; each choice states its cost
+  (who misses which practice period), so reassignment is a tradeoff not a preference.
+
+### 2026-07-31 - Phase 3 complete
+
+Files touched:
+- Friday Night Manager Vercel.dc.html
+
+Phase 3 - Opponent-specific Game Plan
+- Tactics now has three tabs: Game Plan (default), Depth Chart (the previous screen,
+  preserved verbatim under its own tab), and Situational Policies. Header, status chip
+  ("N of 3 answers set"), and a persistent accepted-risk strip sit above all three tabs,
+  so the risk is visible everywhere in the plan (3.5).
+- 12 seeded answers, 3 per hypothesis (this.ANSW). Each carries: how it works, personnel
+  package, owning assistant, what it buys, what it exposes, an observable success cue,
+  and the practice objective + target reps it creates. Selecting one collapses the others
+  to a one-line gist, so density stays readable.
+- Exactly one active answer per prioritized concern. Card state reads No answer yet /
+  Answer set / Conflicts with your front, with matching dot + text (never color alone).
+- Scheme propagation (3.4): answers declare a required scheme (4-2-5, 46 Bear, 3-4 Stack,
+  Spread). Choosing one that does not match the active scheme surfaces an inline
+  explanation plus a "Switch to X" button that actually changes the scheme on the Depth
+  Chart tab. The Week hub objective reason repeats the conflict in words.
+- Personnel propagation: the trips-flood answer depends on a right tackle, so selecting it
+  raises a Kowalski warning with a route to the Depth Chart, adds a sentence to the
+  Kowalski constraint on the Week hub, and shows in the "Personnel this plan depends on"
+  rail alongside McCoy's no-contact restriction.
+- Week hub objectives now trace back to the chosen answer: "Answer - <name> - target N
+  reps - <coach>" before the block/rep reason, and "No answer chosen yet" when a
+  prioritized concern is still unanswered. Nav badge on Tactics counts missing answers.
+- Situational Policies: four standing calls (fourth down, conversions, clock/timeouts,
+  coordinator autonomy) with three options each, a stated cost per option, an owning
+  coach, and a staff-default vs changed indicator. The selections summarize into the
+  third-down/red-zone standing objective on the Week hub and are noted as re-confirmed in
+  Friday's Decision Room.
+- Gate: when all three concerns have a valid answer, "Lock the plan - go to Practice"
+  advances the week to the practice stage and routes to Training. Empty state when no
+  concerns are prioritized yet routes back to the Film Room.
+- New state: tacTab, policies{}. Both live in WEEK_SEED, so Reset Week clears them.
+
+Known gaps carried into later phases
+- Practice blocks array exists and drives readiness, but nothing writes to it yet, so all
+  objectives read "Unseen" until Phase 4. Phase 4 consumes answers[].obj + reps as the
+  allocator's demand side.
+- Depth Chart bench drag is still decorative; Phase 5 gives it the RT resolution flow
+  (rtFix), which will also clear the Game Plan personnel warning.
+- Situational policies do not yet reach Match Day; Phase 6 reads them in the Decision Room.- 768/390px reflow is functional (drawer + wrapping rails) but not yet audited per
+  Phase 8; dense tables in Squad/Schedule/Academics still need card treatment.
+- Remaining dead controls outside Scouting (Squad bench, Inbox message actions, Tactics
+  sliders, Player Profile tab stubs) are inventoried for Phases 3-5 and 8.4.
+
+### 2026-07-31 - Phase 4 complete
+
+Files touched:
+- Friday Night Manager Vercel.dc.html
+
+Phase 4 - Constrained practice allocator
+- Training is now two tabs: Practice Plan (default) and Development. The old week cards,
+  individual development, unit emphasis, fatigue rail, and intensity control are preserved
+  verbatim under Development; nothing was deleted.
+- Practice Plan keeps the Monday-Thursday rhythm as four day cards. Each day states its
+  pads level (Helmets / Full pads / Shells / Walk-through), total minutes, and a fixed
+  script the coach does NOT control (4 periods per day, shown muted). Below the fixed
+  script sits the discretionary "Opponent plan" area.
+- Eight ten-minute priority blocks, distributed MON 2 / TUE 3 / WED 2 / THU 1 - so the
+  slot count is the scarcity, and Tuesday's three live slots are the real bottleneck.
+- Placement is select-then-place: "Place a block" on an objective arms it, a banner names
+  what is being placed, and every open slot becomes a target. Clicking an open slot with
+  nothing armed explains what to do rather than doing nothing.
+- Each placed block shows unit, expected reps, contact tone, and the responsible coach,
+  plus an inline note when the rep is degraded. Tuesday blocks can be toggled Live/Thud.
+- Rep + readiness math (all traceable, never a single opaque score):
+  reps = 8 live / 6 padless / 4 Thursday walk-through.
+  weight = contact objective: 1.0 live, 0.6 thud, 0.4 Mon-Wed air, 0.3 Thursday;
+           non-contact objective: 1.0 Mon-Wed, 0.7 Thursday.
+  Unseen 0 / Introduced <1 / Repped <2 / Rehearsed >=2, and a contact objective with no
+  live Tuesday rep is hard-capped at Repped with that sentence printed on the row.
+- Constraint consequences are real, not cosmetic: o1 live blocks lose 2 reps because McCoy
+  cannot take contact and Dunn runs the scout counter; o5 blocks are worth half credit
+  while Kowalski's replacement is unresolved (Phase 5 clears this via rtFix).
+- Every objective row shows: source answer + owning coach, readiness, reps against the
+  answer's target, one line per placed block explaining what it produced, and the affected
+  Student-Athletes with Active / No contact / Ineligible status (dot + word, never color
+  alone).
+- Right rail: plan actions (Undo history, Staff plan, Save draft, Lock), the three
+  authority-owned constraints, and "Where the reps went" unit balance with a warning when
+  a unit gets nothing.
+- Gate: with fewer than three answers set, the allocator explains that blocks are spent on
+  answers and routes to the Game Plan; open slots and the Staff plan / Lock buttons are
+  disabled with the reason stated.
+- Lock requires all eight blocks placed. Locking freezes the grid, advances the week to the
+  disruption stage, and prints "What Friday looks like" - Prepared / Thin / Knowingly
+  uncovered, each with its rep evidence.
+- Week hub now reads the same derived readiness (no more block-count proxy), and the
+  Training nav item carries a badge with the number of unplaced blocks during the practice
+  stage.
+
+Known gaps carried into Phase 5
+- Locked plans are read-only; Phase 5 needs a Thursday catch-up reallocation path once
+  Kowalski is resolved, which will also clear the half-credit penalty on o5.
+- Blocks assigned to an objective whose personnel later becomes unavailable are flagged in
+  words but not yet removed or re-offered - that is 5.2/5.3 work.
+- Contact toggles exist only on Tuesday; if Phase 8 adds a second pads day the tone rules
+  are in blockCalc() and change in one place.
+
+
+================================================================
+PHASE 5 — Thursday disruption and cross-screen consequences
+Implemented: 2026-08-02
+================================================================
+
+State
+  lineup    : per-phase {slots,bench} working depth chart (drag edits live here)
+  rtFix     : null | 'promote' | 'simplify' | 'switch' | 'accept'  (Step 2)
+  rtLegal   = RT slot occupant is not Kowalski     rtResolved = rtLegal && rtFix
+  unresolved = (rtLegal?0:1) + (rtFix?0:1)  -> Week nav badge, Depth Chart tab badge
+  (REVISED 2026-08-02 pm: the original rtStarter:'webb'|'ruiz' flag was replaced
+   by the real lineup model when bench drag-and-drop landed; roster values
+   corrected to Levi Webb OT 62 / Pete Ruiz OG 61 / slide option Mendes RG->RT)
+
+Trigger
+  Locking the practice plan sets stage='disruption' (Thursday). The Guidance
+  Office message and the ATC no-contact restriction are retained, not re-rolled.
+  No override path exists: eligibility is stated as the Guidance Office's call
+  with the next checkpoint fixed at Oct 26.
+
+Thursday resolution panel  (Tactics > Depth Chart, offense, after lock)
+  Step 1 - legal right tackle
+    L. Webb (OT 66)  line stays intact, thin player
+    P. Ruiz (OG 74)  better player, opens RG for T. Alvarez (61), first start
+  Step 2 - what happens to the package
+    promote  +2 reps, +0.4 weight on o5, readiness floor Introduced
+    simplify o3 target drops to 8, readiness floor Repped, ceiling narrative cost
+    switch   o3 weight halved and capped at Introduced (spent reps do not transfer)
+    accept   o5 capped at Introduced, target 6, logged as accepted risk
+
+Propagation from one action
+  Depth Chart   RT slot re-labels; RG shows T. Alvarez + FIRST VARSITY START on ruiz
+  Chip / badges 1 ineligible starter -> Package unresolved -> Personnel legal
+  Game Plan     rtBad banner text switches from "set a right tackle" to "package open"
+  Week Hub      constraint status Ineligible -> Package open -> Resolved; changes feed
+  Training      blockCalc + why-lines; illegal o5 reps after lock produce zero weight
+  Inbox         Assign Tutor / Study Hall / Open Depth Chart are live and show state
+
+Illegal reps and Friday gating
+  After lock, o5 blocks with no eligible RT get w=0 and an "Illegal assignment" note.
+  McCoy no-contact continues to degrade live o1 reps (Dunn runs the scout look).
+  Confirm Friday personnel is dead until rtResolved; only then does stage='friday'.
+  Continue now lands on the Depth Chart tab with the offense phase selected.
+
+Not yet done (Phase 6)
+  stage='friday' has no Decision Room behind it yet.
+
+
+================================================================
+POST-PHASE-5 UX PASS — guided flow and direct manipulation
+Implemented: 2026-08-02 (afternoon)
+================================================================
+
+Driven by first-use feedback: the app must drive the coach to the next
+blocker, and lists must not show the same thing in two places.
+
+1. Smart Continue button (header)
+   nextStep computed from real state, not the stage marker. Chain:
+     Prioritize concerns n/3 -> Name the accepted risk -> Set answers n/3
+     -> Fix the conflicted answer -> Place blocks n/8 / Lock the practice plan
+     -> BLOCKER No legal right tackle -> BLOCKER Decide the RT package
+     -> Confirm Friday personnel -> Match Day
+   Button names the action, navigates to exact screen+tab+phase, tooltip says
+   why. Blocker states turn the button red. Tactics nav badge turns red with
+   the unresolved count while the Depth Chart blocks Friday.
+
+2. Inline risk decision
+   The Hypotheses gate banner lists the remaining candidate(s) with an
+   "Accept as this week's risk" button, so Continue's landing spot contains
+   the action (it used to sit below the fold).
+
+3. Game Plan stack behavior
+   Answered concern cards sink to the bottom; next unanswered surfaces on top.
+   Completion banner when all 3 are set: green (clean) with "Open the practice
+   plan", red variant when an answer conflicts with the active front.
+
+4. Objectives list dedupe (Training)
+   Objectives with >=1 block leave "Objectives competing for the plan" - they
+   exist only on the day grid. Header shows "n left / m on the script";
+   empty state when everything is allocated. Place button disabled at target
+   ("Target met"). Rows sorted: unallocated first, risk/off-board last.
+
+5. Depth chart drag-and-drop (real)
+   Bench rows are native drag sources (dataTransfer text/plain = bench index);
+   every slot is a drop target; swap puts the displaced starter on the bench
+   (Kowalski keeps an ineligible flag). Slot cards sized 9.4% of field width
+   (min-width 520px on the field) so drop targets never overlap. Out-of-
+   position starters get an amber "OG PLAYING RT" flag. Dropping a legal body
+   on RT resolves Step 1 of the Thursday panel; panel option buttons perform
+   the same swaps (Webb / Ruiz / slide-the-line).
+
+6. Practice plan kanban
+   Placed blocks drag between days (payload 'block:<id>'); objective rows drag
+   from the list onto a day ('obj:<oid>'). Day columns highlight during drag,
+   refuse drops at capacity; moves recompute live/tempo/reps for the new day
+   and go through the undo stack.
+
+Known-good end-to-end (self-tested in preview): prioritize 3 -> accept risk
+inline -> 3 answers (cards sink, banner appears) -> Continue to Training ->
+drag objective to MON -> drag block MON->TUE (goes Live) -> counters track.
+
+Next: Phase 6 - Decision Room + seeded Match Day branches behind stage='friday'.
+
+
+================================================================
+PHASE 6 — Preparation-aware Match Day
+Implemented: 2026-08-02
+================================================================
+
+State (all in WEEK_SEED, so Reset Week clears the game)
+  mPhase   : pregame | live | final
+  mQueue   : engine step queue (plays / lazy gens / decisions)
+  mLog     : decision + tagged-play log, seeded for Phase 7's review timeline
+  pendingDec, plays, wScore/cScore, mQ, mClock, dd, mom, ball/fd/drv, qt, speed
+
+Match Day now has three faces
+  Locked out (stage before friday): explains why kickoff is gated, Continue
+    button routes to the real next step. The old auto-running Q3 script is gone.
+  Decision Room (stage=friday, pregame): the four Situational Policies get a
+    last confirm (same polList state as Tactics), beside a "What you take onto
+    the field" readiness recap (Prepared/Thin/Uncovered from the real derived
+    objState), the accepted-risk strip, and Take the field. Taking the field
+    snapshots {objective levels, answers, rtFix, RT name, risk, policies} as
+    the game context.
+  Live/final: preserved scoreboard/field/feed/Quick Adjust/speed controls, plus
+    quarter label is real (Q1-Q4/OT), feed rows carry trace tags, Skip is now
+    "Next call" (runs to the next key situation), FINAL state adds a Decision
+    review button and sets stage='review' (Phase 7 hangs off this).
+
+Engine (buildGame in the logic class)
+  Deterministic, no RNG: variance is scripted. ~12 key situations across four
+  quarters; 6 are coach decisions in a Key Situation panel over the field (game
+  state chips + live score, evidence-from-the-week line, staff voice, 2-4
+  choices each with its stated cost). The rest are annotated auto-plays.
+  Situations: opening KO return (h4/o4), the power test (h1/o1, decision),
+  RT protection 3rd&7 (branches on rtFix: promote/simplify/switch/accept),
+  4th&2 policy call, sprint-out test (h2/o2), two-minute clock/timeout call
+  (honors the coordinator-autonomy policy — Tillman pre-checks the front if it
+  is his), halftime, the trips-flood shot (h3/o3, framing changes if the answer
+  was switched or never installed), the Q3 power drive, Q4 TD + conversion
+  policy call, and a score-aware closer (defense protects a lead / offense
+  4th&6, framing computed from the live score; OT paths exist so no tie ends
+  the game).
+  Readiness gates outcomes without guaranteeing them: Rehearsed sprint-out
+  contain still gets beaten once by a missed tackle (execution, tagged as
+  such), and an Unseen power front still gets one Okafor solo TFL ("execution
+  beat scheme"). Accepted risk is tagged amber wherever it cashes (Malone
+  returns, uncovered flood window, unprotected five-step).
+  Quick Adjust reaches branches at resolve time: Blitz Heavy changes the Q3
+  power stop and the closing pressure call, Pound the Rock changes the ground
+  option in the flood situation, Air It Out enables the closing boot.
+
+Both validation scenarios produce different games: Scenario A (defense-first)
+wins on stops but bleeds return-game field goals; Scenario B (offense/ST)
+hits the flood but eats power touchdowns. Either can win or lose at the
+closing decision.
+
+Not yet done (Phase 7)
+  stage='review' currently lands on Schedule; the Decision Review screen reads
+  mLog + the snapshot ctx. Old this.SCRIPT array is dead data, removable in a
+  Phase 8 cleanup.
+
+
+================================================================
+PHASE 7 — Post-game Decision Review and learning
+Implemented: 2026-08-03
+================================================================
+
+State (all in WEEK_SEED; startMatch also resets them, so replays are clean)
+  mCtx      : the take-the-field snapshot {lvl,risk,ansBy,rtFix,rtName,pol},
+              now in state (was only this.mctx) so the review survives hot code
+  revRate{} : the coach's own Sound/Debatable/Poor-process read per decision
+  lessons[] : saved lesson ids (max 3)   revClosed : week closed out
+  lessonMsg : "three lessons travel" refusal banner
+
+Richer decision log (choose())
+  Every chosen Key Situation now logs: dec id, option index, chips, the
+  evidence string AS SHOWN AT THE TIME, staff line + speaker, chosen option,
+  score at the moment of the call, the resulting play sequence (text + trace
+  tags), and the points swing across that sequence. advance() keeps logging
+  tagged plays (incl. every "Accepted risk" cash) as before.
+
+New screen: screen='review' (no nav item — entered via the final Match Day
+button, the Schedule result card, the Week hub review card, Continue, and the
+SAT timeline chip; STAGES review row now routes here instead of schedule)
+  Header: final score, WIN/LOSS chip, and the framing line (scoreboard is one
+    output of many). Empty state if no game is on film yet.
+  Decision timeline: one card per logged decision — when/chips, WHAT YOU KNEW
+    THEN (the pregame evidence verbatim), the staff voice at the time, the
+    choice, the actual play-by-play with trace tags, then three separate rows:
+    Decision (staff process read: Sound / Debatable / Poor process + rationale
+    computed from policy/readiness/evidence at decision time, never from the
+    result), Execution (first execution tag or "ran as called"), Result
+    (points swing on the sequence). The coach adds their own read via three
+    pills; agreement/split with the staff read is stated in words.
+  Process rubric (procOf in renderVals) covers all 8 situation ids and
+    branches on the snapshot ctx — e.g. trusting Rehearsed fits is Sound while
+    trusting Introduced fits is Debatable; the hard count is Poor process with
+    a certain five-yard downside; prevent at +3 or less is Poor process while
+    prevent up 4+ is Sound. Good calls can lose and bad calls can win, and the
+    labels don't move.
+  Accepted-risk retrospective: the hypothesis statement, every logged cash
+    with timestamp, and a verdict line (never cashed = luck, not proof it was
+    free). Framed as reviewing Monday's decision, not Friday's luck.
+  Lessons: 4-6 candidates computed from the actual game — risk cash count,
+    first sound-call-bad-sequence, first non-sound-call-good-sequence, an
+    rtFix-specific lesson, a Rehearsed-still-failed execution lesson, a
+    delegated-policy lesson. Save up to 3; a 4th is refused with an
+    explanation. Saved lessons appear on the completed Week hub (What changed
+    feed) and in the next-opponent card.
+  Westfield Courier: state-aware headline + 2-sentence story (score, the real
+    RT program decision, next opponent). Footer states the paper grades
+    results while the room grades decisions — it is never the evaluator.
+  Close out the week: disabled until >=1 lesson saved (reason stated), then
+    returns to a completed Week hub — timeline all green, header "Saturday ·
+    Week complete", Next Decision card becomes the Week 9 Riverside preview
+    with a Reopen-the-review secondary action.
+
+Schedule is now state-aware after the final: hero card shows the final score,
+tiebreak note, and a Decision Review button; the Week 8 row gets a W/L result;
+Week 9 becomes "next"; record line and district standings recompute for either
+outcome (win = Westfield #1 at 5-0; loss = Central 8-0 and Westfield #2).
+
+Known gaps carried into Phase 8
+  Lessons are seeded candidates only — no free-text lesson entry.
+  The review's user ratings (revRate) are not surfaced anywhere outside the
+  review screen; a Phase 8/9 handoff could summarize staff-vs-coach splits.
+  Old this.SCRIPT array is still dead data — remove in the 8.4 cleanup.
+
+
+================================================================
+PHASE 8 — Responsive, accessible, interaction-complete polish
+Implemented: 2026-08-03
+================================================================
+
+Files touched
+  Friday Night Manager Vercel.dc.html   (all changes)
+  FNM Design System.dc.html             (new "Responsive & interaction-complete" section)
+
+8.1 Responsive reflow (reflow, never scale)
+  Pattern: every two-column screen grid (Schedule, Academics, Boosters, School,
+  Training/Development, Scouting Overview, Player Profile) became a flex-wrap row
+  with flex-basis — the secondary rail stacks under the primary column when the
+  bases no longer fit. No page-wide horizontal scrolling anywhere.
+  Dense tables get a CONTAINED horizontal scroller: Squad roster (790px track),
+  Academics table (620px), Schedule results (470px). Sticky headers preserved.
+  Depth-chart field keeps its 520px geometry inside its own scroller so drop
+  targets never overlap; the bench wraps below it. RT resolution panel and the
+  step-2 option grid are auto-fit minmax. Scheme cards / sliders / ST units /
+  stat strips are auto-fit minmax grids.
+  Inbox is single-pane below 900px: message list, then the opened message with
+  an "← All messages" return (msgView state). Detail pane padding and subject
+  size use clamp(). Match Day: scoreboard numerals clamp(30px,7vw,48px), field
+  and feed panes wrap (field min 320px tall, feed list capped at 70vh), the
+  Key Situation overlay scrolls within the field. Status footer wraps.
+
+8.2 Semantics / keyboard / non-color
+  Converted every clickable div to a real <button> with visible focus ring:
+  inbox rows, squad sort headers + roster rows (grid-as-button), profile back
+  link + tabs, scheme cards, RT starter cards, RT package cards. Selection
+  cards carry aria-pressed. Screen titles are real <h1>s (Squad, Schedule,
+  Academics, Boosters, School, Inbox subject).
+  Non-color: the last color-only signal (Squad morale dot) now has a title on
+  the roster cell and a High/Steady/Low word on the player card.
+  Keyboard path exists for every REQUIRED decision: hypotheses, answers,
+  select-then-place practice blocks, RT panel buttons (mirror of bench drag),
+  policies, match choices, review pills. Drag-and-drop is an accelerator only.
+
+8.3 States
+  Already present from earlier phases (film-filter empty, review empty, match
+  locked-out, plan locked, unused blocks, completed week). Added: acknowledged
+  message actions (past-tense + greyed), deferred booster requests, profile
+  stub tabs restyled as an explicit "Not in this prototype" card, disabled
+  Full Profile with the reason stated in place.
+
+8.4 Dead interactions — final sweep
+  Removed the dead this.SCRIPT array (last Phase 6 leftover).
+  Inbox: ALL remaining message actions now act — Rest 2 Weeks / Prep Highlight
+  Tape / Reply / Pin to Bulletin / Approve Halftime Check / Send Thanks
+  acknowledge into state (acks{}, in WEEK_SEED so Reset clears them).
+  Squad: dead Bench button → "Depth Chart" (navigates to the right phase for
+  the selected player). Full Profile disabled-with-reason outside Reed.
+  Academics: dead "Manage study hall" removed, replaced with the factual line.
+  Boosters: "Later" defers a request to a visible "Deferred · Nov board" state.
+  Tactics sliders: cursor removed; a line states they are set by the active
+  scheme (disabled-with-explanation), pointing at Quick Adjust for in-game.
+  Reset Week is now fully deterministic: also restores scheme/schemeDef/
+  schemeSt, phase, selected player/message/tab — the one leak (a Game Plan
+  "Switch to X front" surviving reset) is fixed.
+
+8.5 Validation scenarios — run end-to-end (scripted clicks, 2026-08-03)
+  Scenario A (power defense): prioritize h1/h2/h3, accept return-game risk,
+  answers Spill-the-puller / Squat-the-boundary / Trips-flood, staff plan,
+  lock, Webb + Promote-and-rep, Decision Room, full game → WIN, review,
+  lesson saved, week closed ("Beat Central Catholic", completed hub).
+  Scenario B (field position/offense): prioritize h3/h4/h2, accept power risk,
+  answers Trips-flood / Sky-kick / Spy-and-chase, staff plan, lock, Webb +
+  Simplify-the-package → FINAL Westfield 20, Central Catholic 14. Different
+  framing, tags, and branches from A throughout.
+  (Note for testers: browser background-tab timer throttling can slow the live
+  game when the tab is hidden; it resumes normally on focus. Not an app bug.)
+
+Known gaps carried into Phase 9
+  Squad/Academics table cards were kept as contained scrollers, not converted
+  to stacked cards — acceptable per plan ("cards or contained horizontal
+  scrollers") and cheaper to hand off.
+  Free-text lesson entry still absent (seeded candidates only).
+  revRate splits are still not summarized outside the review screen.
+
+
+================================================================
+PHASE 9 — Design handoff package
+Implemented: 2026-08-04
+================================================================
+
+Files touched
+  README.md                     (new — the handoff document)
+  screenshots/handoff/*         (28 captures)
+  docs/archive/*                (this file + the implementation plan, moved)
+
+9.1/9.3 README.md at the prototype root documents: file map + run/reset
+  instructions, the screen map (state.screen / tabs), the week state machine
+  with per-stage gates, the seeded scenario, how buildGame() branches on the
+  take-the-field snapshot, designed-vs-simulated behavior with production
+  unknowns (film, engine, readiness calibration, eligibility data, persistence,
+  staff-voice content), and known limitations carried out of Phase 8.
+
+9.2 28 screenshots in screenshots/handoff/ — stages 00 (Career Start) through
+  13 (completed Week hub) at desktop (914x540 viewport, .jpg) and true 390px
+  narrow layout (.png, vw forced to 390 and cropped). Captured by scripting the
+  real golden path (Scenario A: h1/h2/h3, return-game risk, staff plan, Webb +
+  promote-and-rep, first option at each in-game decision — final 20-3 WIN);
+  no state was faked, so every capture is a reachable state.
+
+9.4 Final review run via the platform verifier on the main prototype;
+  acceptance of the package rests with the design owner.
+
+9.5 Plan + tracker moved to docs/archive/.
