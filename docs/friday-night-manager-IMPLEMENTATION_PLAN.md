@@ -228,7 +228,7 @@ Boundaries:
 
 ## 6. Immediate next steps
 
-1. Run `docs/prototype-coaching-week-DESIGN_AGENT_PROMPT.md` against the local source in `prototypes/Friday Night Manager UI`.
+1. Run `docs/prototype-coaching-week-DESIGN_AGENT_PROMPT.md` against the local source in `prototypes/Friday Night Manager UI-3`.
 2. Build and test the first-playable practice-allocation loop phase by phase using the synchronized child tracker.
 3. Resolve **Define the shared Decision Model boundary** while the prototype exposes the concepts that genuinely need to transfer.
 4. Run both seeded planning paths and five moderated prototype sessions before expanding career setup.
