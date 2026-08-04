@@ -2,7 +2,7 @@
 
 You are extending an existing Friday Night Manager `.dc.html` design prototype. Work directly in this directory:
 
-`/Users/andrewsolomon/Documents/Github/arc-fnm/prototypes/Friday Night Manager UI`
+`/Users/andrewsolomon/Documents/Github/arc-fnm/prototypes/Friday Night Manager UI-3`
 
 Your mission is to turn the current collection of management screens into one complete, interactive opponent week. Do not create a parallel app, do not scaffold a production codebase, and do not redesign the visual language from scratch.
 
@@ -11,9 +11,9 @@ Your mission is to turn the current collection of management screens into one co
 Read these files completely, in this order:
 
 1. `/Users/andrewsolomon/Documents/Github/arc-fnm/docs/prototype-coaching-week-IMPLEMENTATION_PLAN.md`
-2. `/Users/andrewsolomon/Documents/Github/arc-fnm/prototypes/Friday Night Manager UI/FNM Design System.dc.html`
-3. `/Users/andrewsolomon/Documents/Github/arc-fnm/prototypes/Friday Night Manager UI/FNM Career Start.dc.html`
-4. `/Users/andrewsolomon/Documents/Github/arc-fnm/prototypes/Friday Night Manager UI/Friday Night Manager Vercel.dc.html`
+2. `/Users/andrewsolomon/Documents/Github/arc-fnm/prototypes/Friday Night Manager UI-3/FNM Design System.dc.html`
+3. `/Users/andrewsolomon/Documents/Github/arc-fnm/prototypes/Friday Night Manager UI-3/FNM Career Start.dc.html`
+4. `/Users/andrewsolomon/Documents/Github/arc-fnm/prototypes/Friday Night Manager UI-3/Friday Night Manager Vercel.dc.html`
 5. `/Users/andrewsolomon/Documents/Github/arc-fnm/CONTEXT.md`
 6. `/Users/andrewsolomon/Documents/Github/arc-fnm/docs/research/high-school-football-coach-decision-support.md`
 7. `/Users/andrewsolomon/Documents/Github/arc-fnm/docs/adr/0001-simulation-first-shared-decision-model.md`

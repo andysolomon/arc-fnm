@@ -1,6 +1,6 @@
 # First Playable Coaching Week Prototype — Implementation Plan
 
-**Mode:** Gap implementation. A substantial interactive `.dc.html` prototype already exists at `prototypes/Friday Night Manager UI`; this plan extends it in place rather than redesigning or scaffolding a production application.
+**Mode:** Gap implementation. A substantial interactive `.dc.html` prototype already exists at `prototypes/Friday Night Manager UI-3`; this plan extends it in place rather than redesigning or scaffolding a production application.
 
 **Companion prompt:** `docs/prototype-coaching-week-DESIGN_AGENT_PROMPT.md`
 
@@ -60,12 +60,12 @@ The first playable is compelling when the coach must decide:
 
 | File | Current role | Plan treatment |
 |---|---|---|
-| `prototypes/Friday Night Manager UI/FNM Career Start.dc.html` | Career menu, coach creation, team selection, game setup, appointment news | Preserve; repair dead affordances and route careers into the new Coaching Week hub |
-| `prototypes/Friday Night Manager UI/Friday Night Manager Vercel.dc.html` | Main management prototype with ten screens and seeded state | Primary implementation target; extend in place |
-| `prototypes/Friday Night Manager UI/FNM Design System.dc.html` | Visual tokens and component examples | Extend with decision-workflow patterns |
-| `prototypes/Friday Night Manager UI/Friday Night Manager.dc.html` | Older/alternate prototype | Treat as legacy reference; do not make it the new source of truth |
-| `prototypes/Friday Night Manager UI/support.js` | Generated `.dc.html` runtime | Do not edit |
-| `prototypes/Friday Night Manager UI/uploads/*` | Football Manager screenshots and local visual references | Inspiration only; do not copy their visual language over the established system |
+| `prototypes/Friday Night Manager UI-3/FNM Career Start.dc.html` | Career menu, coach creation, team selection, game setup, appointment news | Preserve; repair dead affordances and route careers into the new Coaching Week hub |
+| `prototypes/Friday Night Manager UI-3/Friday Night Manager Vercel.dc.html` | Main management prototype with ten screens and seeded state | Primary implementation target; extend in place |
+| `prototypes/Friday Night Manager UI-3/FNM Design System.dc.html` | Visual tokens and component examples | Extend with decision-workflow patterns |
+| `prototypes/Friday Night Manager UI-3/Friday Night Manager.dc.html` | Older/alternate prototype | Treat as legacy reference; do not make it the new source of truth |
+| `prototypes/Friday Night Manager UI-3/support.js` | Generated `.dc.html` runtime | Do not edit |
+| `prototypes/Friday Night Manager UI-3/uploads/*` | Football Manager screenshots and local visual references | Inspiration only; do not copy their visual language over the established system |
 
 ### Existing visual language to preserve
 

@@ -2,12 +2,12 @@ prototype-coaching-week - First Playable Coaching Week Prototype - Progress
 Generated: 2026-07-31 17:03:49 EDT
 On completion, move this file and docs/prototype-coaching-week-IMPLEMENTATION_PLAN.md to docs/archive/.
 
-[ ] 0.0 - Phase 0 - Stabilize the existing prototype and design system
-    [ ] 0.1 - Preserve current files and confirm the primary prototype source of truth
-    [ ] 0.2 - Fix runtime console errors and remove the 1240px minimum-width constraint
-    [ ] 0.3 - Establish desktop, compact, and narrow shell primitives
-    [ ] 0.4 - Add semantic controls, focus treatment, and interaction-complete global affordances
-    [ ] 0.5 - Add decision-workflow patterns to FNM Design System.dc.html
+[x] 0.0 - Phase 0 - Stabilize the existing prototype and design system
+    [x] 0.1 - Preserve current files and confirm the primary prototype source of truth
+    [x] 0.2 - Fix runtime console errors and remove the 1240px minimum-width constraint
+    [x] 0.3 - Establish desktop, compact, and narrow shell primitives
+    [x] 0.4 - Add semantic controls, focus treatment, and interaction-complete global affordances
+    [x] 0.5 - Add decision-workflow patterns to FNM Design System.dc.html
 [ ] 1.0 - Phase 1 - Add the Coaching Week hub and decision queue
     [ ] 1.1 - Add Week navigation and make the Week Hub the management entry screen
     [ ] 1.2 - Build opponent stakes, Monday-Saturday timeline, and Next Decision card
@@ -62,3 +62,5 @@ On completion, move this file and docs/prototype-coaching-week-IMPLEMENTATION_PL
     [ ] 9.3 - Record known limitations and production unknowns
     [ ] 9.4 - Complete final design review and acceptance
     [ ] 9.5 - Move docs/prototype-coaching-week-IMPLEMENTATION_PLAN.md + docs/prototype-coaching-week-progress.txt to docs/archive/
+
+Phase 0 sync note (2026-08-04): Phase 0 was verified complete in prototypes/Friday Night Manager UI-3; this root tracker was stale and has been updated to match.
