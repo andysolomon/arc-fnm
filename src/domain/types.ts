@@ -29,6 +29,109 @@ export type AnswerId = string;
 
 export type PracticeObjectiveId = string;
 
+/** Stable identities are intentionally limited to the seeded RT/protection slice. */
+export type ProtectionPlayerId =
+  | 'player-kowalski'
+  | 'player-mccoy'
+  | 'player-webb'
+  | 'player-ruiz'
+  | 'player-mendes';
+
+export type ProtectionPackageId = 'package-five-step-trips-flood';
+
+export type PlayerParticipation = 'available' | 'ineligible' | 'no-contact';
+
+export interface ProtectionPlayer {
+  readonly id: ProtectionPlayerId;
+  readonly name: string;
+  readonly shortName: string;
+  readonly position: string;
+}
+
+/** Seeded authority input. Selectors decide what it permits; the UI cannot override it. */
+export interface PlayerAvailability {
+  readonly playerId: ProtectionPlayerId;
+  readonly participation: PlayerParticipation;
+  readonly label: string;
+  readonly authority: 'Coaching Staff' | 'Guidance Office' | 'Athletic Trainer';
+  readonly detail: string;
+  readonly checkpoint: string;
+}
+
+export interface PackageDepthAssignment {
+  readonly packageId: ProtectionPackageId;
+  readonly playerId: ProtectionPlayerId;
+  readonly role: 'RT';
+  readonly order: number;
+  readonly starterOption: RtStarterId | null;
+  readonly objectiveIds: readonly PracticeObjectiveId[];
+}
+
+export interface PackageMastery {
+  readonly packageId: ProtectionPackageId;
+  readonly playerId: ProtectionPlayerId;
+  readonly readiness: ReadinessLabel;
+}
+
+export interface DevelopmentAssignment {
+  readonly id: string;
+  readonly playerId: ProtectionPlayerId;
+  readonly packageId: ProtectionPackageId;
+  readonly objectiveId: PracticeObjectiveId;
+  readonly focus: string;
+  readonly detail: string;
+}
+
+export type PracticeParticipationRequirement = 'contact-required';
+
+export interface PracticePersonnelFallback {
+  readonly name: string;
+  readonly position: string;
+  readonly repPenalty: number;
+  readonly detail: string;
+}
+
+/** Stable scenario input connecting an objective's personnel to availability. */
+export interface PracticePersonnelAssignment {
+  readonly id: string;
+  readonly objectiveId: PracticeObjectiveId;
+  readonly playerId: ProtectionPlayerId;
+  readonly requiredParticipation: PracticeParticipationRequirement;
+  readonly fallback: PracticePersonnelFallback;
+}
+
+/** Persisted scenario inputs only. Eligibility, depth, and readiness stay derived. */
+export interface RosterPlanningInput {
+  readonly players: readonly ProtectionPlayer[];
+  readonly availability: readonly PlayerAvailability[];
+  readonly packageDepth: readonly PackageDepthAssignment[];
+  readonly packageMastery: readonly PackageMastery[];
+  readonly developmentAssignments: readonly DevelopmentAssignment[];
+  readonly practicePersonnelAssignments: readonly PracticePersonnelAssignment[];
+}
+
+/**
+ * The situational periods a practice objective can be pointed at. Canonical
+ * Week 8 declares none, so every seeded objective stays situation-neutral.
+ */
+export type PrioritySituationId =
+  | 'backed-up'
+  | 'red-zone'
+  | 'four-minute'
+  | 'two-minute'
+  | 'end-of-half'
+  | 'overtime';
+
+/** Normalization order for `PrioritySituationId`. Game order, not alphabetical. */
+export const PRIORITY_SITUATIONS = [
+  'backed-up',
+  'red-zone',
+  'four-minute',
+  'two-minute',
+  'end-of-half',
+  'overtime',
+] as const satisfies readonly PrioritySituationId[];
+
 export type PracticeDayId = 'MON' | 'TUE' | 'WED' | 'THU';
 
 export type ReadinessLabel = 'Unseen' | 'Introduced' | 'Repped' | 'Rehearsed';
@@ -139,6 +242,9 @@ export interface PracticeObjective {
   readonly coach: string;
   readonly contact: boolean;
   readonly note?: string;
+  readonly packageId?: ProtectionPackageId;
+  /** Absent on canonical Week 8 — the objective prepares no named situation. */
+  readonly prioritySituation?: PrioritySituationId;
 }
 
 export interface FixedPracticePeriod {
@@ -196,6 +302,7 @@ export interface GamePlanAnswer {
   readonly objectiveId: PracticeObjectiveId;
   readonly targetReps: number;
   readonly contact: boolean;
+  readonly packageId?: ProtectionPackageId;
   readonly schemeRequirement?: SchemeRequirement;
 }
 
@@ -213,6 +320,113 @@ export interface Program {
   readonly rank: string;
 }
 
+export type JurisdictionSourceId =
+  | 'texas-education-code-33-081'
+  | 'uil-academic-requirements'
+  | 'uil-football-plan'
+  | 'uil-football-regular-season-manual-2026-27'
+  | 'uil-rule-changes-2026-27';
+
+/** Immutable provenance for one official input to a versioned rule set. */
+export interface JurisdictionRuleSource {
+  readonly id: JurisdictionSourceId;
+  readonly issuer: string;
+  readonly title: string;
+  readonly url: string;
+  /** Publication is recorded only when the official source states it. */
+  readonly publishedDate: string | null;
+  /** Source-specific effective date; null means the source does not state one. */
+  readonly effectiveDate: string | null;
+  /** Static retrieval metadata, not a run-time clock value. */
+  readonly retrievedDate: string | null;
+}
+
+export type ScenarioAuthorityClassification =
+  'fictional-local-policy' | 'scenario-authority';
+
+/** Makes simulation-only constraints auditable without presenting them as UIL rules. */
+export interface ScenarioAuthorityNote {
+  readonly id:
+    | 'kowalski-academic-restriction'
+    | 'mccoy-medical-restriction'
+    | 'tuesday-contact-window';
+  readonly classification: ScenarioAuthorityClassification;
+  readonly issuer: string;
+  readonly detail: string;
+}
+
+export interface JurisdictionRuleSet {
+  readonly id: string;
+  readonly schemaVersion: 1;
+  readonly version: string;
+  readonly jurisdiction: 'Texas';
+  readonly issuer: 'UIL';
+  readonly issuerName: 'University Interscholastic League';
+  readonly season: '2026-27';
+  /** Effective date of this rule-set snapshot, not of every source in it. */
+  readonly effectiveDate: string;
+  /** The rule-change publication that expressly backs the snapshot date. */
+  readonly effectiveDateSourceId: 'uil-rule-changes-2026-27';
+  readonly sport: 'football';
+  readonly competition: 'regular-season';
+  readonly level: 'varsity';
+  readonly sources: readonly JurisdictionRuleSource[];
+  readonly academicEligibility: {
+    readonly passingPeriodGrade: 70;
+    readonly gracePeriodDays: 7;
+    readonly sourceIds: readonly JurisdictionSourceId[];
+  };
+  readonly weeklyFullContact: {
+    readonly maximumMinutes: number;
+    readonly sourceIds: readonly JurisdictionSourceId[];
+  };
+  readonly gameDayVideoData: {
+    readonly allowedSurfaces: readonly GameDayVideoDataSurface[];
+    readonly rejectedSurfaces: readonly GameDayVideoDataSurface[];
+    readonly sourceIds: readonly JurisdictionSourceId[];
+  };
+  readonly scenarioAuthorities: readonly ScenarioAuthorityNote[];
+}
+
+export type GameDayVideoDataSurface =
+  | 'coaching-booth'
+  | 'locker-room'
+  | 'sideline'
+  | 'team-area'
+  | 'printable'
+  | 'rehearsal';
+
+export interface AcademicEligibilityInput {
+  /** Context only. An overall GPA never substitutes for an official period grade. */
+  readonly overallGpa?: string;
+  readonly periodGrade?: string;
+  readonly courseStatus?: 'nonexempt' | 'exempt';
+  readonly reportKind?: 'official-grading-period' | 'progress-report';
+  readonly seasonPhase?: 'after-first-six-weeks';
+  readonly periodEndDate?: string;
+  readonly contestDate?: string;
+}
+
+export interface AcademicEligibilityResult {
+  readonly contest: 'eligible' | 'contest-ineligible' | 'insufficient-context';
+  readonly practice: 'practice-allowed';
+  readonly reason: string;
+  readonly sourceIds: readonly JurisdictionSourceId[];
+}
+
+export interface FullContactValidationResult {
+  readonly status: 'within-limit' | 'over-limit' | 'invalid-input';
+  readonly minutes: number;
+  readonly maximumMinutes: number;
+  readonly sourceIds: readonly JurisdictionSourceId[];
+}
+
+export interface VideoDataSurfaceValidationResult {
+  readonly status: 'allowed' | 'rejected';
+  readonly surface: GameDayVideoDataSurface;
+  readonly sourceIds: readonly JurisdictionSourceId[];
+}
+
 export interface WeekScenario {
   readonly weekNumber: number;
   readonly program: Program;
@@ -226,6 +440,8 @@ export interface WeekScenario {
   readonly objectives: readonly PracticeObjective[];
   readonly answers: readonly GamePlanAnswer[];
   readonly practiceDays: readonly PracticeDay[];
+  readonly rosterPlanning: RosterPlanningInput;
+  readonly jurisdictionRuleSet: JurisdictionRuleSet;
   /** How many concerns get practice time. The rest is accepted risk. */
   readonly priorityCapacity: number;
 }

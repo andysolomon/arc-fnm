@@ -2,7 +2,20 @@ import { describe, expect, it } from 'vitest';
 
 import { WEEK_8_SCENARIO as scenario } from './scenario.ts';
 import { deriveDisruptionGate } from './disruption.ts';
-import type { RtFix, RtStarterId, WeekState } from './types.ts';
+import {
+  deriveFieldSnapshot,
+  deriveTakeFieldContext,
+  execSeedFor,
+  execSeedInputFor,
+} from './matchDay.ts';
+import {
+  FIVE_STEP_TRIPS_FLOOD,
+  developmentAssignments,
+  eligiblePackageDepth,
+  playerAvailability,
+  resolvePracticePersonnel,
+} from './roster.ts';
+import type { RtFix, RtStarterId, WeekScenario, WeekState } from './types.ts';
 import {
   acceptRisk,
   allocatePracticeBlock,
@@ -68,6 +81,19 @@ function fullPracticePlan(): WeekState {
       allocatePracticeBlock(state, scenario, objectiveId, day),
     cleanPlan(),
   );
+}
+
+function scenarioWithFullContactCap(maximumMinutes: number): WeekScenario {
+  return {
+    ...scenario,
+    jurisdictionRuleSet: {
+      ...scenario.jurisdictionRuleSet,
+      weeklyFullContact: {
+        ...scenario.jurisdictionRuleSet.weeklyFullContact,
+        maximumMinutes,
+      },
+    },
+  };
 }
 
 describe('seeded Week 8 scenario', () => {
@@ -145,11 +171,66 @@ describe('Thursday disruption and authority', () => {
 
   it('keeps Kowalski ineligible and McCoy no-contact without an override path', () => {
     const locked = lockedPlan();
-    const attempted = selectRtStarter(locked, 'kowalski' as RtStarterId);
+    const attempted = selectRtStarter(
+      locked,
+      scenario,
+      'kowalski' as RtStarterId,
+    );
     expect(attempted).toBe(locked);
     expect(deriveDisruptionGate(attempted).rtLegal).toBe(false);
     expect(summary(locked, 'o1')).toMatchObject({ expectedReps: 6 });
-    expect(confirmDisruption(locked)).toBe(locked);
+    expect(confirmDisruption(locked, scenario)).toBe(locked);
+  });
+
+  it('causally resolves McCoy availability into only the live locked o1 fallback', () => {
+    const locked = lockedPlan();
+    const resolution = resolvePracticePersonnel(
+      scenario.rosterPlanning,
+      'o1',
+    )[0];
+    expect(resolution).toMatchObject({
+      availability: { participation: 'no-contact' },
+      fallback: {
+        name: 'C. Dunn',
+        repPenalty: 2,
+        detail:
+          'McCoy cannot take contact. Dunn runs the scout counter and the look is a step slow.',
+      },
+    });
+    expect(summary(locked, 'o1')).toMatchObject({ expectedReps: 6 });
+
+    const availableScenario: WeekScenario = {
+      ...scenario,
+      rosterPlanning: {
+        ...scenario.rosterPlanning,
+        availability: scenario.rosterPlanning.availability.map((entry) =>
+          entry.playerId === 'player-mccoy'
+            ? { ...entry, participation: 'available' as const }
+            : entry,
+        ),
+      },
+    };
+    expect(
+      resolvePracticePersonnel(availableScenario.rosterPlanning, 'o1')[0]
+        ?.fallback,
+    ).toBeNull();
+    expect(
+      practiceObjectiveSummaries(locked, availableScenario).find(
+        (item) => item.objective.id === 'o1',
+      ),
+    ).toMatchObject({ expectedReps: 8 });
+
+    const liveBlock = fullPracticePlan().practiceBlocks.find(
+      (block) => block.objectiveId === 'o1',
+    )!;
+    const nonLive = lockPracticePlan(
+      setPracticeBlockLive(fullPracticePlan(), scenario, liveBlock.id, false),
+      scenario,
+    );
+    expect(
+      nonLive.practiceBlocks.find((block) => block.objectiveId === 'o1'),
+    ).toMatchObject({ live: false });
+    expect(summary(nonLive, 'o1')).toMatchObject({ expectedReps: 6 });
   });
 
   it.each([
@@ -169,7 +250,7 @@ describe('Thursday disruption and authority', () => {
   ] as const)(
     'applies the canonical %s branch to reps, target, and readiness',
     (fix, expected) => {
-      let state = selectRtStarter(lockedPlan(), 'webb');
+      let state = selectRtStarter(lockedPlan(), scenario, 'webb');
       state = selectRtFix(state, fix as RtFix);
       expect(deriveDisruptionGate(state)).toMatchObject({
         rtLegal: true,
@@ -188,10 +269,10 @@ describe('Thursday disruption and authority', () => {
   );
 
   it('confirms only a legal RT plus response and opens Friday Decision Room', () => {
-    const starterOnly = selectRtStarter(lockedPlan(), 'slide');
-    expect(confirmDisruption(starterOnly)).toBe(starterOnly);
+    const starterOnly = selectRtStarter(lockedPlan(), scenario, 'slide');
+    expect(confirmDisruption(starterOnly, scenario)).toBe(starterOnly);
     const resolved = selectRtFix(starterOnly, 'simplify');
-    const confirmed = confirmDisruption(resolved);
+    const confirmed = confirmDisruption(resolved, scenario);
     expect(confirmed).toMatchObject({
       stage: 'friday',
       rtStarter: 'slide',
@@ -207,7 +288,171 @@ describe('Thursday disruption and authority', () => {
   });
 });
 
+describe('RT protection roster hardening', () => {
+  const lockedPlan = () => lockPracticePlan(fullPracticePlan(), scenario);
+  const webbPromote = () =>
+    selectRtFix(selectRtStarter(lockedPlan(), scenario, 'webb'), 'promote');
+  const unavailableWebbScenario = (): WeekScenario => ({
+    ...scenario,
+    rosterPlanning: {
+      ...scenario.rosterPlanning,
+      availability: scenario.rosterPlanning.availability.map((entry) =>
+        entry.playerId === 'player-webb'
+          ? {
+              ...entry,
+              participation: 'ineligible' as const,
+              label: 'Unavailable Friday',
+              authority: 'Guidance Office' as const,
+            }
+          : entry,
+      ),
+    },
+  });
+
+  it('derives eligible package depth and preserves non-coach authority', () => {
+    expect(
+      eligiblePackageDepth(scenario.rosterPlanning, FIVE_STEP_TRIPS_FLOOD).map(
+        (entry) => entry.playerId,
+      ),
+    ).toEqual(['player-webb', 'player-ruiz', 'player-mendes']);
+    expect(
+      playerAvailability(scenario.rosterPlanning, 'player-kowalski'),
+    ).toMatchObject({
+      participation: 'ineligible',
+      authority: 'Guidance Office',
+    });
+    expect(
+      playerAvailability(scenario.rosterPlanning, 'player-mccoy'),
+    ).toMatchObject({
+      participation: 'no-contact',
+      authority: 'Athletic Trainer',
+    });
+    expect(
+      developmentAssignments(scenario.rosterPlanning, 'o5', 'player-webb'),
+    ).toEqual([
+      expect.objectContaining({
+        id: 'development-webb-five-step-protection',
+        packageId: FIVE_STEP_TRIPS_FLOOD,
+      }),
+    ]);
+  });
+
+  it('changes answer validity and eligible depth when Webb becomes unavailable', () => {
+    const unavailableScenario = unavailableWebbScenario();
+    const state = webbPromote();
+
+    expect(
+      eligiblePackageDepth(
+        unavailableScenario.rosterPlanning,
+        FIVE_STEP_TRIPS_FLOOD,
+      ).map((entry) => entry.playerId),
+    ).not.toContain('player-webb');
+    expect(derivePlanGate(state, unavailableScenario)).toMatchObject({
+      ready: false,
+      blocker: { kind: 'invalid-answer', hypothesisId: 'h3' },
+    });
+  });
+
+  it('rejects an unavailable Webb when a caller bypasses the depth-chart UI', () => {
+    const locked = lockedPlan();
+    const unavailableScenario = unavailableWebbScenario();
+
+    expect(selectRtStarter(locked, unavailableScenario, 'webb')).toBe(locked);
+  });
+
+  it('does not confirm an invalid direct Webb selection in an unavailable scenario', () => {
+    const invalidDirectState: WeekState = {
+      ...lockedPlan(),
+      rtStarter: 'webb',
+      rtFix: 'promote',
+    };
+
+    expect(
+      confirmDisruption(invalidDirectState, unavailableWebbScenario()),
+    ).toBe(invalidDirectState);
+  });
+
+  it('caps package readiness and the Friday snapshot when Webb mastery falls', () => {
+    const lowerMasteryScenario = {
+      ...scenario,
+      rosterPlanning: {
+        ...scenario.rosterPlanning,
+        packageMastery: scenario.rosterPlanning.packageMastery.map((entry) =>
+          entry.playerId === 'player-webb'
+            ? { ...entry, readiness: 'Introduced' as const }
+            : entry,
+        ),
+      },
+    };
+    const state = webbPromote();
+    const baseline = practiceObjectiveSummaries(state, scenario).find(
+      (summary) => summary.objective.id === 'o5',
+    );
+    const lowered = practiceObjectiveSummaries(
+      state,
+      lowerMasteryScenario,
+    ).find((summary) => summary.objective.id === 'o5');
+
+    expect(baseline).toMatchObject({
+      readiness: 'Repped',
+      expectedReps: 10,
+    });
+    expect(lowered).toMatchObject({
+      readiness: 'Introduced',
+      expectedReps: 10,
+    });
+    expect(
+      deriveFieldSnapshot(state, lowerMasteryScenario).thin.find(
+        (item) => item.name === 'Right tackle protection with a backup',
+      )?.note,
+    ).toBe('Introduced · 10 reps');
+  });
+
+  it('retains the seeded Webb/promote reps, readiness, and Match Day seed', () => {
+    const state = confirmDisruption(webbPromote(), scenario);
+    const summary = practiceObjectiveSummaries(state, scenario).find(
+      (item) => item.objective.id === 'o5',
+    );
+    const context = deriveTakeFieldContext(state, scenario);
+
+    expect(summary).toMatchObject({
+      expectedReps: 10,
+      targetReps: 14,
+      readiness: 'Repped',
+    });
+    expect(execSeedInputFor(context)).toBe(
+      'h4|promote|Levi Webb|Chart|Kick|Bank|Ask|o1:2|o2:3|o3:3|o4:0|o5:2|o6:2',
+    );
+    expect(execSeedFor(context)).toBe(3_427_930_963);
+    expect(execSeedFor(context)).toBe(execSeedFor(context));
+  });
+});
+
 describe('game plan gate and actions', () => {
+  it('changes planning output when the accepted evidence risk changes', () => {
+    let alternate = acceptRisk(boardWith('h1', 'h2', 'h4'), scenario, 'h3');
+    alternate = chooseAnswer(alternate, scenario, 'h1', 'a11');
+    alternate = chooseAnswer(alternate, scenario, 'h2', 'a21');
+    alternate = chooseAnswer(alternate, scenario, 'h4', 'a41');
+
+    const baseline = practiceObjectiveSummaries(cleanPlan(), scenario);
+    const changed = practiceObjectiveSummaries(alternate, scenario);
+    expect(
+      baseline.find((summary) => summary.objective.id === 'o3')?.availability,
+    ).toBe('available');
+    expect(
+      changed.find((summary) => summary.objective.id === 'o3')?.availability,
+    ).toBe('accepted-risk');
+    expect(
+      changed.find((summary) => summary.objective.id === 'o4')?.availability,
+    ).toBe('available');
+    expect(
+      staffPracticeBlocks(alternate, scenario).map(
+        (block) => block.objectiveId,
+      ),
+    ).toContain('o4');
+  });
+
   it('stays incomplete until every priority has exactly one active answer', () => {
     const board = planBoard();
     const one = chooseAnswer(board, scenario, 'h1', 'a11');
@@ -418,6 +663,9 @@ describe('practice plan gate and block actions', () => {
     const staffA = staffPracticeBlocks(clean, scenario);
     const staffB = staffPracticeBlocks(clean, scenario);
 
+    expect(scenario.jurisdictionRuleSet.weeklyFullContact.maximumMinutes).toBe(
+      90,
+    );
     expect(staffA).toEqual(staffB);
     expect(staffA).toHaveLength(8);
     expect(staffA.map((block) => block.day)).toEqual([
@@ -431,6 +679,20 @@ describe('practice plan gate and block actions', () => {
       'THU',
     ]);
     expect(staffA.filter((block) => block.live)).toHaveLength(3);
+    expect(
+      staffA
+        .filter((block) => block.live)
+        .every((block) => block.day === 'TUE'),
+    ).toBe(true);
+    expect(
+      derivePracticeGate({ ...clean, practiceBlocks: staffA }, scenario)
+        .dayCounts,
+    ).toEqual({
+      MON: 2,
+      TUE: 3,
+      WED: 2,
+      THU: 1,
+    });
 
     const partial = allocatePracticeBlock(clean, scenario, 'o6', 'THU');
     const reset = resetPracticeToStaffPlan(partial, scenario);
@@ -445,6 +707,88 @@ describe('practice plan gate and block actions', () => {
         scenario,
       ),
     ).toEqual(lockPracticePlan(fullPracticePlan(), scenario));
+  });
+
+  it('applies a lower jurisdiction cap without changing staff objective or day order', () => {
+    const clean = cleanPlan();
+    const cappedScenario = scenarioWithFullContactCap(20);
+    const baseline = staffPracticeBlocks(clean, scenario);
+    const capped = staffPracticeBlocks(clean, cappedScenario);
+
+    expect(capped).toHaveLength(8);
+    expect(capped).toEqual(staffPracticeBlocks(clean, cappedScenario));
+    expect(
+      capped.map(({ objectiveId, day }) => ({ objectiveId, day })),
+    ).toEqual(baseline.map(({ objectiveId, day }) => ({ objectiveId, day })));
+    expect(capped.map((block) => block.live)).toEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+  });
+
+  it('rejects explicit over-cap live allocation and toggling without mutation', () => {
+    const cappedScenario = scenarioWithFullContactCap(20);
+    let state = allocatePracticeBlock(
+      cleanPlan(),
+      cappedScenario,
+      'o1',
+      'TUE',
+      true,
+    );
+    state = allocatePracticeBlock(state, cappedScenario, 'o5', 'TUE', true);
+
+    expect(
+      allocatePracticeBlock(state, cappedScenario, 'o6', 'TUE', true),
+    ).toBe(state);
+
+    const nonLive = allocatePracticeBlock(
+      state,
+      cappedScenario,
+      'o6',
+      'TUE',
+      false,
+    );
+    expect(
+      setPracticeBlockLive(
+        nonLive,
+        cappedScenario,
+        nonLive.practiceBlocks[2]!.id,
+        true,
+      ),
+    ).toBe(nonLive);
+  });
+
+  it('keeps an implicit move to Tuesday non-live when the cap is full', () => {
+    const cappedScenario = scenarioWithFullContactCap(20);
+    let state = allocatePracticeBlock(cleanPlan(), cappedScenario, 'o1', 'TUE');
+    state = allocatePracticeBlock(state, cappedScenario, 'o5', 'TUE');
+    state = allocatePracticeBlock(state, cappedScenario, 'o6', 'MON', false);
+    const movedId = state.practiceBlocks[2]!.id;
+    const moved = movePracticeBlock(state, cappedScenario, movedId, 'TUE');
+
+    expect(moved).not.toBe(state);
+    expect(moved.practiceBlocks[2]).toMatchObject({
+      id: movedId,
+      day: 'TUE',
+      live: false,
+    });
+  });
+
+  it('marks an existing over-cap block set invalid and refuses to lock it', () => {
+    const cappedScenario = scenarioWithFullContactCap(20);
+    const overCap = fullPracticePlan();
+
+    expect(derivePracticeGate(overCap, cappedScenario).blocker).toMatchObject({
+      kind: 'invalid-blocks',
+      reason: expect.stringContaining('20 minutes'),
+    });
+    expect(lockPracticePlan(overCap, cappedScenario)).toBe(overCap);
   });
 
   it('derives canonical reps and readiness without persisting either', () => {

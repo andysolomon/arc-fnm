@@ -294,14 +294,14 @@ export function weekReducer(
     case 'select-rt-starter':
       return {
         ...state,
-        week: selectRtStarter(state.week, action.starter),
+        week: selectRtStarter(state.week, scenario, action.starter),
       };
 
     case 'select-rt-fix':
       return { ...state, week: selectRtFix(state.week, action.fix) };
 
     case 'confirm-disruption':
-      return { ...state, week: confirmDisruption(state.week) };
+      return { ...state, week: confirmDisruption(state.week, scenario) };
 
     case 'set-policy':
       return {

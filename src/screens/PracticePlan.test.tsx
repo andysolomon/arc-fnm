@@ -172,7 +172,14 @@ describe('canonical Training parity', () => {
       screen.getByRole('region', { name: 'What Friday looks like' }),
     ).toBeVisible();
     expect(screen.getByText('Decided by Guidance Office')).toBeVisible();
+    expect(screen.getByText('Hunter McCoy · FB')).toBeVisible();
+    expect(screen.getByText('No contact')).toBeVisible();
     expect(screen.getByText('Decided by Athletic Trainer')).toBeVisible();
+    expect(
+      screen.getByText(
+        'McCoy cannot take contact. Dunn runs the scout counter and the look is a step slow.',
+      ),
+    ).toBeVisible();
     expect(
       screen.queryByRole('button', { name: /Remove .* from/i }),
     ).toBeNull();

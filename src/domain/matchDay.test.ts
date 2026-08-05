@@ -2,8 +2,26 @@ import { describe, expect, it } from 'vitest';
 
 import matchDaySource from './matchDay.ts?raw';
 import { WEEK_8_SCENARIO } from './scenario.ts';
-import type { PolicyValue, PracticeBlock, WeekState } from './types.ts';
-import { createSeedState, resetWeek } from './week.ts';
+import { PRIORITY_SITUATIONS } from './types.ts';
+import type {
+  PolicyValue,
+  PracticeBlock,
+  PrioritySituationId,
+  WeekScenario,
+  WeekState,
+} from './types.ts';
+import {
+  acceptRisk,
+  allocatePracticeBlock,
+  chooseAnswer,
+  confirmDisruption,
+  createSeedState,
+  lockPracticePlan,
+  resetWeek,
+  selectRtFix,
+  selectRtStarter,
+  togglePriority,
+} from './week.ts';
 import {
   buildGame,
   chooseMatchOption,
@@ -81,7 +99,73 @@ function fridayState(path: 'A' | 'B'): WeekState {
   };
 }
 
-function playGoldenPath(initial: WeekState): {
+/** The canonical Week 8 Webb/promote route, built through the week actions. */
+function webbPromoteConfirmed(): WeekState {
+  let state = ['h1', 'h2', 'h3'].reduce(
+    (current, id) => togglePriority(current, scenario, id),
+    createSeedState(),
+  );
+  state = acceptRisk(state, scenario, 'h4');
+  state = chooseAnswer(state, scenario, 'h1', 'a11');
+  state = chooseAnswer(state, scenario, 'h2', 'a21');
+  state = chooseAnswer(state, scenario, 'h3', 'a31');
+  state = (
+    [
+      ['o2', 'MON'],
+      ['o3', 'MON'],
+      ['o1', 'TUE'],
+      ['o5', 'TUE'],
+      ['o6', 'TUE'],
+      ['o2', 'WED'],
+      ['o3', 'WED'],
+      ['o6', 'THU'],
+    ] as const
+  ).reduce(
+    (current, [objectiveId, day]) =>
+      allocatePracticeBlock(current, scenario, objectiveId, day),
+    state,
+  );
+  state = lockPracticePlan(state, scenario);
+  state = selectRtFix(selectRtStarter(state, scenario, 'webb'), 'promote');
+  return confirmDisruption(state, scenario);
+}
+
+/** Point one objective at a situational period. Canonical Week 8 points at none. */
+function situationScenario(
+  objectiveId: string,
+  situation: PrioritySituationId,
+): WeekScenario {
+  return {
+    ...scenario,
+    objectives: scenario.objectives.map((objective) =>
+      objective.id === objectiveId
+        ? { ...objective, prioritySituation: situation }
+        : objective,
+    ),
+  };
+}
+
+/** Take a player off Friday without touching anything else in the scenario. */
+function playerOutScenario(
+  playerId: WeekScenario['rosterPlanning']['availability'][number]['playerId'],
+): WeekScenario {
+  return {
+    ...scenario,
+    rosterPlanning: {
+      ...scenario.rosterPlanning,
+      availability: scenario.rosterPlanning.availability.map((entry) =>
+        entry.playerId === playerId
+          ? { ...entry, participation: 'ineligible' as const, label: 'Out' }
+          : entry,
+      ),
+    },
+  };
+}
+
+function playGoldenPath(
+  initial: WeekState,
+  against: WeekScenario = scenario,
+): {
   state: WeekState;
   view: MatchView;
   decisions: readonly string[];
@@ -89,13 +173,13 @@ function playGoldenPath(initial: WeekState): {
   let state = takeField(initial);
   const decisions: string[] = [];
   for (let guard = 0; guard < 12; guard += 1) {
-    state = skipToDecision(state, scenario);
-    const view = deriveMatch(state, scenario);
+    state = skipToDecision(state, against);
+    const view = deriveMatch(state, against);
     if (view.phase === 'final') return { state, view, decisions };
     expect(view.pending).not.toBeNull();
     const pending = view.pending!;
     decisions.push(pending.id);
-    state = chooseMatchOption(state, scenario, pending.id, 0);
+    state = chooseMatchOption(state, against, pending.id, 0);
   }
   throw new Error('golden path did not reach the final horn');
 }
@@ -475,5 +559,197 @@ describe('six canonical situations and golden paths', () => {
         true,
       );
     }
+  });
+});
+
+describe('priority situations and unavailable players', () => {
+  const CANONICAL_A_INPUT =
+    'h4|promote|Levi Webb|Chart|Kick|Bank|Ask|o1:3|o2:3|o3:2|o4:0|o5:1|o6:2';
+  const CANONICAL_FIXTURE_INPUT =
+    'h4|promote|Levi Webb|Chart|Kick|Bank|Ask|o1:3|o2:2|o3:2|o4:0|o5:1|o6:1';
+
+  it('leaves the canonical Webb/promote snapshot situation-neutral and fully represented', () => {
+    const canonical = deriveTakeFieldContext(webbPromoteConfirmed(), scenario);
+    expect(canonical.sits).toEqual([]);
+    expect(canonical.outs).toEqual([]);
+    expect(execSeedInputFor(canonical)).toBe(
+      'h4|promote|Levi Webb|Chart|Kick|Bank|Ask|o1:2|o2:3|o3:3|o4:0|o5:2|o6:2',
+    );
+    expect(execSeedFor(canonical)).toBe(3_427_930_963);
+
+    const pathA = deriveTakeFieldContext(fridayState('A'), scenario);
+    expect([pathA.sits, pathA.outs]).toEqual([[], []]);
+    expect(execSeedInputFor(pathA)).toBe(CANONICAL_A_INPUT);
+    expect(execSeedFor(pathA)).toBe(1_768_531_688);
+  });
+
+  it.each([
+    ['backed-up', 1_428_732_932],
+    ['red-zone', 1_271_997_404],
+    ['four-minute', 2_398_440_599],
+    ['two-minute', 2_129_788_141],
+    ['end-of-half', 356_497_921],
+    ['overtime', 1_918_741_751],
+  ] as const)(
+    'appends the %s situation to the seed input without moving the canonical prefix',
+    (situation, seed) => {
+      const context = { ...fixtureContext, sits: [situation] };
+      expect(execSeedInputFor(context)).toBe(
+        `${CANONICAL_FIXTURE_INPUT}|sit:${situation}`,
+      );
+      expect(execSeedFor(context)).toBe(seed);
+      // The neutral fixture the rest of the suite pins is untouched by all of it.
+      expect(execSeedInputFor(fixtureContext)).toBe(CANONICAL_FIXTURE_INPUT);
+      expect(execSeedFor(fixtureContext)).toBe(4_273_764_986);
+    },
+  );
+
+  it('gives all six situations distinct seeds and normalizes duplicates and order', () => {
+    const seeds = PRIORITY_SITUATIONS.map((situation) =>
+      execSeedFor({ ...fixtureContext, sits: [situation] }),
+    );
+    expect(new Set(seeds).size).toBe(PRIORITY_SITUATIONS.length);
+    expect(
+      execSeedInputFor({
+        ...fixtureContext,
+        sits: ['backed-up', 'red-zone', 'two-minute'],
+      }),
+    ).toBe(`${CANONICAL_FIXTURE_INPUT}|sit:backed-up,red-zone,two-minute`);
+  });
+
+  it('derives only prepared, on-board situations, in canonical game order', () => {
+    const tagged: WeekScenario = {
+      ...scenario,
+      objectives: scenario.objectives.map((objective) => {
+        const situation: Partial<Record<string, PrioritySituationId>> = {
+          o2: 'two-minute',
+          o4: 'overtime',
+          o5: 'backed-up',
+          o6: 'red-zone',
+        };
+        const declared = situation[objective.id];
+        return declared === undefined
+          ? objective
+          : { ...objective, prioritySituation: declared };
+      }),
+    };
+
+    // Scenario A: h4 is the accepted risk, so o4's overtime never counts, and
+    // scenario order (o2 before o5) does not survive normalization.
+    expect(deriveTakeFieldContext(fridayState('A'), tagged).sits).toEqual([
+      'backed-up',
+      'red-zone',
+      'two-minute',
+    ]);
+    // Scenario B: o5 is Unseen, so backed-up drops; h4 is on the board, so
+    // overtime counts.
+    expect(deriveTakeFieldContext(fridayState('B'), tagged).sits).toEqual([
+      'red-zone',
+      'two-minute',
+      'overtime',
+    ]);
+    expect(deriveTakeFieldContext(fridayState('A'), scenario).sits).toEqual([]);
+  });
+
+  it.each([
+    ['backed-up', 2_421_413_206, [24, 3]],
+    ['red-zone', 3_697_324_262, [24, 3]],
+    ['four-minute', 1_715_507_397, [20, 6]],
+    ['two-minute', 1_338_690_115, [20, 3]],
+    ['end-of-half', 595_169_807, [24, 3]],
+    ['overtime', 3_096_729_405, [24, 3]],
+  ] as const)(
+    'resolves the %s situation into its own deterministic queue',
+    (situation, seed, score) => {
+      const situational = situationScenario('o6', situation);
+      const context = deriveTakeFieldContext(fridayState('A'), situational);
+      expect(context.sits).toEqual([situation]);
+      expect(execSeedFor(context)).toBe(seed);
+
+      const view = playGoldenPath(fridayState('A'), situational).view;
+      expect(view.phase).toBe('final');
+      expect([view.wScore, view.cScore]).toEqual([...score]);
+    },
+  );
+
+  it('carries an additionally unavailable player into the seed, snapshot, and queue', () => {
+    const mendesOut = playerOutScenario('player-mendes');
+    const context = deriveTakeFieldContext(fridayState('A'), mendesOut);
+
+    // Mendes is fourth on the protection depth chart with no practice
+    // assignment, so nothing else in the snapshot speaks for his absence.
+    expect(context.outs).toEqual(['player-mendes']);
+    expect(context.lvl).toEqual(
+      deriveTakeFieldContext(fridayState('A'), scenario).lvl,
+    );
+    expect(execSeedInputFor(context)).toBe(
+      `${CANONICAL_A_INPUT}|out:player-mendes`,
+    );
+    expect(execSeedFor(context)).toBe(325_368_726);
+
+    const baseline = deriveFieldSnapshot(fridayState('A'), scenario);
+    const short = deriveFieldSnapshot(fridayState('A'), mendesOut);
+    expect([
+      baseline.prepared.length,
+      baseline.thin.length,
+      baseline.uncovered.length,
+    ]).toEqual([2, 3, 1]);
+    expect([
+      short.prepared.length,
+      short.thin.length,
+      short.uncovered.length,
+    ]).toEqual([2, 1, 3]);
+    expect(short.uncovered.map((item) => item.name)).toEqual([
+      'Trips-side flood vs Cover 3',
+      'Kick coverage lane discipline',
+      'Right tackle protection with a backup',
+    ]);
+    expect(short.uncovered[0]?.note).toBe(
+      'J. Mendes unavailable — the package has no repped body left.',
+    );
+
+    const view = playGoldenPath(fridayState('A'), mendesOut).view;
+    expect([view.wScore, view.cScore]).toEqual([20, 6]);
+  });
+
+  it('keeps a represented unavailability out of the seed', () => {
+    // Kowalski is the depth-one right tackle and McCoy runs a scout-look
+    // assignment: rtFix/rtName and lvl already carry both, so neither shows up.
+    const kowalskiOut = deriveTakeFieldContext(
+      fridayState('A'),
+      playerOutScenario('player-kowalski'),
+    );
+    const mccoyOut = deriveTakeFieldContext(
+      fridayState('A'),
+      playerOutScenario('player-mccoy'),
+    );
+    expect(kowalskiOut.outs).toEqual([]);
+    expect(mccoyOut.outs).toEqual([]);
+    expect(execSeedInputFor(kowalskiOut)).toBe(CANONICAL_A_INPUT);
+  });
+
+  it('leaves the canonical seed, snapshot, and 20–3 outcome untouched throughout', () => {
+    // Derive every noncanonical variant first, then re-derive the canonical one.
+    situationScenario('o6', 'two-minute');
+    deriveTakeFieldContext(
+      fridayState('A'),
+      playerOutScenario('player-mendes'),
+    );
+    PRIORITY_SITUATIONS.forEach((situation) =>
+      execSeedFor({ ...fixtureContext, sits: [situation] }),
+    );
+
+    const canonical = deriveTakeFieldContext(webbPromoteConfirmed(), scenario);
+    expect(execSeedFor(canonical)).toBe(3_427_930_963);
+    expect(canonical.outs).toEqual([]);
+
+    const result = playGoldenPath(fridayState('A'));
+    expect([result.view.wScore, result.view.cScore]).toEqual([20, 3]);
+    expect(result.view.plays[0]?.t).toBe(
+      'FINAL — Westfield 20, Central Catholic 3. The district runs through Wildcat Stadium.',
+    );
+    expect(deriveFieldSnapshot(fridayState('A'), scenario).thin).toHaveLength(
+      3,
+    );
   });
 });

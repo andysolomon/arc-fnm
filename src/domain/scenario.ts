@@ -7,12 +7,14 @@
 
 import type {
   FilmClip,
+  JurisdictionRuleSet,
   PracticeDay,
   ScoutingHypothesis,
   Stage,
   WeekScenario,
 } from './types.ts';
 import { GAME_PLAN_ANSWERS, GAME_PLAN_OBJECTIVES } from './gamePlanScenario.ts';
+import { WEEK_8_RT_PROTECTION } from './roster.ts';
 
 const STAGES: readonly Stage[] = [
   {
@@ -692,6 +694,111 @@ function toClip(tuple: ClipTuple): FilmClip {
 
 const CLIPS: readonly FilmClip[] = CLIP_TUPLES.map(toClip);
 
+/** Official 2026-27 Texas context plus explicit simulation-only authorities. */
+export const TEXAS_UIL_2026_27_RULE_SET = {
+  id: 'texas-uil-varsity-football-regular-season-2026-27',
+  schemaVersion: 1,
+  version: '2026.1',
+  jurisdiction: 'Texas',
+  issuer: 'UIL',
+  issuerName: 'University Interscholastic League',
+  season: '2026-27',
+  effectiveDate: '2026-08-01',
+  effectiveDateSourceId: 'uil-rule-changes-2026-27',
+  sport: 'football',
+  competition: 'regular-season',
+  level: 'varsity',
+  sources: [
+    {
+      id: 'texas-education-code-33-081',
+      issuer: 'Texas Legislature',
+      title: 'Texas Education Code §33.081 — Extracurricular Activities',
+      url: 'https://statutes.capitol.texas.gov/Docs/ED/htm/ED.33.htm#33.081',
+      publishedDate: null,
+      effectiveDate: null,
+      retrievedDate: null,
+    },
+    {
+      id: 'uil-academic-requirements',
+      issuer: 'University Interscholastic League',
+      title: 'TEA-UIL Side-by-Side — Academic Requirements',
+      url: 'https://www.uiltexas.org/policy/tea-uil-side-by-side/academic-requirements',
+      publishedDate: null,
+      effectiveDate: null,
+      retrievedDate: null,
+    },
+    {
+      id: 'uil-football-plan',
+      issuer: 'University Interscholastic League',
+      title: 'Football Plan — Constitution and Contest Rules',
+      url: 'https://www.uiltexas.org/policy/constitution/athletics/football',
+      publishedDate: null,
+      effectiveDate: null,
+      retrievedDate: null,
+    },
+    {
+      id: 'uil-football-regular-season-manual-2026-27',
+      issuer: 'University Interscholastic League',
+      title: '2026-2027 Football Manual — Regular Season',
+      url: 'https://www.uiltexas.org/football/manual/football-manual-regular-season',
+      publishedDate: null,
+      effectiveDate: null,
+      retrievedDate: null,
+    },
+    {
+      id: 'uil-rule-changes-2026-27',
+      issuer: 'University Interscholastic League',
+      title: '2026-2027 Rule Changes',
+      url: 'https://www.uiltexas.org/policy/2026-27-policy-info/rule-changes',
+      effectiveDate: '2026-08-01',
+      publishedDate: null,
+      retrievedDate: null,
+    },
+  ],
+  academicEligibility: {
+    passingPeriodGrade: 70,
+    gracePeriodDays: 7,
+    sourceIds: ['texas-education-code-33-081', 'uil-academic-requirements'],
+  },
+  weeklyFullContact: {
+    maximumMinutes: 90,
+    sourceIds: ['uil-football-plan'],
+  },
+  gameDayVideoData: {
+    allowedSurfaces: [
+      'coaching-booth',
+      'locker-room',
+      'printable',
+      'rehearsal',
+    ],
+    rejectedSurfaces: ['sideline', 'team-area'],
+    sourceIds: ['uil-football-regular-season-manual-2026-27'],
+  },
+  scenarioAuthorities: [
+    {
+      id: 'kowalski-academic-restriction',
+      classification: 'fictional-local-policy',
+      issuer: 'Guidance Office',
+      detail:
+        'Kowalski’s 1.9 GPA and Oct 26 checkpoint are seeded local simulation facts, not UIL facts.',
+    },
+    {
+      id: 'mccoy-medical-restriction',
+      classification: 'scenario-authority',
+      issuer: 'Athletic Trainer',
+      detail:
+        'McCoy’s no-contact restriction is seeded trainer authority, not a UIL medical determination.',
+    },
+    {
+      id: 'tuesday-contact-window',
+      classification: 'scenario-authority',
+      issuer: 'Westfield scenario',
+      detail:
+        'Tuesday-only heavy contact is fixed Week 8 schedule data, not a UIL requirement.',
+    },
+  ],
+} as const satisfies JurisdictionRuleSet;
+
 export const WEEK_8_SCENARIO: WeekScenario = {
   weekNumber: 8,
   program: {
@@ -715,5 +822,7 @@ export const WEEK_8_SCENARIO: WeekScenario = {
   objectives: GAME_PLAN_OBJECTIVES,
   answers: GAME_PLAN_ANSWERS,
   practiceDays: PRACTICE_DAYS,
+  rosterPlanning: WEEK_8_RT_PROTECTION,
+  jurisdictionRuleSet: TEXAS_UIL_2026_27_RULE_SET,
   priorityCapacity: 3,
 };

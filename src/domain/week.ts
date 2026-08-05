@@ -7,6 +7,13 @@
 
 import { STAGE_ORDER } from './types.ts';
 import { deriveDisruptionGate, RT_FIXES, RT_STARTERS } from './disruption.ts';
+import { validateWeeklyFullContactMinutes } from './jurisdiction.ts';
+import {
+  packageMastery,
+  playerAvailability,
+  playerIdForRtStarter,
+  resolvePracticePersonnel,
+} from './roster.ts';
 import type {
   AnswerId,
   Disposition,
@@ -323,6 +330,7 @@ export interface AnswerValidity {
 export function answerValidity(
   state: WeekState,
   answer: GamePlanAnswer,
+  scenario: WeekScenario,
 ): AnswerValidity {
   const requirement = answer.schemeRequirement;
   if (
@@ -337,7 +345,15 @@ export function answerValidity(
 
   if (state.practicePlanLocked && answer.id === 'a31') {
     const disruption = deriveDisruptionGate(state);
-    if (!disruption.rtLegal) {
+    const starterPlayerId = playerIdForRtStarter(state.rtStarter);
+    const starterAvailability =
+      starterPlayerId === null
+        ? null
+        : playerAvailability(scenario.rosterPlanning, starterPlayerId);
+    if (
+      !disruption.rtLegal ||
+      starterAvailability?.participation !== 'available'
+    ) {
       return {
         ok: false,
         explanation:
@@ -394,7 +410,7 @@ export function derivePlanGate(
     .filter((answer): answer is GamePlanAnswer => answer !== undefined)
     .map((answer) => ({
       answer,
-      validity: answerValidity(state, answer),
+      validity: answerValidity(state, answer, scenario),
     }))
     .find(({ validity }) => !validity.ok);
 
@@ -494,6 +510,27 @@ function totalPracticeCapacity(scenario: WeekScenario): number {
   return scenario.practiceDays.reduce((total, day) => total + day.capacity, 0);
 }
 
+/** One canonical opponent-plan block consumes ten full-contact minutes. */
+export const FULL_CONTACT_BLOCK_MINUTES = 10;
+
+function weeklyFullContactMinutes(blocks: readonly PracticeBlock[]): number {
+  return (
+    blocks.filter((block) => block.live).length * FULL_CONTACT_BLOCK_MINUTES
+  );
+}
+
+function isWithinWeeklyFullContactLimit(
+  blocks: readonly PracticeBlock[],
+  scenario: WeekScenario,
+): boolean {
+  return (
+    validateWeeklyFullContactMinutes(
+      scenario.jurisdictionRuleSet,
+      weeklyFullContactMinutes(blocks),
+    ).status === 'within-limit'
+  );
+}
+
 function practiceDayCounts(
   blocks: readonly PracticeBlock[],
 ): Record<PracticeDayId, number> {
@@ -523,7 +560,7 @@ export function practiceObjectiveAvailability(
     objective.hypothesisId
   ];
   return answer?.objectiveId === objective.id &&
-    answerValidity(state, answer).ok
+    answerValidity(state, answer, scenario).ok
     ? 'available'
     : 'invalid-answer';
 }
@@ -565,6 +602,9 @@ function validatePracticeBlocks(
   }
   if (state.practiceBlocks.length > totalPracticeCapacity(scenario)) {
     return 'The opponent plan contains more than eight blocks.';
+  }
+  if (!isWithinWeeklyFullContactLimit(state.practiceBlocks, scenario)) {
+    return `Live contact exceeds the jurisdiction limit of ${scenario.jurisdictionRuleSet.weeklyFullContact.maximumMinutes} minutes.`;
   }
   return null;
 }
@@ -666,16 +706,27 @@ export function allocatePracticeBlock(
   ) {
     return state;
   }
-  const isLive = live ?? day.contact;
+  let isLive = live ?? day.contact;
   if (isLive && !day.contact) return state;
+  const candidate: PracticeBlock = {
+    id: nextPracticeBlockId(state.practiceBlocks),
+    objectiveId,
+    day: dayId,
+    live: isLive,
+  };
+  if (
+    isLive &&
+    !isWithinWeeklyFullContactLimit(
+      [...state.practiceBlocks, candidate],
+      scenario,
+    )
+  ) {
+    if (live === true) return state;
+    isLive = false;
+  }
   return rememberBlocks(state, [
     ...state.practiceBlocks,
-    {
-      id: nextPracticeBlockId(state.practiceBlocks),
-      objectiveId,
-      day: dayId,
-      live: isLive,
-    },
+    { ...candidate, live: isLive },
   ]);
 }
 
@@ -697,12 +748,15 @@ export function movePracticeBlock(
   ) {
     return state;
   }
-  return rememberBlocks(
-    state,
-    state.practiceBlocks.map((item) =>
-      item.id === blockId ? { ...item, day: dayId, live: day.contact } : item,
-    ),
+  const movedBlocks = state.practiceBlocks.map((item) =>
+    item.id === blockId ? { ...item, day: dayId, live: day.contact } : item,
   );
+  const practiceBlocks = isWithinWeeklyFullContactLimit(movedBlocks, scenario)
+    ? movedBlocks
+    : movedBlocks.map((item) =>
+        item.id === blockId ? { ...item, live: false } : item,
+      );
+  return rememberBlocks(state, practiceBlocks);
 }
 
 export function removePracticeBlock(
@@ -729,12 +783,13 @@ export function setPracticeBlockLive(
   if (block === undefined || day === undefined || (live && !day.contact))
     return state;
   if (block.live === live) return state;
-  return rememberBlocks(
-    state,
-    state.practiceBlocks.map((item) =>
-      item.id === blockId ? { ...item, live } : item,
-    ),
+  const practiceBlocks = state.practiceBlocks.map((item) =>
+    item.id === blockId ? { ...item, live } : item,
   );
+  if (live && !isWithinWeeklyFullContactLimit(practiceBlocks, scenario)) {
+    return state;
+  }
+  return rememberBlocks(state, practiceBlocks);
 }
 
 export function undoPracticeBlocks(state: WeekState): WeekState {
@@ -793,12 +848,17 @@ export function staffPracticeBlocks(
     const day = scenario.practiceDays.find((item) => item.id === dayId);
     if (day === undefined) return;
     remaining[dayId] -= 1;
-    blocks.push({
+    const block: PracticeBlock = {
       id: `practice-block-${String(blocks.length + 1).padStart(2, '0')}`,
       objectiveId,
       day: dayId,
       live: day.contact,
-    });
+    };
+    blocks.push(
+      isWithinWeeklyFullContactLimit([...blocks, block], scenario)
+        ? block
+        : { ...block, live: false },
+    );
   };
 
   const contact = wanted.filter(
@@ -834,7 +894,16 @@ export function expectedPracticeReps(
   if (day === undefined) return 0;
   let reps = day.id === 'THU' ? 4 : block.live && day.contact ? 8 : 6;
   if (state?.practicePlanLocked) {
-    if (block.objectiveId === 'o1' && block.live && day.contact) reps -= 2;
+    if (block.live && day.contact) {
+      reps -= resolvePracticePersonnel(
+        scenario.rosterPlanning,
+        block.objectiveId,
+      ).reduce(
+        (penalty, resolution) =>
+          penalty + (resolution.fallback?.repPenalty ?? 0),
+        0,
+      );
+    }
     if (block.objectiveId === 'o5' && !deriveDisruptionGate(state).rtLegal)
       reps = 0;
     if (
@@ -894,6 +963,21 @@ function readinessFor(
       level = 1;
     if (objective.id === 'o5' && state.rtFix === 'accept' && level > 1)
       level = 1;
+    const starterPlayerId = playerIdForRtStarter(state.rtStarter);
+    if (objective.packageId !== undefined && starterPlayerId !== null) {
+      const mastery = packageMastery(
+        scenario.rosterPlanning,
+        objective.packageId,
+        starterPlayerId,
+      );
+      const masteryLevel = [
+        'Unseen',
+        'Introduced',
+        'Repped',
+        'Rehearsed',
+      ].indexOf(mastery);
+      level = Math.min(level, Math.max(0, masteryLevel));
+    }
   }
   const labels: readonly ReadinessLabel[] = [
     'Unseen',
@@ -978,16 +1062,30 @@ export function lockPracticePlan(
   };
 }
 
-/** Assign one of the three canonical eligible Thursday right-tackle options. */
+function isAvailableRtStarter(
+  scenario: WeekScenario,
+  starter: RtStarterId | null,
+): boolean {
+  const playerId = playerIdForRtStarter(starter);
+  return (
+    playerId !== null &&
+    playerAvailability(scenario.rosterPlanning, playerId)?.participation ===
+      'available'
+  );
+}
+
+/** Assign an available canonical Thursday right-tackle option. */
 export function selectRtStarter(
   state: WeekState,
+  scenario: WeekScenario,
   starter: RtStarterId,
 ): WeekState {
   if (
     !state.practicePlanLocked ||
     state.stage !== 'disruption' ||
     state.disruptionConfirmed ||
-    !RT_STARTERS.some((candidate) => candidate.id === starter)
+    !RT_STARTERS.some((candidate) => candidate.id === starter) ||
+    !isAvailableRtStarter(scenario, starter)
   )
     return state;
   return { ...state, rtStarter: starter };
@@ -1014,9 +1112,17 @@ export function selectRtFix(state: WeekState, fix: RtFix): WeekState {
 }
 
 /** Confirm Thursday after both legal-personnel steps; the week moves to Friday. */
-export function confirmDisruption(state: WeekState): WeekState {
+export function confirmDisruption(
+  state: WeekState,
+  scenario: WeekScenario,
+): WeekState {
   const gate = deriveDisruptionGate(state);
-  if (!gate.ready || state.disruptionConfirmed) return state;
+  if (
+    !gate.ready ||
+    state.disruptionConfirmed ||
+    !isAvailableRtStarter(scenario, state.rtStarter)
+  )
+    return state;
   return { ...state, disruptionConfirmed: true, stage: 'friday' };
 }
 

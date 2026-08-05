@@ -18,7 +18,12 @@ import {
   type MatchView,
 } from './matchDay.ts';
 import { WEEK_8_SCENARIO } from './scenario.ts';
-import type { PracticeBlock, WeekState } from './types.ts';
+import type {
+  PracticeBlock,
+  PrioritySituationId,
+  WeekScenario,
+  WeekState,
+} from './types.ts';
 import { createSeedState, resetWeek } from './week.ts';
 import { createInitialState, weekReducer } from '../state/weekStore.ts';
 
@@ -71,18 +76,51 @@ function fridayState(path: 'A' | 'B', withRisk = true): WeekState {
   };
 }
 
-function playToFinal(initial: WeekState): {
+function playToFinal(
+  initial: WeekState,
+  against: WeekScenario = scenario,
+): {
   readonly state: WeekState;
   readonly view: MatchView;
 } {
   let state = takeField(initial);
   for (let guard = 0; guard < 12; guard += 1) {
-    state = skipToDecision(state, scenario);
-    const view = deriveMatch(state, scenario);
+    state = skipToDecision(state, against);
+    const view = deriveMatch(state, against);
     if (view.phase === 'final') return { state, view };
-    state = chooseMatchOption(state, scenario, view.pending!.id, 0);
+    state = chooseMatchOption(state, against, view.pending!.id, 0);
   }
   throw new Error('review fixture did not reach the final horn');
+}
+
+/** Point one objective at a situational period. Canonical Week 8 points at none. */
+function situationScenario(
+  objectiveId: string,
+  situation: PrioritySituationId,
+): WeekScenario {
+  return {
+    ...scenario,
+    objectives: scenario.objectives.map((objective) =>
+      objective.id === objectiveId
+        ? { ...objective, prioritySituation: situation }
+        : objective,
+    ),
+  };
+}
+
+/** Take Mendes — fourth on the depth chart, no practice assignment — off Friday. */
+function mendesOutScenario(): WeekScenario {
+  return {
+    ...scenario,
+    rosterPlanning: {
+      ...scenario.rosterPlanning,
+      availability: scenario.rosterPlanning.availability.map((entry) =>
+        entry.playerId === 'player-mendes'
+          ? { ...entry, participation: 'ineligible' as const, label: 'Out' }
+          : entry,
+      ),
+    },
+  };
 }
 
 describe('Decision Review derivation', () => {
@@ -264,6 +302,65 @@ describe('Decision Review derivation', () => {
       tacticsTab: 'Game Plan',
       scoutingHypothesis: null,
     });
+  });
+
+  it('reflects an additionally unavailable player in a row, not in the canonical one', () => {
+    const mendesOut = mendesOutScenario();
+    const baseline = deriveDecisionReview(
+      playToFinal(fridayState('A')).state,
+      scenario,
+    );
+    const short = deriveDecisionReview(
+      playToFinal(fridayState('A'), mendesOut).state,
+      mendesOut,
+    );
+
+    expect(baseline.score).toBe('Westfield 20 — 3 Central Catholic');
+    expect(short.score).toBe('Westfield 20 — 6 Central Catholic');
+    expect(short.rows.map((row) => row.decisionId)).toEqual(
+      baseline.rows.map((row) => row.decisionId),
+    );
+
+    const basePower = baseline.rows[0]!;
+    const shortPower = short.rows[0]!;
+    expect(basePower.execution).toBe('Practiced — puller fits · Rehearsed');
+    expect(shortPower.execution).toBe(
+      'Rehearsed — but execution missed the scrape fit',
+    );
+    // Mendes took no reps off anyone, so preparation is unmoved — the missing
+    // body shows up in execution, which is the honest place for it.
+    expect(shortPower.preparation).toEqual(basePower.preparation);
+    expect(
+      deriveDecisionReview(playToFinal(fridayState('A')).state, scenario).score,
+    ).toBe('Westfield 20 — 3 Central Catholic');
+  });
+
+  it('reflects a prepared priority situation in a row, not in the canonical one', () => {
+    const fourMinute = situationScenario('o6', 'four-minute');
+    const baseline = deriveDecisionReview(
+      playToFinal(fridayState('A')).state,
+      scenario,
+    );
+    const situational = deriveDecisionReview(
+      playToFinal(fridayState('A'), fourMinute).state,
+      fourMinute,
+    );
+
+    expect(deriveTakeFieldContext(fridayState('A'), fourMinute).sits).toEqual([
+      'four-minute',
+    ]);
+    expect(situational.score).toBe('Westfield 20 — 6 Central Catholic');
+    expect(situational.rows.map((row) => row.execution)).not.toEqual(
+      baseline.rows.map((row) => row.execution),
+    );
+    expect(situational.rows[3]?.decisionId).toBe('s_flood');
+    expect(situational.rows[3]?.execution).toBe(
+      'Rehearsed — right call, missed throw',
+    );
+    expect(baseline.score).toBe('Westfield 20 — 3 Central Catholic');
+    expect(baseline.rows[0]?.execution).toBe(
+      'Practiced — puller fits · Rehearsed',
+    );
   });
 
   it('contains no entropy, unsafe sinks, or inline SVG interpolation', () => {

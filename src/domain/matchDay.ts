@@ -16,18 +16,22 @@
  */
 
 import { rtStarterName } from './disruption.ts';
+import { playerIdForRtStarter } from './roster.ts';
 import {
   deriveEvidenceGate,
   derivePlanGate,
   practiceObjectiveSummaries,
 } from './week.ts';
 import { WEEK_8_SCENARIO } from './scenario.ts';
+import { PRIORITY_SITUATIONS } from './types.ts';
 import type {
   MatchEvent,
   MatchSpeed,
   PolicyId,
   PolicyState,
   PolicyValue,
+  PrioritySituationId,
+  ProtectionPlayerId,
   QuickAdjustCall,
   ReadinessLabel,
   WeekScenario,
@@ -186,6 +190,12 @@ export interface ContextAnswer {
 /**
  * The take-the-field snapshot. Everything the queue depends on, derived from
  * persisted decisions at kickoff — never edited afterwards.
+ *
+ * `sits` and `outs` are optional and normalized: absent or empty means the
+ * canonical Week 8 snapshot, which declares no situational period and carries
+ * no unavailability that the other fields don't already account for. Both are
+ * appended to `execSeedInputFor` only when non-empty, so the canonical seed
+ * input stays byte-for-byte what it was before they existed.
  */
 export interface TakeFieldContext {
   readonly lvl: Readonly<Record<string, number>>;
@@ -194,6 +204,24 @@ export interface TakeFieldContext {
   readonly rtName: string;
   readonly ansBy: Readonly<Partial<Record<string, ContextAnswer>>>;
   readonly risk: string | null;
+  /** Prepared situational periods, deduped and in `PRIORITY_SITUATIONS` order. */
+  readonly sits?: readonly PrioritySituationId[];
+  /** Unavailable players no other field carries, by ascending player id. */
+  readonly outs?: readonly ProtectionPlayerId[];
+}
+
+/** Normalized situational periods for a snapshot. Empty on canonical Week 8. */
+export function prioritySituationsOf(
+  context: TakeFieldContext,
+): readonly PrioritySituationId[] {
+  return context.sits ?? [];
+}
+
+/** Normalized unrepresented unavailability. Empty on canonical Week 8. */
+export function unavailablePlayersOf(
+  context: TakeFieldContext,
+): readonly ProtectionPlayerId[] {
+  return context.outs ?? [];
 }
 
 const READINESS_LEVEL: Readonly<Record<ReadinessLabel, number>> = {
@@ -209,6 +237,64 @@ export const READINESS_WORDS = [
   'Repped',
   'Rehearsed',
 ] as const;
+
+/**
+ * Unavailability that no other take-the-field input already carries.
+ *
+ * The right-tackle decision (`rtFix`/`rtName`) already speaks for the depth-one
+ * body it replaced and for the starter it promoted; a practice-personnel
+ * assignment already speaks for its player through the rep penalty folded into
+ * `lvl`. Anyone else who cannot play is invisible to the snapshot unless it is
+ * listed here, so on canonical Week 8 — Kowalski ineligible, McCoy no-contact —
+ * this is empty and the seed input is unchanged.
+ */
+function unrepresentedUnavailable(
+  state: WeekState,
+  scenario: WeekScenario,
+): readonly ProtectionPlayerId[] {
+  const roster = scenario.rosterPlanning;
+  const carried = new Set<ProtectionPlayerId>();
+  const starterId = playerIdForRtStarter(state.rtStarter);
+  if (starterId !== null) carried.add(starterId);
+  for (const entry of roster.packageDepth) {
+    if (entry.starterOption === null) carried.add(entry.playerId);
+  }
+  for (const assignment of roster.practicePersonnelAssignments) {
+    carried.add(assignment.playerId);
+  }
+  const outs = new Set(
+    roster.availability
+      .filter((entry) => entry.participation !== 'available')
+      .map((entry) => entry.playerId)
+      .filter((playerId) => !carried.has(playerId)),
+  );
+  return [...outs].sort();
+}
+
+/**
+ * The situational periods the week actually prepared: declared by an objective
+ * that is on the board, is not the accepted risk, and got at least one block.
+ * Deduped into `PRIORITY_SITUATIONS` order so ordering never depends on how the
+ * scenario happens to list its objectives.
+ */
+function preparedPrioritySituations(
+  state: WeekState,
+  scenario: WeekScenario,
+): readonly PrioritySituationId[] {
+  const gate = deriveEvidenceGate(state, scenario);
+  const declared = new Set<PrioritySituationId>();
+  for (const summary of practiceObjectiveSummaries(state, scenario)) {
+    const objective = summary.objective;
+    if (objective.prioritySituation === undefined) continue;
+    if (READINESS_LEVEL[summary.readiness] < 1) continue;
+    if (objective.hypothesisId !== null) {
+      if (objective.hypothesisId === gate.acceptedRisk) continue;
+      if (!gate.validSelection.includes(objective.hypothesisId)) continue;
+    }
+    declared.add(objective.prioritySituation);
+  }
+  return PRIORITY_SITUATIONS.filter((situation) => declared.has(situation));
+}
 
 /** Derive the canonical snapshot (`takeField`'s ctx) from persisted decisions. */
 export function deriveTakeFieldContext(
@@ -236,6 +322,8 @@ export function deriveTakeFieldContext(
     rtName: rtStarterName(state.rtStarter) ?? '',
     ansBy,
     risk: deriveEvidenceGate(state, scenario).acceptedRisk,
+    sits: preparedPrioritySituations(state, scenario),
+    outs: unrepresentedUnavailable(state, scenario),
   };
 }
 
@@ -243,6 +331,10 @@ export function deriveTakeFieldContext(
  * FNV-1a over the snapshot in the exact canonical input order:
  * risk, rtFix, RT name, fourth/pat/clock/auto policies, then `id:level`
  * pairs for every objective with ids sorted, all joined by `|`.
+ *
+ * Prepared situations and unrepresented unavailability are appended after that
+ * — and only when non-empty — so a canonical Week 8 snapshot still hashes the
+ * exact string it hashed before either input existed.
  */
 export function execSeedInputFor(context: TakeFieldContext): string {
   const parts = [
@@ -257,6 +349,10 @@ export function execSeedInputFor(context: TakeFieldContext): string {
   Object.keys(context.lvl)
     .sort()
     .forEach((key) => parts.push(`${key}:${context.lvl[key]}`));
+  const sits = prioritySituationsOf(context);
+  if (sits.length > 0) parts.push(`sit:${sits.join(',')}`);
+  const outs = unavailablePlayersOf(context);
+  if (outs.length > 0) parts.push(`out:${outs.join(',')}`);
   return parts.join('|');
 }
 
@@ -331,7 +427,14 @@ export function buildGame(C: TakeFieldContext): QueueItem[] {
   const o4 = L.o4 ?? 0;
   const o6 = L.o6 ?? 0;
   const seed = execSeedFor(C);
-  const execPrep = (sit: string, lvl: number) => execPrepFor(seed, sit, lvl);
+  const sits = prioritySituationsOf(C);
+  const outs = unavailablePlayersOf(C);
+  // A week pointed at situational periods resolves its execution rolls inside
+  // those periods. Canonical Week 8 declares none, so the key is untouched.
+  const situationKey = (sit: string) =>
+    sits.length === 0 ? sit : `${sit}@${sits.join('+')}`;
+  const execPrep = (sit: string, lvl: number) =>
+    execPrepFor(seed, situationKey(sit), lvl);
 
   const Q: QueueItem[] = [];
   const koHot = (q: string, c1: string, c2: string): QueueItem[] => {
@@ -456,7 +559,9 @@ export function buildGame(C: TakeFieldContext): QueueItem[] {
             },
           ),
         ];
-  const surgeOk = () => o6 >= 2 && C.rtFix !== 'accept';
+  // The surge needs its reps, its right tackle, and eleven bodies. An
+  // unavailability nothing else accounts for takes the third one away.
+  const surgeOk = () => o6 >= 2 && C.rtFix !== 'accept' && outs.length === 0;
   const FINISH = (need: number): QueueItem[] => {
     if (need < 3)
       return [
@@ -3002,6 +3107,20 @@ export function deriveFieldSnapshot(
   const prepared: SnapshotItem[] = [];
   const thin: SnapshotItem[] = [];
   const uncovered: SnapshotItem[] = [];
+  // A package missing a body it never accounted for cannot claim the readiness
+  // its rep count implies, so it drops one tier and says whose absence did it.
+  const outs = unrepresentedUnavailable(state, scenario);
+  const shortPackages = new Map<string, string[]>();
+  for (const entry of scenario.rosterPlanning.packageDepth) {
+    if (!outs.includes(entry.playerId)) continue;
+    const name =
+      scenario.rosterPlanning.players.find(
+        (player) => player.id === entry.playerId,
+      )?.shortName ?? entry.playerId;
+    const named = shortPackages.get(entry.packageId) ?? [];
+    if (!named.includes(name)) named.push(name);
+    shortPackages.set(entry.packageId, named);
+  }
   for (const summary of practiceObjectiveSummaries(state, scenario)) {
     const objective = summary.objective;
     const onBoard =
@@ -3018,6 +3137,25 @@ export function deriveFieldSnapshot(
       continue;
     }
     if (!onBoard) continue;
+    const missing =
+      objective.packageId === undefined
+        ? undefined
+        : shortPackages.get(objective.packageId);
+    if (missing !== undefined) {
+      const who = missing.join(' and ');
+      if (READINESS_LEVEL[summary.readiness] >= 3) {
+        thin.push({
+          name: objective.name,
+          note: `${summary.readiness} on paper · ${who} unavailable, the package is a body short`,
+        });
+      } else {
+        uncovered.push({
+          name: objective.name,
+          note: `${who} unavailable — the package has no repped body left.`,
+        });
+      }
+      continue;
+    }
     const level = READINESS_LEVEL[summary.readiness];
     if (level >= 3) {
       prepared.push({

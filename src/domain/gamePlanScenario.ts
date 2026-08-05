@@ -29,6 +29,7 @@ export const GAME_PLAN_OBJECTIVES: readonly PracticeObjective[] = [
     hypothesisId: 'h3',
     coach: 'Pruitt',
     contact: false,
+    packageId: 'package-five-step-trips-flood',
   },
   {
     id: 'o4',
@@ -48,6 +49,7 @@ export const GAME_PLAN_OBJECTIVES: readonly PracticeObjective[] = [
     coach: 'Pruitt',
     contact: true,
     note: 'Standing objective — right tackle protection reps.',
+    packageId: 'package-five-step-trips-flood',
   },
   {
     id: 'o6',
@@ -256,6 +258,7 @@ export const GAME_PLAN_ANSWERS: readonly GamePlanAnswer[] = [
     objectiveId: 'o3',
     targetReps: 12,
     contact: false,
+    packageId: 'package-five-step-trips-flood',
     schemeRequirement: {
       decision: 'offenseScheme',
       value: 'Spread',

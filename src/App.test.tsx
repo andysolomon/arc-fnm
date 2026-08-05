@@ -376,6 +376,28 @@ describe('Game Plan → Practice Plan', () => {
     expect(
       within(constraints).getByText('Authority · Athletic Trainer'),
     ).toBeVisible();
+    expect(
+      within(constraints).getByText('Rules · Texas · UIL · 2026-27'),
+    ).toBeVisible();
+    expect(
+      within(constraints).getByText('Rule-set snapshot effective · 2026-08-01'),
+    ).toBeVisible();
+    expect(
+      within(constraints).getAllByText(/Source effective · Not stated/),
+    ).toHaveLength(4);
+    expect(
+      within(constraints).getByText(
+        /Publication · Not stated · Source effective · 2026-08-01 · Retrieved · Not recorded/,
+      ),
+    ).toBeVisible();
+    expect(
+      within(constraints).getByRole('link', {
+        name: 'Source · 2026-2027 Football Manual — Regular Season',
+      }),
+    ).toHaveAttribute(
+      'href',
+      'https://www.uiltexas.org/football/manual/football-manual-regular-season',
+    );
     expect(screen.getByText(/Kowalski is out for Friday/i)).toBeVisible();
     expect(
       screen.getByText(/That one is not a coaching decision/i),

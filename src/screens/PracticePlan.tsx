@@ -12,11 +12,20 @@ import {
 } from '../components/ui.tsx';
 import { evidenceCounts, expectedPracticeReps } from '../domain/week.ts';
 import { rtStarterName } from '../domain/disruption.ts';
+import {
+  developmentAssignments,
+  packageDepthForObjective,
+  playerAvailability,
+  playerIdForRtStarter,
+  resolvePracticePersonnel,
+} from '../domain/roster.ts';
 import type {
   PracticeBlock,
   PracticeDayId,
   PracticeObjectiveId,
   PracticeObjectiveSummary,
+  ProtectionPlayerId,
+  WeekScenario,
   WeekState,
 } from '../domain/types.ts';
 import { useWeek } from '../state/weekContext.ts';
@@ -27,6 +36,7 @@ interface ObjectivePerson {
   readonly name: string;
   readonly position: string;
   readonly constrained?: 'No contact' | 'Ineligible';
+  readonly playerId?: ProtectionPlayerId;
 }
 
 const OBJECTIVE_PERSONNEL: Readonly<
@@ -35,7 +45,6 @@ const OBJECTIVE_PERSONNEL: Readonly<
   o1: [
     { name: 'S. Okafor', position: 'MLB' },
     { name: 'C. Dean', position: 'WLB' },
-    { name: 'H. McCoy', position: 'FB', constrained: 'No contact' },
   ],
   o2: [
     { name: 'N. Reyes', position: 'LB' },
@@ -45,18 +54,13 @@ const OBJECTIVE_PERSONNEL: Readonly<
   o3: [
     { name: 'M. Reed', position: 'QB' },
     { name: 'A. Silva', position: 'WR' },
-    { name: 'R. Kowalski', position: 'RT', constrained: 'Ineligible' },
   ],
   o4: [
     { name: 'C. Ramsey', position: 'K' },
     { name: 'D. Pierce', position: 'S' },
     { name: 'T. Coker', position: 'LB' },
   ],
-  o5: [
-    { name: 'R. Kowalski', position: 'RT', constrained: 'Ineligible' },
-    { name: 'L. Webb', position: 'OT' },
-    { name: 'P. Ruiz', position: 'OG' },
-  ],
+  o5: [],
   o6: [
     { name: 'M. Reed', position: 'QB' },
     { name: 'D. Carter', position: 'RB' },
@@ -144,20 +148,70 @@ function periodLabel(day: PracticeDayId, live: boolean): string {
 function objectivePeople(
   objectiveId: PracticeObjectiveId,
   week: WeekState,
+  scenario: WeekScenario,
 ): readonly (ObjectivePerson & { readonly status: string })[] {
   const starter = rtStarterName(week.rtStarter);
-  return (OBJECTIVE_PERSONNEL[objectiveId] ?? []).map((person) => {
+  const objective = scenario.objectives.find((item) => item.id === objectiveId);
+  const packagePeople =
+    objective?.packageId === undefined
+      ? []
+      : packageDepthForObjective(
+          scenario.rosterPlanning,
+          objective.packageId,
+          objectiveId,
+        ).map((entry): ObjectivePerson => {
+          const constrained =
+            entry.availability.participation === 'ineligible'
+              ? ('Ineligible' as const)
+              : entry.availability.participation === 'no-contact'
+                ? ('No contact' as const)
+                : null;
+          return {
+            name: entry.player.shortName,
+            position: entry.player.position,
+            playerId: entry.player.id,
+            ...(constrained === null ? {} : { constrained }),
+          };
+        });
+  const practicePeople = resolvePracticePersonnel(
+    scenario.rosterPlanning,
+    objectiveId,
+  ).map((resolution): ObjectivePerson => ({
+    name: resolution.player.shortName,
+    position: resolution.player.position,
+    playerId: resolution.player.id,
+    ...(resolution.availability.participation === 'ineligible'
+      ? { constrained: 'Ineligible' as const }
+      : resolution.availability.participation === 'no-contact'
+        ? { constrained: 'No contact' as const }
+        : {}),
+  }));
+  return [
+    ...(OBJECTIVE_PERSONNEL[objectiveId] ?? []),
+    ...practicePeople,
+    ...packagePeople,
+  ].map((person) => {
     const replaceRt =
       week.practicePlanLocked &&
       starter !== null &&
-      person.name === 'R. Kowalski';
+      person.playerId === 'player-kowalski';
+    const authority =
+      person.playerId === undefined
+        ? null
+        : playerAvailability(scenario.rosterPlanning, person.playerId);
+    const constrained =
+      authority?.participation === 'ineligible'
+        ? 'Ineligible'
+        : authority?.participation === 'no-contact'
+          ? 'No contact'
+          : person.constrained;
     return {
       ...person,
       name: replaceRt ? starter : person.name,
       status: replaceRt
         ? 'Active'
         : week.practicePlanLocked
-          ? (person.constrained ?? 'Active')
+          ? (constrained ?? 'Active')
           : 'Active',
     };
   });
@@ -197,6 +251,14 @@ export function PracticePlan() {
   const acceptedRisk = scenario.hypotheses.find(
     (hypothesis) => hypothesis.id === gate.acceptedRisk,
   );
+  const kowalskiAvailability = playerAvailability(
+    scenario.rosterPlanning,
+    'player-kowalski',
+  );
+  const mccoyPersonnel = resolvePracticePersonnel(
+    scenario.rosterPlanning,
+    'o1',
+  )[0];
 
   const unitBalance = useMemo(
     () =>
@@ -242,7 +304,7 @@ export function PracticePlan() {
   const readinessReasons = (
     summary: PracticeObjectiveSummary,
   ): readonly string[] => {
-    const people = objectivePeople(summary.objective.id, state.week);
+    const people = objectivePeople(summary.objective.id, state.week, scenario);
     const reasons = summary.blocks.map(
       (block) =>
         `${block.day} · ${periodLabel(block.day, block.live)} · ${expectedPracticeReps(block, scenario, state.week)} reps`,
@@ -275,18 +337,26 @@ export function PracticePlan() {
     ) {
       reasons.push('Needs a Tuesday live block to get past Repped.');
     }
-    if (locked && summary.objective.id === 'o1') {
-      reasons.push(
-        'McCoy cannot take contact. Dunn runs the scout counter and the look is a step slow.',
-      );
+    if (locked && summary.objective.id === 'o1' && mccoyPersonnel?.fallback) {
+      reasons.push(mccoyPersonnel.fallback.detail);
     }
     if (
       locked &&
       summary.objective.id === 'o5' &&
       state.week.rtFix === 'promote'
     ) {
+      const playerId = playerIdForRtStarter(state.week.rtStarter);
+      const assignment =
+        playerId === null
+          ? undefined
+          : developmentAssignments(
+              scenario.rosterPlanning,
+              summary.objective.id,
+              playerId,
+            )[0];
       reasons.push(
-        `THU · two catch-up periods · walk-through with ${rtStarterName(state.week.rtStarter) ?? 'the backup'} at right tackle.`,
+        assignment?.detail ??
+          `THU · two catch-up periods · walk-through with ${rtStarterName(state.week.rtStarter) ?? 'the backup'} at right tackle.`,
       );
     }
     if (
@@ -691,6 +761,7 @@ export function PracticePlan() {
                   const people = objectivePeople(
                     summary.objective.id,
                     state.week,
+                    scenario,
                   );
                   const readiness = available
                     ? summary.readiness
@@ -1003,17 +1074,28 @@ export function PracticePlan() {
                     title="Ryan Kowalski · RT"
                     status="Ineligible"
                     tone="danger"
-                    detail="GPA 1.9. Out for Friday. The next eligibility checkpoint is Oct 26 — nothing you do this week changes that."
-                    authority="Guidance Office"
+                    detail={
+                      kowalskiAvailability?.detail ??
+                      'GPA 1.9. Out for Friday. The next eligibility checkpoint is Oct 26 — nothing you do this week changes that.'
+                    }
+                    authority={
+                      kowalskiAvailability?.authority ?? 'Guidance Office'
+                    }
                   />
                 )}
                 {locked && (
                   <ConstraintRow
-                    title="Hunter McCoy · FB"
-                    status="No contact"
+                    title={`${mccoyPersonnel?.player.name ?? 'Hunter McCoy'} · ${mccoyPersonnel?.player.position ?? 'FB'}`}
+                    status={mccoyPersonnel?.availability.label ?? 'No contact'}
                     tone="risk"
-                    detail="Bruised ribs. Conditioning only through Friday. The trainer re-evaluates him Monday."
-                    authority="Athletic Trainer"
+                    detail={
+                      mccoyPersonnel?.availability.detail ??
+                      'Bruised ribs. Conditioning only through Friday. The trainer re-evaluates him Monday.'
+                    }
+                    authority={
+                      mccoyPersonnel?.availability.authority ??
+                      'Athletic Trainer'
+                    }
                   />
                 )}
                 <ConstraintRow

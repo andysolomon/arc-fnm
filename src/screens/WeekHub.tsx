@@ -708,12 +708,12 @@ export function WeekHub() {
                 </span>
               </div>
               <p className="text-ink-subtle mt-[5px] mb-0 text-[11.5px] leading-normal text-pretty">
-                District contact limits leave Tuesday as the only heavy-contact
+                The Week 8 schedule leaves Tuesday as the only heavy-contact
                 window. Anything that needs live reps has to live there.
               </p>
               <div className="mt-[7px] flex items-center gap-2">
                 <span className="text-ink-subtle text-[11px]">
-                  Authority · District policy
+                  Authority · Week 8 scenario
                 </span>
                 <span className="flex-1" />
                 <TextButton
@@ -727,6 +727,39 @@ export function WeekHub() {
                 >
                   Open Practice Plan
                 </TextButton>
+              </div>
+            </div>
+            <div className="px-4 py-3 shadow-[inset_0_1px_0_rgba(0,0,0,0.05)]">
+              <p className="text-ink-muted m-0 text-[11.5px] font-medium">
+                Rules · {scenario.jurisdictionRuleSet.jurisdiction} ·{' '}
+                {scenario.jurisdictionRuleSet.issuer} ·{' '}
+                {scenario.jurisdictionRuleSet.season}
+              </p>
+              <p className="text-ink-subtle mt-1 mb-0 font-mono text-[10.5px]">
+                Rule-set snapshot effective ·{' '}
+                {scenario.jurisdictionRuleSet.effectiveDate}
+              </p>
+              <div
+                aria-label="Official rule sources"
+                className="mt-2 flex flex-col items-start gap-1"
+              >
+                {scenario.jurisdictionRuleSet.sources.map((source) => (
+                  <div key={source.id} className="flex flex-col items-start">
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-accent text-[10.5px] leading-normal hover:text-[#005fcc]"
+                    >
+                      Source · {source.title}
+                    </a>
+                    <span className="text-ink-subtle font-mono text-[9.5px]">
+                      Publication · {source.publishedDate ?? 'Not stated'} ·{' '}
+                      Source effective · {source.effectiveDate ?? 'Not stated'}{' '}
+                      · Retrieved · {source.retrievedDate ?? 'Not recorded'}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </Section>

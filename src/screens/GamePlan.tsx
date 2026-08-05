@@ -1,10 +1,11 @@
 import { useState } from 'react';
 
+import { RT_FIXES, RT_STARTERS } from '../domain/disruption.ts';
 import {
-  KOWALSKI_AUTHORITY,
-  RT_FIXES,
-  RT_STARTERS,
-} from '../domain/disruption.ts';
+  FIVE_STEP_TRIPS_FLOOD,
+  eligiblePackageDepth,
+  playerAvailability,
+} from '../domain/roster.ts';
 import type { GamePlanAnswer, ScoutingHypothesis } from '../domain/types.ts';
 import { answerValidity, evidenceCounts } from '../domain/week.ts';
 import { useWeek } from '../state/weekContext.ts';
@@ -206,6 +207,20 @@ function GamePlanTab({
   );
   const firstIssue =
     planGate.blocker?.kind === 'invalid-answer' ? planGate.blocker.reason : '';
+  const kowalski = scenario.rosterPlanning.players.find(
+    (player) => player.id === 'player-kowalski',
+  );
+  const kowalskiAvailability = playerAvailability(
+    scenario.rosterPlanning,
+    'player-kowalski',
+  );
+  const mccoy = scenario.rosterPlanning.players.find(
+    (player) => player.id === 'player-mccoy',
+  );
+  const mccoyAvailability = playerAvailability(
+    scenario.rosterPlanning,
+    'player-mccoy',
+  );
 
   return (
     <div
@@ -295,11 +310,12 @@ function GamePlanTab({
             <div className="flex flex-wrap items-center gap-2">
               <StatusDot tone="danger" />
               <span className="text-[12.5px] font-medium">
-                Ryan Kowalski · RT
+                {kowalski?.name ?? 'Ryan Kowalski'} ·{' '}
+                {kowalski?.position ?? 'RT'}
               </span>
               <span className="flex-1" />
               <span className="text-ink-muted text-[11px] font-medium">
-                Ineligible Friday
+                {kowalskiAvailability?.label ?? 'Ineligible Friday'}
               </span>
             </div>
             <p className="text-ink-subtle mt-1.5 mb-0 text-[11.5px] leading-[1.55] text-pretty">
@@ -318,11 +334,11 @@ function GamePlanTab({
             <div className="flex flex-wrap items-center gap-2">
               <StatusDot tone="risk" />
               <span className="text-[12.5px] font-medium">
-                Hunter McCoy · FB
+                {mccoy?.name ?? 'Hunter McCoy'} · {mccoy?.position ?? 'FB'}
               </span>
               <span className="flex-1" />
               <span className="text-ink-muted text-[11px] font-medium">
-                No contact
+                {mccoyAvailability?.label ?? 'No contact'}
               </span>
             </div>
             <p className="text-ink-subtle mt-1.5 mb-0 text-[11.5px] leading-[1.55] text-pretty">
@@ -369,7 +385,9 @@ function ConcernAnswers({ hypothesis }: { hypothesis: ScoutingHypothesis }) {
   const activeId = state.week.answers[hypothesis.id];
   const active = answers.find((answer) => answer.id === activeId);
   const activeValid =
-    active === undefined ? false : answerValidity(state.week, active).ok;
+    active === undefined
+      ? false
+      : answerValidity(state.week, active, scenario).ok;
   const counts = evidenceCounts(hypothesis.id, scenario);
   const headingId = `plan-${hypothesis.id}`;
 
@@ -466,7 +484,7 @@ function AnswerOption({
   const objective = scenario.objectives.find(
     (candidate) => candidate.id === answer.objectiveId,
   );
-  const validity = answerValidity(state.week, answer);
+  const validity = answerValidity(state.week, answer, scenario);
   const dependency = [
     answer.packageName,
     ...answer.personnelDependencies.map(
@@ -734,7 +752,7 @@ function DepthChartTab({
   phase: DepthPhase;
   onPhaseChange: (phase: DepthPhase) => void;
 }) {
-  const { state, disruptionGate, dispatch } = useWeek();
+  const { scenario, state, disruptionGate, dispatch } = useWeek();
   const unit = DEPTH_UNITS[phase];
   const activeScheme =
     phase === 'Offense'
@@ -747,6 +765,21 @@ function DepthChartTab({
     (starter) => starter.id === state.week.rtStarter,
   );
   const selectedFix = RT_FIXES.find((fix) => fix.id === state.week.rtFix);
+  const eligibleStarterIds = new Set(
+    eligiblePackageDepth(
+      scenario.rosterPlanning,
+      FIVE_STEP_TRIPS_FLOOD,
+    ).flatMap((entry) =>
+      entry.starterOption === null ? [] : [entry.starterOption],
+    ),
+  );
+  const eligibleStarters = RT_STARTERS.filter((starter) =>
+    eligibleStarterIds.has(starter.id),
+  );
+  const kowalskiAvailability = playerAvailability(
+    scenario.rosterPlanning,
+    'player-kowalski',
+  );
 
   return (
     <div id="tactics-depth-chart" role="tabpanel">
@@ -810,9 +843,10 @@ function DepthChartTab({
               {disruptionGate.body}
             </p>
             <p className="text-danger mt-2 mb-0 text-[11.5px] font-medium">
-              Eligibility is the {KOWALSKI_AUTHORITY.authority}’s call. The next
-              checkpoint is {KOWALSKI_AUTHORITY.checkpoint} — nothing you do
-              this week moves it.
+              Eligibility is the{' '}
+              {kowalskiAvailability?.authority ?? 'Guidance Office'}’s call. The
+              next checkpoint is {kowalskiAvailability?.checkpoint ?? 'Oct 26'}
+              {' — '}nothing you do this week moves it.
             </p>
           </div>
 
@@ -825,7 +859,7 @@ function DepthChartTab({
                 Kowalski cannot be selected or overridden.
               </p>
               <div className="grid gap-2">
-                {RT_STARTERS.map((starter) => (
+                {eligibleStarters.map((starter) => (
                   <button
                     key={starter.id}
                     type="button"
