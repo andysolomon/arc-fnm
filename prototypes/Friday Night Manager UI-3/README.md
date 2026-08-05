@@ -2,7 +2,7 @@
 
 Design handoff for the first playable **Coaching Week** (Westfield Wildcats vs. Central Catholic, Week 8).
 
-**Status:** Phases **1–8** implemented and validated in `Friday Night Manager Vercel.dc.html`. Phase **0** (standalone prototype/design-system stabilization) was intentionally **out of scope** — its deliverables were not executed as a separate phase; residual gaps are noted under Known limitations. This README completes Phase 9 items 9.1–9.3; final design acceptance and archival (9.4–9.5) are complete.
+**Status:** Phases **0–9** implemented and statically validated in the UI-3 prototype family. Browser rendering and console inspection were not available in this environment; the known limitations below remain explicit. Phase 0 established the source-of-truth routing, runtime-safe navigation icons, responsive Career Start shell, semantic/focus controls, and the reusable Design System patterns. Phase 9 handoff, acceptance, and archival are complete.
 
 **Plan and tracker:** the accepted copies are archived at repo-root `docs/archive/` (linked as `../../docs/archive/` from this folder). The `uploads/` bundle is reference material only; use the archived root copies as the canonical records.
 

@@ -22,31 +22,31 @@ input:focus{outline:1px auto #005FCC}
 </helmet>
 <div style="min-height:100vh;background:#FAFAFA;color:#171717;font-family:Geist,Inter,system-ui,sans-serif">
 
-  <div style="height:56px;display:flex;align-items:center;gap:12px;padding:0 24px;box-shadow:0 1px 0 0 rgba(0,0,0,0.08);background:#FAFAFA;position:sticky;top:0;z-index:10">
-    <div style="width:26px;height:26px;border-radius:6px;background:#171717;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px">F</div>
-    <span style="font-size:14px;font-weight:500;letter-spacing:-0.28px">Friday Night Manager</span>
-    <span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace">v1.4.2</span>
-    <div style="flex:1"></div>
-    <button style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:32px;padding:0 14px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">What's New?</button>
-    <button style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:32px;padding:0 14px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">Preferences</button>
+  <div style="min-height:56px;display:flex;align-items:center;gap:12px;padding:{{ barPad }};box-shadow:0 1px 0 0 rgba(0,0,0,0.08);background:#FAFAFA;position:sticky;top:0;z-index:10">
+    <div style="width:26px;height:26px;border-radius:6px;background:#171717;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;flex-shrink:0">F</div>
+    <span style="font-size:14px;font-weight:500;letter-spacing:-0.28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Friday Night Manager</span>
+    <span style="font-size:11px;color:#8F8F8F;font-family:'Geist Mono',monospace;white-space:nowrap">v1.5.0 — Coaching Week</span>
+    <div style="flex:1;min-width:4px"></div>
+    <sc-if value="{{ showChrome }}" hint-placeholder-val="{{ true }}"><button disabled="{{ soon }}" title="Release notes are not part of the coaching-week prototype." style="background:#fff;color:#8F8F8F;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:32px;padding:0 14px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:default;flex-shrink:0">What's New?</button></sc-if>
+    <sc-if value="{{ showChrome }}" hint-placeholder-val="{{ true }}"><button disabled="{{ soon }}" title="Preferences are set on the Game Setup screen in this prototype." style="background:#fff;color:#8F8F8F;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:32px;padding:0 14px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:default;flex-shrink:0">Preferences</button></sc-if>
   </div>
 
   <sc-if value="{{ isMenu }}" hint-placeholder-val="{{ true }}">
-  <div data-screen-label="Main Menu" style="max-width:1200px;margin:0 auto;padding:56px 24px 64px 24px">
-    <div style="font-size:48px;font-weight:600;letter-spacing:-2.28px;line-height:1">Friday Night Manager</div>
-    <div style="font-size:14px;color:#4D4D4D;margin-top:10px">Take over a Texas high school football program. Win Fridays, keep them eligible, hang a banner.</div>
-    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-top:36px;align-items:stretch">
-      <div onClick="{{ goJourney }}" style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:24px;cursor:pointer;display:flex;flex-direction:column" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2),0 2px 2px rgba(0,0,0,0.04)">
+  <div data-screen-label="Main Menu" style="max-width:1200px;margin:0 auto;padding:{{ shellPad }}">
+    <div style="font-size:{{ heroSize }};font-weight:600;letter-spacing:-2.28px;line-height:1;text-wrap:pretty">Friday Night Manager</div>
+    <div style="font-size:14px;color:#4D4D4D;margin-top:10px;text-wrap:pretty">Take over a Texas high school football program. Win Fridays, keep them eligible, hang a banner.</div>
+    <div style="display:grid;grid-template-columns:{{ menuCols }};gap:16px;margin-top:36px;align-items:stretch">
+      <button onClick="{{ goJourney }}" style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border:none;border-radius:12px;padding:24px;cursor:pointer;display:flex;flex-direction:column;text-align:left;width:100%;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2),0 2px 2px rgba(0,0,0,0.04)" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.4)">
         <div style="font-size:20px;font-weight:600;letter-spacing:-0.8px">Start New Career</div>
         <div style="font-size:13px;color:#4D4D4D;margin-top:6px;line-height:1.55">Forge your path as a first-year head coach in a new single-player career.</div>
-        <div style="flex:1;min-height:200px;border-radius:8px;margin-top:18px;background:repeating-linear-gradient(45deg,#F2F2F2 0 10px,#FAFAFA 10px 20px);box-shadow:0 0 0 1px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:#8F8F8F">stadium photo — friday night lights</div>
+        <div style="flex:1;width:100%;min-height:200px;border-radius:8px;margin-top:18px;background:repeating-linear-gradient(45deg,#F2F2F2 0 10px,#FAFAFA 10px 20px);box-shadow:0 0 0 1px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:11px;color:#8F8F8F">stadium photo — friday night lights</div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:16px;font-size:13px;font-weight:500;color:#0072F5">Begin <span>→</span></div>
-      </div>
+      </button>
       <div style="display:flex;flex-direction:column;gap:16px">
         <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:20px">
           <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Load Game</div>
           <div style="font-size:12.5px;color:#8F8F8F;margin-top:4px">Continue a saved career.</div>
-          <a href="Friday Night Manager Vercel.dc.html" style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 12px;border-radius:6px;background:#FAFAFA;box-shadow:0 0 0 1px rgba(0,0,0,0.06);color:#171717" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2)">
+          <a href="Friday Night Manager Vercel.dc.html" style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 12px;border-radius:6px;background:#FAFAFA;box-shadow:0 0 0 1px rgba(0,0,0,0.06);color:#171717;outline:none" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2)" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.06),0 0 0 3px rgba(0,114,245,0.4)">
             <span style="width:8px;height:8px;border-radius:9999px;background:#45A557;flex-shrink:0"></span>
             <span style="flex:1"><span style="font-size:13px;font-weight:500;display:block">Westfield Wildcats — 2026</span><span style="font-size:11.5px;color:#8F8F8F">Week 8 · 6-1 · District #2</span></span>
             <span style="font-size:12px;font-weight:500;color:#0072F5">Resume →</span>
@@ -56,14 +56,14 @@ input:focus{outline:1px auto #005FCC}
             <span style="flex:1"><span style="font-size:13px;font-weight:500;display:block">Millbrook Mustangs — 2024</span><span style="font-size:11.5px;color:#8F8F8F">Season complete · 3-7</span></span>
           </div>
         </div>
-        <div onClick="{{ goProfiles }}" style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:20px;cursor:pointer" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2),0 2px 2px rgba(0,0,0,0.04)">
+        <button onClick="{{ goProfiles }}" style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border:none;border-radius:12px;padding:20px;cursor:pointer;text-align:left;width:100%;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2),0 2px 2px rgba(0,0,0,0.04)" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.4)">
           <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Head Coach Profiles</div>
           <div style="font-size:12.5px;color:#8F8F8F;margin-top:4px">Create and manage the coaches you start careers with.</div>
-        </div>
+        </button>
         <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:20px">
           <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Playoff Run</span><span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:500;color:#4D4D4D;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:2px 8px"><span style="width:7px;height:7px;border-radius:9999px;background:#FF990A"></span>New</span></div>
           <div style="font-size:12.5px;color:#8F8F8F;margin-top:4px">Skip the regular season — take a 10-0 team straight into the state bracket.</div>
-          <div style="font-size:12px;font-weight:500;color:#0072F5;margin-top:10px;cursor:pointer">Quick Start →</div>
+          <button disabled="{{ soon }}" title="Playoff Run is not playable in the coaching-week prototype." style="background:none;border:none;padding:0;margin-top:10px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;color:#8F8F8F;cursor:default">Quick Start — not in this prototype</button>
         </div>
       </div>
     </div>
@@ -71,49 +71,49 @@ input:focus{outline:1px auto #005FCC}
   </sc-if>
 
   <sc-if value="{{ isJourney }}" hint-placeholder-val="{{ false }}">
-  <div data-screen-label="Start Your Journey" style="max-width:1200px;margin:0 auto;padding:48px 24px 64px 24px">
-    <div style="font-size:32px;font-weight:600;letter-spacing:-1.28px">Start Your Journey</div>
-    <div style="font-size:13.5px;color:#4D4D4D;margin-top:8px">How much of the world do you want to shape before kickoff?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:32px">
-      <div onClick="{{ goTeam }}" style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2),0 2px 2px rgba(0,0,0,0.04)">
-        <div style="padding:20px;flex:1">
+  <div data-screen-label="Start Your Journey" style="max-width:1200px;margin:0 auto;padding:{{ shellPad }}">
+    <div style="font-size:{{ pageTitleSize }};font-weight:600;letter-spacing:-1.28px;text-wrap:pretty">Start Your Journey</div>
+    <div style="font-size:13.5px;color:#4D4D4D;margin-top:8px;text-wrap:pretty">How much of the world do you want to shape before kickoff?</div>
+    <div style="display:grid;grid-template-columns:{{ journeyCols }};gap:16px;margin-top:32px">
+      <button onClick="{{ goTeam }}" style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border:none;border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;padding:0;text-align:left;width:100%;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2),0 2px 2px rgba(0,0,0,0.04)" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.4)">
+        <div style="padding:20px;flex:1;width:100%">
           <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Quick Start Career</div>
           <div style="font-size:12.5px;color:#4D4D4D;margin-top:6px;line-height:1.55">Choose the school you want to coach. The districts around it are built for you — you can still edit later.</div>
           <div style="height:110px;border-radius:8px;margin-top:16px;background:repeating-linear-gradient(45deg,#F2F2F2 0 8px,#FAFAFA 8px 16px);box-shadow:0 0 0 1px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:10.5px;color:#8F8F8F">school crests</div>
         </div>
-        <div style="padding:10px 20px;background:#F2F2F2;font-size:11.5px;font-weight:500;color:#4D4D4D;display:flex;justify-content:space-between"><span>Schools &amp; Districts</span><span style="font-family:'Geist Mono',monospace">TX</span></div>
-      </div>
-      <div onClick="{{ goSetup }}" style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2),0 2px 2px rgba(0,0,0,0.04)">
-        <div style="padding:20px;flex:1">
+        <div style="padding:10px 20px;background:#F2F2F2;font-size:11.5px;font-weight:500;color:#4D4D4D;display:flex;justify-content:space-between;width:100%"><span>Schools &amp; Districts</span><span style="font-family:'Geist Mono',monospace">TX</span></div>
+      </button>
+      <button onClick="{{ goSetup }}" style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border:none;border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;padding:0;text-align:left;width:100%;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2),0 2px 2px rgba(0,0,0,0.04)" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.4)">
+        <div style="padding:20px;flex:1;width:100%">
           <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Advanced Setup</div>
           <div style="font-size:12.5px;color:#4D4D4D;margin-top:6px;line-height:1.55">Customize your game world — active regions, roster mode, and season start — before choosing who to coach.</div>
           <div style="height:110px;border-radius:8px;margin-top:16px;background:repeating-linear-gradient(45deg,#F2F2F2 0 8px,#FAFAFA 8px 16px);box-shadow:0 0 0 1px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:10.5px;color:#8F8F8F">world editor</div>
         </div>
-        <div style="padding:10px 20px;background:#F2F2F2;font-size:11.5px;font-weight:500;color:#4D4D4D;display:flex;justify-content:space-between"><span>Schools &amp; Districts</span><span style="font-family:'Geist Mono',monospace">TX</span></div>
-      </div>
-      <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
-        <div style="padding:20px;flex:1">
+        <div style="padding:10px 20px;background:#F2F2F2;font-size:11.5px;font-weight:500;color:#4D4D4D;display:flex;justify-content:space-between;width:100%"><span>Schools &amp; Districts</span><span style="font-family:'Geist Mono',monospace">TX</span></div>
+      </button>
+      <button disabled="{{ soon }}" title="Playoff Run is not playable in the coaching-week prototype." style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border:none;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;padding:0;text-align:left;width:100%;font-family:Geist,sans-serif;color:#171717;cursor:default">
+        <div style="padding:20px;flex:1;width:100%">
           <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Playoff Run</span><span style="display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:500;color:#4D4D4D;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:9999px;padding:2px 8px"><span style="width:7px;height:7px;border-radius:9999px;background:#FF990A"></span>New</span></div>
           <div style="font-size:12.5px;color:#4D4D4D;margin-top:6px;line-height:1.55">Compete in the state bracket right away. Six wins in December takes the title.</div>
           <div style="height:110px;border-radius:8px;margin-top:16px;background:repeating-linear-gradient(45deg,#F2F2F2 0 8px,#FAFAFA 8px 16px);box-shadow:0 0 0 1px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:10.5px;color:#8F8F8F">bracket art</div>
         </div>
-        <div style="padding:10px 20px;background:#F2F2F2;font-size:11.5px;font-weight:500;color:#4D4D4D;display:flex;justify-content:space-between"><span>State Bracket only</span><span style="font-family:'Geist Mono',monospace">DEC</span></div>
-      </div>
+        <div style="padding:10px 20px;background:#F2F2F2;font-size:11.5px;font-weight:500;color:#4D4D4D;display:flex;justify-content:space-between;width:100%"><span>State Bracket only</span><span style="font-family:'Geist Mono',monospace">DEC</span></div>
+      </button>
     </div>
-    <div style="margin-top:28px"><button onClick="{{ goMenu }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:36px;padding:0 16px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">← Back</button></div>
+    <div style="margin-top:28px"><button onClick="{{ goMenu }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:36px;padding:0 16px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">← Back</button></div>
   </div>
   </sc-if>
 
   <sc-if value="{{ isProfiles }}" hint-placeholder-val="{{ false }}">
-  <div data-screen-label="Head Coach Profiles" style="max-width:1200px;margin:0 auto;padding:48px 24px 64px 24px">
-    <div style="font-size:32px;font-weight:600;letter-spacing:-1.28px">Head Coach Profiles</div>
-    <div style="font-size:13.5px;color:#4D4D4D;margin-top:8px">Choose which head coach you'd like to start your career with.</div>
-    <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:28px;margin-top:32px;align-items:start">
-      <div>
-        <div onClick="{{ goWizard }}" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);cursor:pointer;margin-bottom:12px" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2)">
-          <div style="width:36px;height:36px;border-radius:6px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-size:18px;color:#4D4D4D">+</div>
+  <div data-screen-label="Head Coach Profiles" style="max-width:1200px;margin:0 auto;padding:{{ shellPad }}">
+    <div style="font-size:{{ pageTitleSize }};font-weight:600;letter-spacing:-1.28px;text-wrap:pretty">Head Coach Profiles</div>
+    <div style="font-size:13.5px;color:#4D4D4D;margin-top:8px;text-wrap:pretty">Choose which head coach you'd like to start your career with.</div>
+    <div style="display:grid;grid-template-columns:{{ profileCols }};gap:28px;margin-top:32px;align-items:start">
+      <div style="min-width:0">
+        <button onClick="{{ goWizard }}" style="display:flex;align-items:center;gap:12px;padding:14px;border:none;border-radius:12px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);cursor:pointer;margin-bottom:12px;width:100%;text-align:left;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1px rgba(0,0,0,0.2)" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.4)">
+          <div style="width:36px;height:36px;border-radius:6px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-size:18px;color:#4D4D4D;flex-shrink:0">+</div>
           <span style="font-size:13.5px;font-weight:500">Create new head coach profile</span>
-        </div>
+        </button>
         <div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:#fff;box-shadow:0 0 0 1.5px #171717,0 2px 2px rgba(0,0,0,0.04)">
           <span style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px #171717;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:8px;height:8px;border-radius:9999px;background:#171717"></span></span>
           <div style="width:40px;height:48px;border-radius:6px;background:{{ presetTone }};box-shadow:0 0 0 1px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:8px;color:#8F8F8F">photo</div>
@@ -121,12 +121,12 @@ input:focus{outline:1px auto #005FCC}
             <div style="font-size:14px;font-weight:500">{{ fullName }}</div>
             <div style="font-size:12px;color:#8F8F8F">Age {{ age }} · {{ home }}</div>
           </div>
-          <button onClick="{{ goWizard }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:30px;padding:0 12px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">Edit</button>
-          <button style="background:#fff;color:#8F8F8F;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:30px;padding:0 12px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="color:#E5484D">Delete</button>
+          <button onClick="{{ goWizard }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:30px;padding:0 12px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">Edit</button>
+          <button disabled="{{ soon }}" title="The prototype ships with a single seeded coach profile, so it cannot be deleted." style="background:#fff;color:#C9C9C9;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:30px;padding:0 12px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;cursor:default">Delete</button>
         </div>
       </div>
-      <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:22px 24px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="min-width:0;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:22px 24px">
+        <div style="display:grid;grid-template-columns:{{ fieldCols }};gap:16px">
           <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Full Name</div><div style="font-size:14px;font-weight:500;margin-top:3px">{{ fullName }}</div></div>
           <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Age</div><div style="font-size:14px;font-weight:500;margin-top:3px">{{ age }} years old</div></div>
           <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Hometown</div><div style="font-size:14px;font-weight:500;margin-top:3px">{{ home }}</div></div>
@@ -148,34 +148,34 @@ input:focus{outline:1px auto #005FCC}
         </sc-for>
       </div>
     </div>
-    <div style="display:flex;gap:10px;margin-top:28px;justify-content:flex-end">
-      <button onClick="{{ goMenu }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:38px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">Main Menu</button>
-      <button onClick="{{ goJourney }}" style="background:#171717;color:#fff;border:none;border-radius:6px;height:38px;padding:0 20px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#383838">Start New Career →</button>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;justify-content:flex-end">
+      <button onClick="{{ goMenu }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:38px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">Main Menu</button>
+      <button onClick="{{ goJourney }}" style="background:#171717;color:#fff;border:none;border-radius:6px;height:38px;padding:0 20px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#383838" style-focus="box-shadow:0 0 0 3px rgba(0,114,245,0.4)">Start New Career →</button>
     </div>
   </div>
   </sc-if>
 
   <sc-if value="{{ isWizard }}" hint-placeholder-val="{{ false }}">
-  <div data-screen-label="Head Coach Creation" style="max-width:1200px;margin:0 auto;padding:48px 24px 64px 24px">
-    <div style="font-size:32px;font-weight:600;letter-spacing:-1.28px">Head Coach Creation</div>
-    <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+  <div data-screen-label="Head Coach Creation" style="max-width:1200px;margin:0 auto;padding:{{ shellPad }}">
+    <div style="font-size:{{ pageTitleSize }};font-weight:600;letter-spacing:-1.28px;text-wrap:pretty">Head Coach Creation</div>
+    <nav aria-label="Head coach creation steps" style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap">
       <sc-for list="{{ wizSteps }}" as="ws" hint-placeholder-count="5">
-        <span onClick="{{ ws.go }}" style="font-size:13px;font-weight:{{ ws.wt }};color:{{ ws.fg }};cursor:pointer" style-hover="color:#171717">{{ ws.label }}</span>
-        <sc-if value="{{ ws.sep }}" hint-placeholder-val="{{ true }}"><span style="color:#D6D6D6;font-size:12px">›</span></sc-if>
+        <button onClick="{{ ws.go }}" aria-current="{{ ws.cur }}" style="background:none;border:none;padding:2px 4px;border-radius:4px;font-family:Geist,sans-serif;font-size:13px;font-weight:{{ ws.wt }};color:{{ ws.fg }};cursor:pointer;outline:none" style-hover="color:#171717" style-focus="box-shadow:0 0 0 2px rgba(0,114,245,0.45)">{{ ws.label }}</button>
+        <sc-if value="{{ ws.sep }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="color:#D6D6D6;font-size:12px">›</span></sc-if>
       </sc-for>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:28px;margin-top:28px;align-items:start">
-      <div>
+    </nav>
+    <div style="display:grid;grid-template-columns:{{ wizardCols }};gap:28px;margin-top:28px;align-items:start">
+      <div style="min-width:0">
         <sc-if value="{{ w0 }}" hint-placeholder-val="{{ true }}">
         <div>
           <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Appearance</div>
           <div style="font-size:12.5px;color:#8F8F8F;margin-top:4px">Pick a yearbook portrait preset. You can refine it any time.</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+          <div style="display:grid;grid-template-columns:{{ presetCols }};gap:12px;margin-top:16px">
             <sc-for list="{{ presets }}" as="pr" hint-placeholder-count="6">
-              <div onClick="{{ pr.go }}" style="position:relative;background:#fff;box-shadow:{{ pr.sh }};border-radius:12px;padding:12px;cursor:pointer" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)">
+              <button onClick="{{ pr.go }}" aria-pressed="{{ pr.on }}" aria-label="{{ pr.aria }}" style="position:relative;background:#fff;border:none;box-shadow:{{ pr.sh }};border-radius:12px;padding:12px;cursor:pointer;width:100%;font-family:Geist,sans-serif;outline:none" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)" style-focus="box-shadow:0 0 0 1.5px #171717,0 0 0 4px rgba(0,114,245,0.4)">
                 <div style="height:120px;border-radius:8px;background:repeating-linear-gradient(45deg,{{ pr.tone }} 0 7px,#FAFAFA 7px 14px);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:9.5px;color:#8F8F8F">portrait {{ pr.n }}</div>
-                <span style="position:absolute;top:18px;right:18px;width:16px;height:16px;border-radius:9999px;background:#fff;box-shadow:inset 0 0 0 1.5px {{ pr.rc }};display:flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:9999px;background:{{ pr.rd }}"></span></span>
-              </div>
+                <span aria-hidden="true" style="position:absolute;top:18px;right:18px;width:16px;height:16px;border-radius:9999px;background:#fff;box-shadow:inset 0 0 0 1.5px {{ pr.rc }};display:flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:9999px;background:{{ pr.rd }}"></span></span>
+              </button>
             </sc-for>
           </div>
         </div>
@@ -184,7 +184,7 @@ input:focus{outline:1px auto #005FCC}
         <div>
           <div style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Background</div>
           <div style="font-size:12.5px;color:#8F8F8F;margin-top:4px">Who is showing up to the interview?</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;max-width:560px">
+          <div style="display:grid;grid-template-columns:{{ fieldCols }};gap:14px;margin-top:16px;max-width:560px">
             <div><div style="font-size:12px;font-weight:500;color:#4D4D4D;margin-bottom:6px">First name</div><input value="{{ first }}" onChange="{{ setFirst }}" style="width:100%;height:40px;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;padding:0 12px;font-size:13.5px;background:#fff;color:#171717"></div>
             <div><div style="font-size:12px;font-weight:500;color:#4D4D4D;margin-bottom:6px">Last name</div><input value="{{ last }}" onChange="{{ setLast }}" style="width:100%;height:40px;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;padding:0 12px;font-size:13.5px;background:#fff;color:#171717"></div>
             <div><div style="font-size:12px;font-weight:500;color:#4D4D4D;margin-bottom:6px">Age</div><input value="{{ age }}" onChange="{{ setAge }}" style="width:100%;height:40px;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;padding:0 12px;font-size:13.5px;background:#fff;color:#171717"></div>
@@ -200,10 +200,10 @@ input:focus{outline:1px auto #005FCC}
           <div style="font-size:12.5px;color:#8F8F8F;margin-top:2px">Your playing career shapes how players and parents size you up on day one.</div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;max-width:640px">
             <sc-for list="{{ playing }}" as="pc" hint-placeholder-count="5">
-              <div onClick="{{ pc.go }}" style="display:flex;align-items:center;gap:14px;background:#fff;box-shadow:{{ pc.sh }};border-radius:12px;padding:14px 16px;cursor:pointer" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)">
-                <span style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px {{ pc.rc }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:8px;height:8px;border-radius:9999px;background:{{ pc.rd }}"></span></span>
-                <div><div style="font-size:13.5px;font-weight:500">{{ pc.label }}</div><div style="font-size:12px;color:#8F8F8F;margin-top:1px">{{ pc.desc }}</div></div>
-              </div>
+              <button onClick="{{ pc.go }}" aria-pressed="{{ pc.on }}" style="display:flex;align-items:center;gap:14px;background:#fff;border:none;box-shadow:{{ pc.sh }};border-radius:12px;padding:14px 16px;cursor:pointer;width:100%;text-align:left;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)" style-focus="box-shadow:0 0 0 1.5px #171717,0 0 0 4px rgba(0,114,245,0.4)">
+                <span aria-hidden="true" style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px {{ pc.rc }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:8px;height:8px;border-radius:9999px;background:{{ pc.rd }}"></span></span>
+                <div style="min-width:0"><div style="font-size:13.5px;font-weight:500">{{ pc.label }}</div><div style="font-size:12px;color:#8F8F8F;margin-top:1px;text-wrap:pretty">{{ pc.desc }}</div></div>
+              </button>
             </sc-for>
           </div>
         </div>
@@ -215,27 +215,27 @@ input:focus{outline:1px auto #005FCC}
           <div style="font-size:12.5px;color:#8F8F8F;margin-top:2px">Which role are you most recognized for?</div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;max-width:640px">
             <sc-for list="{{ roles }}" as="ro" hint-placeholder-count="5">
-              <div onClick="{{ ro.go }}" style="display:flex;align-items:center;gap:14px;background:#fff;box-shadow:{{ ro.sh }};border-radius:12px;padding:14px 16px;cursor:pointer" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)">
-                <span style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px {{ ro.rc }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:8px;height:8px;border-radius:9999px;background:{{ ro.rd }}"></span></span>
-                <div><div style="font-size:13.5px;font-weight:500">{{ ro.label }}</div><div style="font-size:12px;color:#8F8F8F;margin-top:1px">{{ ro.desc }}</div></div>
-              </div>
+              <button onClick="{{ ro.go }}" aria-pressed="{{ ro.on }}" style="display:flex;align-items:center;gap:14px;background:#fff;border:none;box-shadow:{{ ro.sh }};border-radius:12px;padding:14px 16px;cursor:pointer;width:100%;text-align:left;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)" style-focus="box-shadow:0 0 0 1.5px #171717,0 0 0 4px rgba(0,114,245,0.4)">
+                <span aria-hidden="true" style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px {{ ro.rc }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:8px;height:8px;border-radius:9999px;background:{{ ro.rd }}"></span></span>
+                <div style="min-width:0"><div style="font-size:13.5px;font-weight:500">{{ ro.label }}</div><div style="font-size:12px;color:#8F8F8F;margin-top:1px;text-wrap:pretty">{{ ro.desc }}</div></div>
+              </button>
             </sc-for>
           </div>
           <div style="font-size:13.5px;font-weight:500;margin-top:22px">How well known are you for it?</div>
-          <div style="display:flex;gap:8px;margin-top:10px">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
             <sc-for list="{{ renown }}" as="rn" hint-placeholder-count="4">
-              <button onClick="{{ rn.go }}" style="background:{{ rn.bg }};color:{{ rn.fg }};border:none;box-shadow:{{ rn.sh }};border-radius:9999px;height:32px;padding:0 16px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="opacity:.85">{{ rn.label }}</button>
+              <button onClick="{{ rn.go }}" aria-pressed="{{ rn.on }}" style="background:{{ rn.bg }};color:{{ rn.fg }};border:none;box-shadow:{{ rn.sh }};border-radius:9999px;height:32px;padding:0 16px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="opacity:.85" style-focus="box-shadow:0 0 0 3px rgba(0,114,245,0.4)">{{ rn.label }}</button>
             </sc-for>
           </div>
         </div>
         </sc-if>
         <sc-if value="{{ w4 }}" hint-placeholder-val="{{ false }}">
         <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;max-width:640px">
-            <div style="font-size:20px;font-weight:600;letter-spacing:-0.8px">{{ fullName }} is ready for Friday nights</div>
-            <button onClick="{{ toW0 }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:32px;padding:0 14px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">Edit Head Coach</button>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;max-width:640px">
+            <div style="font-size:20px;font-weight:600;letter-spacing:-0.8px;text-wrap:pretty">{{ fullName }} is ready for Friday nights</div>
+            <button onClick="{{ toW0 }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:32px;padding:0 14px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">Edit Head Coach</button>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px;max-width:640px">
+          <div style="display:grid;grid-template-columns:{{ fieldCols }};gap:16px;margin-top:18px;max-width:640px">
             <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Full Name</div><div style="font-size:14px;font-weight:500;margin-top:3px">{{ fullName }}</div></div>
             <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Age</div><div style="font-size:14px;font-weight:500;margin-top:3px">{{ age }} years old</div></div>
             <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Hometown</div><div style="font-size:14px;font-weight:500;margin-top:3px">{{ home }}</div></div>
@@ -243,7 +243,7 @@ input:focus{outline:1px auto #005FCC}
             <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Playing career</div><div style="font-size:14px;font-weight:500;margin-top:3px">{{ playingLabel }}</div></div>
             <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Coaching background</div><div style="font-size:14px;font-weight:500;margin-top:3px">{{ roleLabel }} · {{ renownLabel }}</div></div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;max-width:640px">
+          <div style="display:grid;grid-template-columns:{{ fieldCols }};gap:24px;margin-top:24px;max-width:640px">
             <div>
               <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Coaching Attributes</span><span style="font-size:11px;color:#8F8F8F">Ability</span></div>
               <sc-for list="{{ coachAttrs }}" as="a" hint-placeholder-count="6">
@@ -266,12 +266,12 @@ input:focus{outline:1px auto #005FCC}
         </div>
         </sc-if>
         <div style="display:flex;gap:10px;margin-top:28px">
-          <button onClick="{{ wizBack }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:38px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">← Back</button>
+          <button onClick="{{ wizBack }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:38px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">← Back</button>
           <div style="flex:1"></div>
-          <button onClick="{{ wizNext }}" style="background:#171717;color:#fff;border:none;border-radius:6px;height:38px;padding:0 20px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#383838">{{ wizNextLabel }}</button>
+          <button onClick="{{ wizNext }}" style="background:#171717;color:#fff;border:none;border-radius:6px;height:38px;padding:0 20px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#383838" style-focus="box-shadow:0 0 0 3px rgba(0,114,245,0.4)">{{ wizNextLabel }}</button>
         </div>
       </div>
-      <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:18px;position:sticky;top:76px">
+      <div style="min-width:0;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:18px;position:{{ stickyPos }};top:76px">
         <div style="height:190px;border-radius:8px;background:repeating-linear-gradient(45deg,{{ presetTone }} 0 8px,#FAFAFA 8px 16px);box-shadow:0 0 0 1px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-family:'Geist Mono',monospace;font-size:10px;color:#8F8F8F;text-align:center;line-height:1.6">yearbook portrait<br>preset {{ presetN }}</div>
         <div style="font-size:17px;font-weight:600;letter-spacing:-0.34px;margin-top:14px">{{ fullName }}</div>
         <div style="font-size:12px;color:#8F8F8F;margin-top:3px">Age {{ age }} · {{ home }}</div>
@@ -291,79 +291,79 @@ input:focus{outline:1px auto #005FCC}
   </sc-if>
 
   <sc-if value="{{ isTeam }}" hint-placeholder-val="{{ false }}">
-  <div data-screen-label="Team Selection" style="max-width:1200px;margin:0 auto;padding:48px 24px 64px 24px">
-    <div style="font-size:32px;font-weight:600;letter-spacing:-1.28px">Team Selection</div>
-    <div style="display:grid;grid-template-columns:340px 1fr;gap:28px;margin-top:28px;align-items:start">
-      <div>
-        <div onClick="{{ toggleUnemployed }}" style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:2px 0;user-select:none">
-          <span style="width:16px;height:16px;border-radius:4px;background:{{ unBg }};box-shadow:{{ unSh }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">{{ unCheck }}</span>
-          <span style="font-size:13px;color:#4D4D4D">Start unemployed — wait for a mid-season opening</span>
-        </div>
+  <div data-screen-label="Team Selection" style="max-width:1200px;margin:0 auto;padding:{{ shellPad }}">
+    <div style="font-size:{{ pageTitleSize }};font-weight:600;letter-spacing:-1.28px;text-wrap:pretty">Team Selection</div>
+    <div style="display:grid;grid-template-columns:{{ teamCols }};gap:28px;margin-top:28px;align-items:start">
+      <div style="min-width:0">
+        <button onClick="{{ toggleUnemployed }}" aria-pressed="{{ unOn }}" style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:4px 4px 4px 0;background:none;border:none;border-radius:6px;text-align:left;width:100%;font-family:Geist,sans-serif;user-select:none;outline:none" style-focus="box-shadow:0 0 0 2px rgba(0,114,245,0.45)">
+          <span aria-hidden="true" style="width:16px;height:16px;border-radius:4px;background:{{ unBg }};box-shadow:{{ unSh }};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;flex-shrink:0">{{ unCheck }}</span>
+          <span style="font-size:13px;color:#4D4D4D;text-wrap:pretty">Start unemployed — wait for a mid-season opening</span>
+        </button>
         <div style="margin-top:18px;font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">State</div>
-        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:40px;padding:0 12px;font-size:13.5px;font-weight:500">Texas · UIL <span style="color:#8F8F8F;margin-left:auto">▾</span></div>
+        <button disabled="{{ soon }}" title="Texas · UIL is the only state modelled in this prototype." style="display:flex;align-items:center;gap:10px;margin-top:8px;background:#fff;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:40px;padding:0 12px;font-size:13.5px;font-weight:500;font-family:Geist,sans-serif;color:#171717;width:100%;text-align:left;cursor:default">Texas · UIL <span aria-hidden="true" style="color:#C9C9C9;margin-left:auto">▾</span></button>
         <div style="margin-top:18px;font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Classification</div>
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
-          <div style="display:flex;align-items:center;gap:12px;background:#fff;box-shadow:0 0 0 1.5px #171717;border-radius:12px;padding:13px 14px">
-            <span style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px #171717;display:flex;align-items:center;justify-content:center"><span style="width:8px;height:8px;border-radius:9999px;background:#171717"></span></span>
-            <div style="flex:1"><div style="font-size:13.5px;font-weight:500">5A Division I</div><div style="font-size:11.5px;color:#8F8F8F">Enrollment 1,925+ · Tier 1</div></div>
-            <span style="width:8px;height:8px;border-radius:9999px;background:#45A557"></span>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:13px 14px;opacity:.75">
-            <span style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px #C9C9C9"></span>
-            <div style="flex:1"><div style="font-size:13.5px;font-weight:500">4A Division II</div><div style="font-size:11.5px;color:#8F8F8F">Enrollment 880–1,299 · Tier 2</div></div>
-            <span style="width:8px;height:8px;border-radius:9999px;background:#6CDA75"></span>
-          </div>
+          <button disabled="{{ soon }}" aria-pressed="{{ yes }}" title="The seeded district is 5A Division I; classification is fixed in this prototype." style="display:flex;align-items:center;gap:12px;background:#fff;border:none;box-shadow:0 0 0 1.5px #171717;border-radius:12px;padding:13px 14px;width:100%;text-align:left;font-family:Geist,sans-serif;color:#171717;cursor:default">
+            <span aria-hidden="true" style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px #171717;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:8px;height:8px;border-radius:9999px;background:#171717"></span></span>
+            <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:500">5A Division I</div><div style="font-size:11.5px;color:#8F8F8F">Enrollment 1,925+ · Tier 1</div></div>
+            <span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:#45A557;flex-shrink:0"></span>
+          </button>
+          <button disabled="{{ soon }}" aria-pressed="{{ no }}" title="4A Division II is not modelled in this prototype." style="display:flex;align-items:center;gap:12px;background:#fff;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:13px 14px;opacity:.75;width:100%;text-align:left;font-family:Geist,sans-serif;color:#171717;cursor:default">
+            <span aria-hidden="true" style="width:16px;height:16px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px #C9C9C9;flex-shrink:0"></span>
+            <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:500">4A Division II</div><div style="font-size:11.5px;color:#8F8F8F">Enrollment 880–1,299 · Tier 2</div></div>
+            <span aria-hidden="true" style="width:8px;height:8px;border-radius:9999px;background:#6CDA75;flex-shrink:0"></span>
+          </button>
         </div>
         <div style="margin-top:18px;font-size:11.5px;color:#8F8F8F">Key (program prestige): <span style="display:inline-block;width:7px;height:7px;border-radius:9999px;background:#45A557;margin:0 3px"></span>Statewide — <span style="display:inline-block;width:7px;height:7px;border-radius:9999px;background:#D6D6D6;margin:0 3px"></span>Rebuilding</div>
       </div>
-      <div>
-        <div style="display:flex;align-items:center;gap:16px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:14px 18px">
-          <div style="width:38px;height:38px;border-radius:6px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#4D4D4D">7-5A</div>
-          <div style="flex:1"><div style="font-size:14px;font-weight:600;letter-spacing:-0.28px">District 7-5A · Region II</div><div style="font-size:12px;color:#8F8F8F">8 schools · West Texas</div></div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4D4D4D"><span style="width:8px;height:8px;border-radius:9999px;background:#45A557"></span>Strong district</div>
+      <div style="min-width:0">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:14px 18px">
+          <div style="width:38px;height:38px;border-radius:6px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#4D4D4D;flex-shrink:0">7-5A</div>
+          <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600;letter-spacing:-0.28px">District 7-5A · Region II</div><div style="font-size:12px;color:#8F8F8F">8 schools · West Texas</div></div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4D4D4D;white-space:nowrap"><span style="width:8px;height:8px;border-radius:9999px;background:#45A557"></span>Strong district</div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px;opacity:{{ gridOpacity }}">
+        <div style="display:grid;grid-template-columns:{{ schoolCols }};gap:12px;margin-top:14px;opacity:{{ gridOpacity }}">
           <sc-for list="{{ schools }}" as="s" hint-placeholder-count="8">
-            <div onClick="{{ s.go }}" style="position:relative;background:#fff;box-shadow:{{ s.sh }};border-radius:12px;padding:16px 14px;cursor:pointer;text-align:center" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)">
-              <span style="position:absolute;top:10px;left:10px;width:15px;height:15px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px {{ s.rc }};display:flex;align-items:center;justify-content:center"><span style="width:7px;height:7px;border-radius:9999px;background:{{ s.rd }}"></span></span>
-              <div style="width:52px;height:52px;border-radius:9999px;background:#F2F2F2;margin:6px auto 0 auto;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:#4D4D4D;letter-spacing:-0.3px">{{ s.init }}</div>
+            <button onClick="{{ s.go }}" aria-pressed="{{ s.on }}" style="position:relative;background:#fff;border:none;box-shadow:{{ s.sh }};border-radius:12px;padding:16px 14px;cursor:pointer;text-align:center;width:100%;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)" style-focus="box-shadow:0 0 0 1.5px #171717,0 0 0 4px rgba(0,114,245,0.4)">
+              <span aria-hidden="true" style="position:absolute;top:10px;left:10px;width:15px;height:15px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px {{ s.rc }};display:flex;align-items:center;justify-content:center"><span style="width:7px;height:7px;border-radius:9999px;background:{{ s.rd }}"></span></span>
+              <div aria-hidden="true" style="width:52px;height:52px;border-radius:9999px;background:#F2F2F2;margin:6px auto 0 auto;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:#4D4D4D;letter-spacing:-0.3px">{{ s.init }}</div>
               <div style="font-size:13px;font-weight:500;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</div>
               <div style="font-size:11px;color:#8F8F8F;margin-top:2px">Predicted finish</div>
               <div style="font-size:15px;font-weight:600;letter-spacing:-0.3px;margin-top:1px">{{ s.pred }}</div>
-            </div>
+            </button>
           </sc-for>
         </div>
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:28px">
-      <button onClick="{{ goJourney }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:38px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">← Back</button>
+      <button onClick="{{ goJourney }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:38px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">← Back</button>
       <div style="flex:1"></div>
-      <button onClick="{{ goSetup }}" style="background:#171717;color:#fff;border:none;border-radius:6px;height:38px;padding:0 20px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#383838">Next — Game Setup →</button>
+      <button onClick="{{ goSetup }}" style="background:#171717;color:#fff;border:none;border-radius:6px;height:38px;padding:0 20px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#383838" style-focus="box-shadow:0 0 0 3px rgba(0,114,245,0.4)">Next — Game Setup →</button>
     </div>
   </div>
   </sc-if>
 
   <sc-if value="{{ isSetup }}" hint-placeholder-val="{{ false }}">
-  <div data-screen-label="Game Setup" style="max-width:1200px;margin:0 auto;padding:48px 24px 64px 24px">
-    <div style="font-size:32px;font-weight:600;letter-spacing:-1.28px">Game Setup</div>
-    <div style="display:flex;align-items:center;gap:16px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:16px 18px;margin-top:24px">
-      <button onClick="{{ goTeam }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:34px;padding:0 14px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">Change</button>
-      <div style="width:38px;height:38px;border-radius:9999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#4D4D4D">{{ selInit }}</div>
-      <div style="flex:1"><div style="font-size:14px;font-weight:600;letter-spacing:-0.28px">{{ startingAs }}</div><div style="font-size:12px;color:#8F8F8F">Predicted to finish {{ selPred }} in District 7-5A</div></div>
+  <div data-screen-label="Game Setup" style="max-width:1200px;margin:0 auto;padding:{{ shellPad }}">
+    <div style="font-size:{{ pageTitleSize }};font-weight:600;letter-spacing:-1.28px;text-wrap:pretty">Game Setup</div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:16px 18px;margin-top:24px">
+      <button onClick="{{ goTeam }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:34px;padding:0 14px;font-size:12.5px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none;flex-shrink:0" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">Change</button>
+      <div style="width:38px;height:38px;border-radius:9999px;background:#F2F2F2;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#4D4D4D;flex-shrink:0">{{ selInit }}</div>
+      <div style="flex:1 1 220px;min-width:0"><div style="font-size:14px;font-weight:600;letter-spacing:-0.28px;text-wrap:pretty">{{ startingAs }}</div><div style="font-size:12px;color:#8F8F8F">Predicted to finish {{ selPred }} in District 7-5A</div></div>
       <div>
         <div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em;text-align:right;margin-bottom:6px">Season start</div>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
           <sc-for list="{{ startDates }}" as="sd" hint-placeholder-count="2">
-            <button onClick="{{ sd.go }}" style="background:{{ sd.bg }};color:{{ sd.fg }};border:none;box-shadow:{{ sd.sh }};border-radius:9999px;height:30px;padding:0 14px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer">{{ sd.label }}</button>
+            <button onClick="{{ sd.go }}" aria-pressed="{{ sd.on }}" style="background:{{ sd.bg }};color:{{ sd.fg }};border:none;box-shadow:{{ sd.sh }};border-radius:9999px;height:30px;padding:0 14px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="opacity:.85" style-focus="box-shadow:0 0 0 3px rgba(0,114,245,0.4)">{{ sd.label }}</button>
           </sc-for>
         </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:16px;align-items:start">
-      <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:20px">
+    <div style="display:grid;grid-template-columns:{{ setupCols }};gap:16px;margin-top:16px;align-items:start">
+      <div style="min-width:0;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:20px">
         <div style="font-size:15px;font-weight:600;letter-spacing:-0.3px">Active Regions</div>
         <div style="font-size:12.5px;color:#4D4D4D;margin-top:5px;line-height:1.55;text-wrap:pretty">Choose which regions are fully simulated. More regions means richer transfers, realignment and playoff seeding — and a slower sim.</div>
-        <div style="display:flex;gap:32px;margin:16px 0">
+        <div style="display:flex;flex-wrap:wrap;gap:32px;margin:16px 0">
           <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Estimated sim speed</div><div style="display:flex;align-items:center;gap:7px;margin-top:5px"><span style="width:9px;height:9px;border-radius:9999px;background:#45A557"></span><span style="font-size:16px;font-weight:600;letter-spacing:-0.32px">Quick</span></div></div>
           <div><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Approx. player count</div><div style="font-size:16px;font-weight:600;letter-spacing:-0.32px;margin-top:4px">1,240 <span style="font-size:12px;font-weight:400;color:#8F8F8F">medium database</span></div></div>
         </div>
@@ -377,36 +377,36 @@ input:focus{outline:1px auto #005FCC}
           <span style="font-weight:500">Regions I, III, IV</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#4D4D4D">playoff opponents</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#4D4D4D"><span style="width:7px;height:7px;border-radius:9999px;background:#D6D6D6"></span>Results only</span>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="min-width:0;display:flex;flex-direction:column;gap:16px">
         <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:12px;padding:20px">
           <div style="font-size:15px;font-weight:600;letter-spacing:-0.3px">Roster Mode</div>
           <div style="font-size:12.5px;color:#4D4D4D;margin-top:5px;line-height:1.55">How rosters are generated for your first season.</div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
             <sc-for list="{{ rosterModes }}" as="rm" hint-placeholder-count="2">
-              <div onClick="{{ rm.go }}" style="display:flex;align-items:flex-start;gap:12px;background:#FAFAFA;box-shadow:{{ rm.sh }};border-radius:8px;padding:11px 12px;cursor:pointer">
-                <span style="width:15px;height:15px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px {{ rm.rc }};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><span style="width:7px;height:7px;border-radius:9999px;background:{{ rm.rd }}"></span></span>
-                <div><div style="font-size:13px;font-weight:500">{{ rm.label }}</div><div style="font-size:11.5px;color:#8F8F8F;margin-top:1px;line-height:1.5">{{ rm.desc }}</div></div>
-              </div>
+              <button onClick="{{ rm.go }}" aria-pressed="{{ rm.on }}" style="display:flex;align-items:flex-start;gap:12px;background:#FAFAFA;border:none;box-shadow:{{ rm.sh }};border-radius:8px;padding:11px 12px;cursor:pointer;width:100%;text-align:left;font-family:Geist,sans-serif;color:#171717;outline:none" style-hover="box-shadow:0 0 0 1.5px rgba(0,0,0,0.3)" style-focus="box-shadow:0 0 0 1.5px #171717,0 0 0 4px rgba(0,114,245,0.4)">
+                <span aria-hidden="true" style="width:15px;height:15px;border-radius:9999px;box-shadow:inset 0 0 0 1.5px {{ rm.rc }};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px"><span style="width:7px;height:7px;border-radius:9999px;background:{{ rm.rd }}"></span></span>
+                <div style="min-width:0"><div style="font-size:13px;font-weight:500">{{ rm.label }}</div><div style="font-size:11.5px;color:#8F8F8F;margin-top:1px;line-height:1.5;text-wrap:pretty">{{ rm.desc }}</div></div>
+              </button>
             </sc-for>
           </div>
         </div>
         <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:12px;padding:20px">
           <div style="font-size:15px;font-weight:600;letter-spacing:-0.3px">Preferences</div>
           <div style="font-size:12.5px;color:#8F8F8F;margin-top:5px">Injuries, weather, referee strictness and more.</div>
-          <div style="font-size:12px;font-weight:500;color:#0072F5;margin-top:10px;cursor:pointer">Customize →</div>
+          <button disabled="{{ soon }}" title="Simulation preferences are fixed to the seeded coaching week in this prototype." style="background:none;border:none;padding:0;margin-top:10px;font-size:12px;font-weight:500;font-family:Geist,sans-serif;color:#8F8F8F;cursor:default">Customize — fixed for this prototype</button>
         </div>
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:28px">
-      <button onClick="{{ goTeam }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:38px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">← Back</button>
+      <button onClick="{{ goTeam }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:38px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">← Back</button>
       <div style="flex:1"></div>
-      <button onClick="{{ goNews }}" style="background:#171717;color:#fff;border:none;border-radius:6px;height:38px;padding:0 20px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#383838">Start Career →</button>
+      <button onClick="{{ goNews }}" style="background:#171717;color:#fff;border:none;border-radius:6px;height:38px;padding:0 20px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#383838" style-focus="box-shadow:0 0 0 3px rgba(0,114,245,0.4)">Start Career →</button>
     </div>
   </div>
   </sc-if>
 
   <sc-if value="{{ isNews }}" hint-placeholder-val="{{ false }}">
-  <div data-screen-label="Appointment News" style="max-width:1000px;margin:0 auto;padding:32px 24px 64px 24px">
+  <div data-screen-label="Appointment News" style="max-width:1000px;margin:0 auto;padding:{{ newsPad }}">
     <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:9px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04);border-radius:9999px;padding:7px 14px">
         <span style="width:8px;height:8px;border-radius:9999px;background:#0072F5;animation:livePulse 1.4s ease-in-out infinite"></span>
@@ -414,22 +414,22 @@ input:focus{outline:1px auto #005FCC}
       </div>
     </div>
     <div style="background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 2px 2px rgba(0,0,0,0.04),0 8px 16px -4px rgba(0,0,0,0.04);border-radius:12px;overflow:hidden">
-      <div style="display:flex;align-items:center;gap:14px;padding:16px 28px;background:#FAFAFA;box-shadow:inset 0 -1px 0 rgba(0,0,0,0.06)">
-        <div style="width:36px;height:36px;border-radius:9999px;background:#F2F2F2;box-shadow:0 0 0 1px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#4D4D4D">{{ selInit }}</div>
-        <div style="flex:1"><div style="font-size:13.5px;font-weight:600;letter-spacing:-0.27px">{{ selSchool }} High School</div><div style="font-size:11.5px;color:#8F8F8F">Predicted to finish {{ selPred }} · District 7-5A</div></div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:16px {{ newsInnerX }};background:#FAFAFA;box-shadow:inset 0 -1px 0 rgba(0,0,0,0.06)">
+        <div style="width:36px;height:36px;border-radius:9999px;background:#F2F2F2;box-shadow:0 0 0 1px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#4D4D4D;flex-shrink:0">{{ selInit }}</div>
+        <div style="flex:1 1 200px;min-width:0"><div style="font-size:13.5px;font-weight:600;letter-spacing:-0.27px">{{ selSchool }} High School</div><div style="font-size:11.5px;color:#8F8F8F">Predicted to finish {{ selPred }} · District 7-5A</div></div>
         <div style="text-align:right"><div style="font-size:11px;font-weight:500;color:#8F8F8F;text-transform:uppercase;letter-spacing:.04em">Reputation</div><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;margin-top:3px"><span style="width:8px;height:8px;border-radius:9999px;background:{{ repDot }}"></span><span style="font-size:12.5px;font-weight:500">{{ repLabel }}</span></div></div>
       </div>
-      <div style="padding:32px 28px 36px 28px">
-        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:#8F8F8F"><span style="font-weight:600;color:#171717;letter-spacing:-0.24px">The {{ selSchool }} Herald</span><span>·</span><span>Sports</span><span>·</span><span>Just now</span></div>
-        <div style="font-size:32px;font-weight:600;letter-spacing:-1.28px;line-height:1.15;margin-top:12px;max-width:680px;text-wrap:pretty">{{ headline }}</div>
+      <div style="padding:32px {{ newsInnerX }} 36px {{ newsInnerX }}">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:12px;color:#8F8F8F"><span style="font-weight:600;color:#171717;letter-spacing:-0.24px">The {{ selSchool }} Herald</span><span>·</span><span>Sports</span><span>·</span><span>Just now</span></div>
+        <div style="font-size:{{ pageTitleSize }};font-weight:600;letter-spacing:-1.28px;line-height:1.15;margin-top:12px;max-width:680px;text-wrap:pretty">{{ headline }}</div>
         <div style="max-width:680px;margin-top:18px">
           <sc-for list="{{ article }}" as="p" hint-placeholder-count="3">
             <p style="font-size:14.5px;line-height:1.75;color:#4D4D4D;margin:0 0 16px 0;text-wrap:pretty">{{ p }}</p>
           </sc-for>
         </div>
-        <div style="display:flex;gap:10px;margin-top:26px">
-          <a href="Friday Night Manager Vercel.dc.html" style="display:inline-flex;align-items:center;background:#171717;color:#fff;border-radius:6px;height:40px;padding:0 22px;font-size:13.5px;font-weight:500" style-hover="background:#383838">Continue to Preseason →</a>
-          <button onClick="{{ goSetup }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:40px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer" style-hover="background:#F2F2F2">← Back to Setup</button>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:26px">
+          <a href="Friday Night Manager Vercel.dc.html" style="display:inline-flex;align-items:center;background:#171717;color:#fff;border-radius:6px;height:40px;padding:0 22px;font-size:13.5px;font-weight:500;outline:none" style-hover="background:#383838" style-focus="box-shadow:0 0 0 3px rgba(0,114,245,0.4)">Continue to Preseason →</a>
+          <button onClick="{{ goSetup }}" style="background:#fff;color:#4D4D4D;border:none;box-shadow:0 0 0 1px rgba(0,0,0,0.08);border-radius:6px;height:40px;padding:0 18px;font-size:13px;font-weight:500;font-family:Geist,sans-serif;cursor:pointer;outline:none" style-hover="background:#F2F2F2" style-focus="box-shadow:0 0 0 1px rgba(0,0,0,0.08),0 0 0 3px rgba(0,114,245,0.35)">← Back to Setup</button>
         </div>
       </div>
     </div>
@@ -466,11 +466,18 @@ class Component extends DCLogic {
       ['lakeview','Lakeview','L','7th'],
       ['millbrook','Millbrook','M','8th']];
     this.WIZ=['Appearance','Background','Playing Career','Coaching Role','Summary'];
-    this.state={step:'menu',wiz:0,preset:0,first:'Alex',last:'Rivera',age:'34',home:'Abilene, TX',alma:'Sam Houston State',
+    this.state={vw:1440,step:'menu',wiz:0,preset:0,first:'Alex',last:'Rivera',age:'34',home:'Abilene, TX',alma:'Sam Houston State',
       playing:'starter',role:'coordinator',renown:'regional',school:'westfield',unemployed:false,startDate:'twoadays',roster:'real'};
   }
+  componentDidMount(){this.alive=1;
+    this.onResize=()=>{if(this.alive)this.setState({vw:window.innerWidth});};this.onResize();
+    window.addEventListener('resize',this.onResize);}
+  componentWillUnmount(){this.alive=0;window.removeEventListener('resize',this.onResize);}
   renderVals(){
     const S=this.state,BORDER='0 0 0 1px rgba(0,0,0,0.08)',SEL='0 0 0 1.5px #171717, 0 2px 2px rgba(0,0,0,0.04)';
+    // Shell tiers mirror the main prototype: 390 phone / 768 compact / 1024 tablet / 1440 wide.
+    const phone=S.vw<768, compact=S.vw>=768&&S.vw<1024, tablet=S.vw>=1024&&S.vw<1440;
+    const narrow=phone||compact;
     const go=step=>()=>this.setState({step});
     const full=(S.first+' '+S.last).trim()||'Unnamed Coach';
     const playMap={none:0,hs:1,walkon:2,starter:3,pro:4},roleMap={norole:0,film:1,teacher:1,position:2,coordinator:3},renMap={local:0,district:1,regional:2,state:3};
@@ -494,24 +501,25 @@ class Component extends DCLogic {
       mk('Determination',true),
       mk('Community standing',S.renown==='state'||S.renown==='regional')];
     const presets=this.TONES.map((tone,i)=>({tone,n:String(i+1).padStart(2,'0'),go:()=>this.setState({preset:i}),
+      on:i===S.preset,aria:'Yearbook portrait preset '+String(i+1).padStart(2,'0'),
       sh:i===S.preset?SEL:BORDER,rc:i===S.preset?'#171717':'#C9C9C9',rd:i===S.preset?'#171717':'transparent'}));
-    const radio=(on)=>({sh:on?SEL:BORDER,rc:on?'#171717':'#C9C9C9',rd:on?'#171717':'transparent'});
+    const radio=(on)=>({on,sh:on?SEL:BORDER,rc:on?'#171717':'#C9C9C9',rd:on?'#171717':'transparent'});
     const playing=this.PLAYING.map(([id,label,desc])=>({id,label,desc,go:()=>this.setState({playing:id}),...radio(S.playing===id)}));
     const roles=this.ROLES.map(([id,label,desc])=>({id,label,desc,go:()=>this.setState({role:id}),...radio(S.role===id)}));
-    const renown=this.RENOWN.map(([id,label])=>({label,go:()=>this.setState({renown:id}),
+    const renown=this.RENOWN.map(([id,label])=>({label,go:()=>this.setState({renown:id}),on:S.renown===id,
       bg:S.renown===id?'#171717':'#fff',fg:S.renown===id?'#fff':'#4D4D4D',sh:S.renown===id?'none':BORDER}));
-    const wizSteps=this.WIZ.map((label,i)=>({label,go:()=>this.setState({wiz:i}),
+    const wizSteps=this.WIZ.map((label,i)=>({label,go:()=>this.setState({wiz:i}),cur:i===S.wiz?'step':'false',
       wt:i===S.wiz?500:400,fg:i===S.wiz?'#171717':'#8F8F8F',sep:i<this.WIZ.length-1}));
     const schools=this.SCHOOLS.map(([id,name,init,pred])=>({id,name,init,pred,
       go:()=>this.setState({school:id,unemployed:false}),
       ...radio(!S.unemployed&&S.school===id)}));
     const selS=this.SCHOOLS.find(s=>s[0]===S.school)||this.SCHOOLS[1];
-    const startDates=[['twoadays','Two-a-Days (Aug 3)'],['week1','Week 1 (Aug 28)']].map(([id,label])=>({label,
+    const startDates=[['twoadays','Two-a-Days (Aug 3)'],['week1','Week 1 (Aug 28)']].map(([id,label])=>({label,on:S.startDate===id,
       go:()=>this.setState({startDate:id}),bg:S.startDate===id?'#171717':'#fff',fg:S.startDate===id?'#fff':'#4D4D4D',sh:S.startDate===id?'none':BORDER}));
     const rosterModes=[
       ['real','Returning rosters','Last season\u2019s underclassmen return as your new varsity core.'],
       ['random','Randomized classes','Every program gets freshly generated players. No two careers alike.']]
-      .map(([id,label,desc])=>({label,desc,go:()=>this.setState({roster:id}),
+      .map(([id,label,desc])=>({label,desc,go:()=>this.setState({roster:id}),on:S.roster===id,
         sh:S.roster===id?'0 0 0 1.5px #171717':'0 0 0 1px rgba(0,0,0,0.06)',rc:S.roster===id?'#171717':'#C9C9C9',rd:S.roster===id?'#171717':'transparent'}));
     const startingAs=S.unemployed?'Starting unemployed — waiting for an opening':'Starting as head coach of '+selS[1];
     const article=S.unemployed?[
@@ -522,6 +530,26 @@ class Component extends DCLogic {
       S.last+' arrives with a background as a '+roleLabel.toLowerCase()+' and a playing r\u00E9sum\u00E9 that reads \u201C'+playingLabel.toLowerCase()+'\u201D — a profile that has the booster club cautiously optimistic and the quarterback room curious.',
       'A '+rep[0].toLowerCase()+' reputation means expectations arrive with the moving boxes. The season opens with '+(S.startDate==='twoadays'?'two-a-days on August 3':'Week 1 on August 28')+'. Six months from now, everyone will know if the hire was the right one.'];
     return {
+      // Layout derived from the viewport tier — no fixed page width anywhere in the shell.
+      barPad:phone?'0 12px':'0 24px',
+      showChrome:!phone,
+      shellPad:phone?'28px 14px 48px 14px':compact?'36px 18px 56px 18px':'48px 24px 64px 24px',
+      newsPad:phone?'20px 14px 48px 14px':compact?'26px 18px 56px 18px':'32px 24px 64px 24px',
+      newsInnerX:phone?'18px':'28px',
+      heroSize:phone?'32px':compact?'40px':'48px',
+      pageTitleSize:phone?'24px':compact?'28px':'32px',
+      menuCols:narrow?'1fr':'1.4fr 1fr',
+      journeyCols:phone?'1fr':compact?'1fr 1fr':'1fr 1fr 1fr',
+      profileCols:narrow?'1fr':'1fr 1.1fr',
+      wizardCols:narrow?'1fr':tablet?'1fr 280px':'1fr 320px',
+      teamCols:narrow?'1fr':tablet?'300px 1fr':'340px 1fr',
+      setupCols:narrow?'1fr':'1.5fr 1fr',
+      schoolCols:phone?'repeat(2,1fr)':compact?'repeat(3,1fr)':'repeat(4,1fr)',
+      presetCols:phone?'1fr 1fr':'1fr 1fr 1fr',
+      fieldCols:phone?'1fr':'1fr 1fr',
+      stickyPos:narrow?'static':'sticky',
+      // Controls that are intentionally inert in this prototype carry disabled + an explanatory title.
+      soon:true,yes:true,no:false,unOn:!!S.unemployed,
       isMenu:S.step==='menu',isJourney:S.step==='journey',isProfiles:S.step==='profiles',isWizard:S.step==='wizard',
       isTeam:S.step==='team',isSetup:S.step==='setup',isNews:S.step==='news',
       goMenu:go('menu'),goJourney:go('journey'),goProfiles:go('profiles'),goTeam:go('team'),goSetup:go('setup'),goNews:go('news'),

@@ -2,12 +2,12 @@ prototype-coaching-week - First Playable Coaching Week Prototype - Progress
 Generated: 2026-07-31 17:03:49 EDT
 Archived after final Phase 9 acceptance in docs/archive/.
 
-[ ] 0.0 - Phase 0 - Stabilize the existing prototype and design system
-    [ ] 0.1 - Preserve current files and confirm the primary prototype source of truth
-    [ ] 0.2 - Fix runtime console errors and remove the 1240px minimum-width constraint
-    [ ] 0.3 - Establish desktop, compact, and narrow shell primitives
-    [ ] 0.4 - Add semantic controls, focus treatment, and interaction-complete global affordances
-    [ ] 0.5 - Add decision-workflow patterns to FNM Design System.dc.html
+[x] 0.0 - Phase 0 - Stabilize the existing prototype and design system
+    [x] 0.1 - Preserve current files and confirm the primary prototype source of truth
+    [x] 0.2 - Fix runtime console errors and remove the 1240px minimum-width constraint
+    [x] 0.3 - Establish desktop, compact, and narrow shell primitives
+    [x] 0.4 - Add semantic controls, focus treatment, and interaction-complete global affordances
+    [x] 0.5 - Add decision-workflow patterns to FNM Design System.dc.html
 [x] 1.0 - Phase 1 - Add the Coaching Week hub and decision queue
     [x] 1.1 - Add Week navigation and make the Week Hub the management entry screen
     [x] 1.2 - Build opponent stakes, Monday-Saturday timeline, and Next Decision card
