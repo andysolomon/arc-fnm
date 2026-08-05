@@ -1,6 +1,6 @@
 # Friday Night Manager — Implementation Plan
 
-**Mode:** Greenfield implementation informed by an external interactive prototype. The repository contains no application source, package manifest, tests, or deployment configuration.
+**Mode:** Gap implementation against an accepted UI-3 prototype. The repository now has a typed Vite/React/Convex production app at the root; remaining work hardens jurisdiction, roster/mastery depth, live persistence/auth, field research, and validated shipping criteria.
 
 ## 1. Product goal and scope boundaries
 
@@ -27,8 +27,10 @@ Boundaries:
 
 ### Repository
 
-- No app implementation is present; only agent skills and newly created product/planning documents exist.
-- Stack is now confirmed as Vite + React + TypeScript, Tailwind CSS v4, Convex, Vitest + Testing Library, and npm-managed dependencies. The production foundation, deterministic Coaching Week slices, and optional typed Convex repository live at the repository root; Convex deployment/authentication, full shell coverage, and browser automation remain later deliverables.
+- Production app lives at the repository root (`src/`, `convex/`, `package.json`) with Career Start through Decision Review plus Inbox/Schedule/Boosters/School shell routes.
+- Stack is Vite + React + TypeScript, Tailwind CSS v4, Convex, Vitest + Testing Library, and npm-managed dependencies. Domain rules are pure in `src/domain/`; local demo persistence is default; optional Convex HTTP persistence needs a live deployment and auth.
+- UI-3 under `prototypes/Friday Night Manager UI-3/` remains the visual/behavior authority. Prototype plan/tracker are archived under `docs/archive/`. ADRs `0001` and `0002` record the simulation-first Decision Model boundary and production foundation.
+- 133 Vitest/Testing Library tests cover career entry, week gates, film/plan/practice, disruption shell, Match Day, and Decision Review. Browser visual QA at 1440/1024/768/390 and Playwright-style journeys remain open.
 
 ### External v1.4.2 prototype observed on 2026-07-31
 
@@ -228,8 +230,8 @@ Boundaries:
 
 ## 6. Immediate next steps
 
-1. Run `docs/prototype-coaching-week-DESIGN_AGENT_PROMPT.md` against the local source in `prototypes/Friday Night Manager UI-3`.
-2. Build and test the first-playable practice-allocation loop phase by phase using the synchronized child tracker.
-3. Resolve **Define the shared Decision Model boundary** while the prototype exposes the concepts that genuinely need to transfer.
-4. Run both seeded planning paths and five moderated prototype sessions before expanding career setup.
-5. Recruit the first three contrasting Texas programs to inform the later Program Workspace without making its integrations a simulation dependency.
+1. Finish Phase 2 hardening: Player Availability/depth/mastery (2.4), versioned Texas Jurisdiction Rule Set provenance (2.5), and tests that prove evidence/roster/rule changes alter the plan (2.6).
+2. Close Phase 3.4 with priority game-state and unavailable-player scenario coverage beyond the seeded Kowalski/McCoy path.
+3. Run browser visual QA against UI-3 at 1440/1024/768/390 and fix remaining look/feel gaps.
+4. Wire a live Convex deployment + ownership/auth boundary when persistence across reload is required.
+5. Recruit contrasting Texas programs for Phase 0.5 field research without blocking simulation hardening.
