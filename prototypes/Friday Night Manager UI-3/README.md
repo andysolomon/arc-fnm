@@ -1,8 +1,10 @@
 # Friday Night Manager — Coaching Week Prototype · Handoff
 
 Design handoff for the first playable **Coaching Week** (Westfield Wildcats vs. Central Catholic, Week 8).
-Status: all phases 0–8 implemented and validated; this document is the Phase 9 package.
-The archived plan and tracker live in `docs/archive/`.
+
+**Status:** Phases **1–8** implemented and validated in `Friday Night Manager Vercel.dc.html`. Phase **0** (standalone prototype/design-system stabilization) was intentionally **out of scope** — its deliverables were not executed as a separate phase; residual gaps are noted under Known limitations. This README completes Phase 9 items 9.1–9.3; final design acceptance and archival (9.4–9.5) are complete.
+
+**Plan and tracker:** the accepted copies are archived at repo-root `docs/archive/` (linked as `../../docs/archive/` from this folder). The `uploads/` bundle is reference material only; use the archived root copies as the canonical records.
 
 ## Files
 
@@ -19,7 +21,7 @@ The archived plan and tracker live in `docs/archive/`.
 ## Run and reset
 
 Open `Friday Night Manager Vercel.dc.html` in a browser. No build, backend, or network.
-All data is seeded and deterministic — there is no RNG anywhere, including the game engine.
+All data is seeded and deterministic. The game engine uses pure hash-derived execution rolls from the take-the-field snapshot; it never reads wall-clock time or external entropy.
 **Reset week** (top bar) restores the full seeded baseline, both mid-week and after a completed week.
 Note for testers: browsers throttle timers in background tabs, which slows the live game until the tab regains focus. Not an app bug.
 
@@ -64,7 +66,7 @@ Key state: `selHyp[]`, `risk`, `answers{hyp→answer}`, `blocks[]`, `planLocked`
 
 ## Branches
 
-The game is a deterministic queue built by `buildGame(ctx)` from the take-the-field snapshot (readiness levels, answers, `rtFix`, RT name, accepted risk, policies). Variance is scripted, never rolled.
+The game is a deterministic queue built by `buildGame(ctx)` from the take-the-field snapshot (readiness levels, answers, `rtFix`, RT name, accepted risk, policies). Each situation uses a pure FNV-1a/xorshift-style hash roll against readiness bands, so the same snapshot always produces the same branch while preparation changes the odds.
 
 - **Preparation branches:** every key situation frames and resolves differently by readiness level; the accepted risk cashes visibly (amber tags); `rtFix` changes the Q1 protection sequence, the Q3 shot play, and the Q4 conversion framing; policies pre-answer the 4th-down, conversion, and two-minute calls; Quick Adjust (Blitz Heavy / Pound the Rock / Air It Out) alters later resolutions.
 - **Validated paths:** Scenario A (defense-first: h1/h2/h3, return-game risk) wins on stops but bleeds return-game field position; Scenario B (offense/ST: h3/h4/h2, power risk) hits the flood but eats power runs. Either can win or lose at the closing decision.
@@ -76,7 +78,7 @@ Designed behavior (spec-quality): the decision workflow, gates, propagation rule
 Simulated stand-ins a production team must replace:
 
 - **Film**: clips are metadata + placeholder frames. Real ingestion, tagging, and video playback are unbuilt.
-- **Game engine**: a scripted branch tree, not a simulation. A real engine needs a probabilistic model calibrated so preparation shifts odds without determinism.
+- **Game engine**: a scripted branch tree with deterministic hash-derived execution rolls, not a production simulation. A real engine needs a probabilistic model calibrated so preparation shifts odds without exposing or fixing outcomes.
 - **Readiness math**: rep weights (live 1.0 / thud 0.6 / air 0.4 …) are design placeholders, not sports science.
 - **Eligibility/medical data**: seeded. Production needs guidance-office and trainer data sources, plus FERPA/HIPAA handling; the coach-cannot-override rule must survive integration.
 - **Persistence**: none — reload restarts the seeded week. No accounts, sync, or multi-week season model.
@@ -93,6 +95,6 @@ Simulated stand-ins a production team must replace:
 
 ## Screenshot index (`screenshots/handoff/`)
 
-Stages 00–13, desktop (`desktop-NN-*.jpg`, 914×540 viewport) and narrow (`narrow-NN-*.png`, true 390px layout):
+Stages 00–13 (**14 desktop** + **14 narrow**): desktop (`desktop-NN-*.jpg`, 914×540 viewport) and narrow (`narrow-NN-*.png`, true 390px layout):
 00 career-start · 01 week-hub · 02 film-room · 03 hypotheses · 04 priorities-risk · 05 game-plan · 06 practice-plan · 07 disruption · 08 rt-resolved · 09 decision-room · 10 key-situation · 11 final · 12 review · 13 week-complete.
 Captured on the Scenario-A path (first option chosen at each in-game decision; final Westfield 20–3). Narrow captures crop to the 390px column; content below the 540px viewport is not shown.
