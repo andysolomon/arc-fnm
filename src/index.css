@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
+
+/*
+ * Design tokens transcribed from the accepted UI-3 prototype
+ * (`FNM Design System.dc.html`): light, achromatic, shadow-as-border, Geist.
+ * Color is reserved for status; it never carries meaning on its own.
+ */
+@theme {
+  --font-sans:
+    Geist, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-ink: #171717;
+  --color-ink-muted: #4d4d4d;
+  --color-ink-subtle: #8f8f8f;
+  --color-ink-faint: #a8a8a8;
+
+  --color-surface: #ffffff;
+  --color-surface-sunken: #fafafa;
+  --color-surface-raised: #f2f2f2;
+  --color-hairline: #d6d6d6;
+
+  --color-accent: #0072f5;
+  --color-accent-soft: #f0f7ff;
+  --color-info: #52aeff;
+  --color-risk: #ff990a;
+  --color-risk-ink: #b76a00;
+  --color-good: #45a557;
+  --color-danger: #e5484d;
+  --color-hold: #7820bc;
+
+  --radius-control: 6px;
+  --radius-tile: 10px;
+  --radius-card: 12px;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-surface-sunken);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  /* Keep focus visible everywhere; the prototype relies on it for keyboard use. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+}
+
+@layer components {
+  /* Shadow-as-border: the prototype never draws a 1px border. */
+  .edge {
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08);
+  }
+
+  .edge-raised {
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.08),
+      0 4px 12px rgb(0 0 0 / 0.05);
+  }
+
+  .career-live-pulse {
+    animation: career-live-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes career-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}

@@ -1,0 +1,479 @@
+import { describe, expect, it } from 'vitest';
+
+import matchDaySource from './matchDay.ts?raw';
+import { WEEK_8_SCENARIO } from './scenario.ts';
+import type { PolicyValue, PracticeBlock, WeekState } from './types.ts';
+import { createSeedState, resetWeek } from './week.ts';
+import {
+  buildGame,
+  chooseMatchOption,
+  deriveFieldSnapshot,
+  deriveMatch,
+  deriveTakeFieldContext,
+  execPrepFor,
+  execRollFor,
+  execSeedFor,
+  execSeedInputFor,
+  setMatchSpeed,
+  setPolicy,
+  setQuickAdjust,
+  skipToDecision,
+  takeField,
+  type MatchView,
+  type TakeFieldContext,
+} from './matchDay.ts';
+
+const scenario = WEEK_8_SCENARIO;
+
+const fixtureContext: TakeFieldContext = {
+  risk: 'h4',
+  rtFix: 'promote',
+  rtName: 'Levi Webb',
+  pol: { fourth: 'Chart', pat: 'Kick', clock: 'Bank', auto: 'Ask' },
+  lvl: { o1: 3, o2: 2, o3: 2, o4: 0, o5: 1, o6: 1 },
+  ansBy: {},
+};
+
+function block(
+  id: string,
+  objectiveId: string,
+  day: PracticeBlock['day'],
+  live = false,
+): PracticeBlock {
+  return { id, objectiveId, day, live };
+}
+
+function fridayState(path: 'A' | 'B'): WeekState {
+  const isA = path === 'A';
+  return {
+    ...createSeedState(),
+    stage: 'friday',
+    selectedHypotheses: isA ? ['h1', 'h2', 'h3'] : ['h3', 'h4', 'h2'],
+    acceptedRisk: isA ? 'h4' : 'h1',
+    answers: isA
+      ? { h1: 'a11', h2: 'a21', h3: 'a31' }
+      : { h3: 'a31', h4: 'a41', h2: 'a21' },
+    practiceBlocks: isA
+      ? [
+          block('a1', 'o1', 'MON'),
+          block('a2', 'o2', 'MON'),
+          block('a3', 'o1', 'TUE', true),
+          block('a4', 'o1', 'TUE', true),
+          block('a5', 'o6', 'TUE'),
+          block('a6', 'o3', 'WED'),
+          block('a7', 'o2', 'WED'),
+          block('a8', 'o3', 'THU'),
+        ]
+      : [
+          block('b1', 'o3', 'MON'),
+          block('b2', 'o4', 'MON'),
+          block('b3', 'o3', 'TUE'),
+          block('b4', 'o4', 'TUE'),
+          block('b5', 'o2', 'TUE'),
+          block('b6', 'o3', 'WED'),
+          block('b7', 'o4', 'WED'),
+          block('b8', 'o6', 'THU'),
+        ],
+    practicePlanLocked: true,
+    rtStarter: isA ? 'webb' : 'slide',
+    rtFix: isA ? 'promote' : 'simplify',
+    disruptionConfirmed: true,
+  };
+}
+
+function playGoldenPath(initial: WeekState): {
+  state: WeekState;
+  view: MatchView;
+  decisions: readonly string[];
+} {
+  let state = takeField(initial);
+  const decisions: string[] = [];
+  for (let guard = 0; guard < 12; guard += 1) {
+    state = skipToDecision(state, scenario);
+    const view = deriveMatch(state, scenario);
+    if (view.phase === 'final') return { state, view, decisions };
+    expect(view.pending).not.toBeNull();
+    const pending = view.pending!;
+    decisions.push(pending.id);
+    state = chooseMatchOption(state, scenario, pending.id, 0);
+  }
+  throw new Error('golden path did not reach the final horn');
+}
+
+describe('canonical deterministic execution', () => {
+  it('keeps the execSeed input ordering and fixture output byte-for-byte', () => {
+    expect(execSeedInputFor(fixtureContext)).toBe(
+      'h4|promote|Levi Webb|Chart|Kick|Bank|Ask|o1:3|o2:2|o3:2|o4:0|o5:1|o6:1',
+    );
+    expect(execSeedFor(fixtureContext)).toBe(4_273_764_986);
+    expect(execSeedFor(fixtureContext)).toBe(execSeedFor(fixtureContext));
+  });
+
+  it('repeats rolls exactly and applies all four preparation bands', () => {
+    const seed = execSeedFor(fixtureContext);
+    expect(
+      ['power', 'sprint', 'flood'].map((key) => execRollFor(seed, key)),
+    ).toEqual([88, 81, 52]);
+    expect(
+      [0, 1, 2, 3].map((level) => execPrepFor(seed, 'flood', level)),
+    ).toEqual([
+      { roll: 52, band: 24, preparedWins: false },
+      { roll: 52, band: 40, preparedWins: false },
+      { roll: 52, band: 56, preparedWins: true },
+      { roll: 52, band: 74, preparedWins: true },
+    ]);
+  });
+
+  it('contains no result entropy, wall-clock reads, or unsafe HTML/SVG injection', () => {
+    expect(matchDaySource).not.toMatch(
+      /Math\.random\s*\(|Date\.now\s*\(|new Date\s*\(|dangerouslySetInnerHTML|\.innerHTML\s*=|<svg/i,
+    );
+  });
+});
+
+describe('Friday policies, snapshot, and controls', () => {
+  it('persists only valid typed policies and freezes them at kickoff', () => {
+    const friday = fridayState('A');
+    const changed = setPolicy(friday, 'fourth', 'Short');
+    expect(changed.policies.fourth).toBe('Short');
+    expect(setPolicy(changed, 'fourth', 'bogus' as PolicyValue)).toBe(changed);
+    const live = takeField(changed);
+    expect(setPolicy(live, 'fourth', 'Kick')).toBe(live);
+    expect(deriveTakeFieldContext(live, scenario).pol.fourth).toBe('Short');
+  });
+
+  it('derives prepared, thin, uncovered, and accepted-risk snapshot rows', () => {
+    const snapshotA = deriveFieldSnapshot(fridayState('A'), scenario);
+    const snapshotB = deriveFieldSnapshot(fridayState('B'), scenario);
+    expect(snapshotA.prepared.length).toBeGreaterThan(0);
+    expect(snapshotA.thin.length).toBeGreaterThan(0);
+    expect(
+      snapshotA.uncovered.some((item) => /Accepted risk/.test(item.note)),
+    ).toBe(true);
+    expect(snapshotA.riskTitle).toMatch(/Return-game threat/);
+    expect(snapshotB.riskTitle).toMatch(/Power tendency/);
+  });
+
+  it('guards kickoff, supports pause/1x/fast and skip, and resets cleanly', () => {
+    const unconfirmed = { ...fridayState('A'), disruptionConfirmed: false };
+    expect(takeField(unconfirmed)).toBe(unconfirmed);
+    let live = takeField(fridayState('A'));
+    expect(live.matchStarted).toBe(true);
+    live = setMatchSpeed(live, 'pause');
+    expect(live.matchSpeed).toBe('pause');
+    live = setMatchSpeed(live, 'fast');
+    expect(live.matchSpeed).toBe('fast');
+    live = setMatchSpeed(live, '1x');
+    const skipped = skipToDecision(live, scenario);
+    expect(skipped.matchEvents.at(-1)).toEqual({ kind: 'skip' });
+    expect(deriveMatch(skipped, scenario).pending?.id).toBe('s_power');
+    expect(resetWeek()).toEqual(createSeedState());
+  });
+
+  it('records every Quick Adjust deterministically and changes a later branch', () => {
+    let live = takeField(fridayState('A'));
+    for (const call of ['Pound the Rock', 'Blitz Heavy', 'Prevent'] as const) {
+      live = setQuickAdjust(live, scenario, call);
+    }
+    const adjusted = deriveMatch(live, scenario);
+    expect(adjusted.qt).toBe('Prevent');
+    expect(adjusted.log.map((entry) => entry.title)).toEqual([
+      'Quick Adjust — Pound the Rock',
+      'Quick Adjust — Blitz Heavy',
+      'Quick Adjust — Prevent',
+    ]);
+    expect(setQuickAdjust(live, scenario, 'Prevent')).toBe(live);
+
+    const advanceThroughFlood = (initial: WeekState) => {
+      let state = initial;
+      for (let decision = 0; decision < 4; decision += 1) {
+        state = skipToDecision(state, scenario);
+        const pending = deriveMatch(state, scenario).pending!;
+        state = chooseMatchOption(
+          state,
+          scenario,
+          pending.id,
+          pending.id === 's_flood' ? 2 : 0,
+        );
+      }
+      state = skipToDecision(state, scenario);
+      return deriveMatch(state, scenario);
+    };
+    const baseline = advanceThroughFlood(takeField(fridayState('A')));
+    const pound = advanceThroughFlood(
+      setQuickAdjust(takeField(fridayState('A')), scenario, 'Pound the Rock'),
+    );
+    expect(
+      pound.plays.some((play) =>
+        /Quick Adjust — Pound the Rock/.test(play.tag),
+      ),
+    ).toBe(true);
+    expect(pound.plays).not.toEqual(baseline.plays);
+  });
+});
+
+describe('six canonical situations and golden paths', () => {
+  it('matches every canonical option and result on the six-decision Scenario A route', () => {
+    const expected = {
+      s_power: [
+        [
+          'Trust the plan — Wrong-arm every pull and make the ball run to our speed.',
+          { w: 0, c: 0 },
+          'Power right — the end wrong-arms the pull and Okafor scrapes over the top. Malone dropped for -2',
+          3,
+        ],
+        [
+          'Walk Pierce down — sell out against the run',
+          { w: 0, c: 0 },
+          'Pierce walks down — eight in the box, power stuffed for nothing',
+          3,
+        ],
+        [
+          'Bend — soft box, keep everything in front',
+          { w: 0, c: 3 },
+          'Soft box — Malone takes 4, 5, 4. Central converts twice and keeps grinding',
+          3,
+        ],
+      ],
+      s_fourth: [
+        [
+          'Go for it — Carter behind Sosa',
+          { w: 7, c: 0 },
+          'Carter surges for 4 — moved the chains',
+          3,
+        ],
+        [
+          'Punt — pin them deep',
+          { w: 0, c: 0 },
+          'Whitfield drops it at the CEN 8 — downed',
+          3,
+        ],
+        [
+          'Hard count — try to draw them off',
+          { w: 0, c: 0 },
+          'Nobody jumps — delay of game, punt from the 43',
+          3,
+        ],
+      ],
+      s_clock: [
+        [
+          'Spend a timeout — reset the front',
+          { w: 0, c: 0 },
+          'Timeout — the front resets. Stuff, incompletion, incompletion. The 41-yarder clangs off the upright',
+          1,
+        ],
+        [
+          'Play the down — trust the rules you repped',
+          { w: 0, c: 3 },
+          'The repped rules hold — two stops, and they settle for three at the gun',
+          1,
+        ],
+        [
+          'Show pressure, back out late',
+          { w: 0, c: 3 },
+          'The bluff buys a checkdown — and the 47-yarder is up and good anyway',
+          1,
+        ],
+      ],
+      s_flood: [
+        [
+          'Take the shot — trips flood',
+          { w: 3, c: 3 },
+          'The window is there — the timing isn’t. Overthrown by a yard',
+          4,
+        ],
+        [
+          'Three-step rhythm — stay underneath',
+          { w: 3, c: 3 },
+          'Hitches and slants — two first downs to the CEN 30',
+          4,
+        ],
+        [
+          'Stay on the ground',
+          { w: 3, c: 3 },
+          'Carter five straight — 46 yards of downhill football to the CEN 13',
+          4,
+        ],
+      ],
+      s_pat: [
+        ['Kick — Ramsey, 21 of 22', { w: 1, c: 0 }, 'Extra point is GOOD', 2],
+        [
+          'Go for two — the surge package',
+          { w: 2, c: 0 },
+          'Carter surges in — TWO POINTS',
+          2,
+        ],
+      ],
+      s_close_def: [
+        [
+          'Base rules — play what you practiced',
+          { w: 0, c: 0 },
+          'Two throws die at the sticks — and on fourth down Cruz arrives with the ball still in Herrera’s hand. TURNOVER ON DOWNS',
+          2,
+        ],
+        [
+          'Prevent — two-deep shell, everything in front',
+          { w: 0, c: 0 },
+          'Checkdown, checkdown, checkdown — midfield with 0:20 and no timeouts. The heave falls incomplete',
+          2,
+        ],
+        [
+          'Send Cruz — end it at the quarterback',
+          { w: 0, c: 0 },
+          'Cruz off the boundary edge — strip sack, Okafor falls on it. BALL GAME',
+          2,
+        ],
+      ],
+    } as const;
+    let state = takeField(fridayState('A'));
+    const ids: string[] = [];
+    for (let decision = 0; decision < 6; decision += 1) {
+      state = skipToDecision(state, scenario);
+      const pending = deriveMatch(state, scenario).pending!;
+      ids.push(pending.id);
+      expect(pending.opts.map((option) => option.name)).toEqual(
+        expected[pending.id as keyof typeof expected].map(([name]) => name),
+      );
+      pending.opts.forEach((_option, optionIndex) => {
+        const fork = chooseMatchOption(
+          state,
+          scenario,
+          pending.id,
+          optionIndex,
+        );
+        const log = deriveMatch(fork, scenario).log.filter(
+          (entry) => entry.kind === 'decision',
+        );
+        const result =
+          expected[pending.id as keyof typeof expected][optionIndex];
+        expect(log.at(-1)).toMatchObject({
+          id: pending.id,
+          oi: optionIndex,
+          choice: result?.[0],
+          pts: result?.[1],
+        });
+        expect(log.at(-1)?.out[0]?.t).toBe(result?.[2]);
+        expect(log.at(-1)?.out).toHaveLength(result?.[3] ?? 0);
+      });
+      state = chooseMatchOption(state, scenario, pending.id, 0);
+    }
+    expect(ids).toEqual([
+      's_power',
+      's_fourth',
+      's_clock',
+      's_flood',
+      's_pat',
+      's_close_def',
+    ]);
+  });
+
+  it.each(['A', 'B'] as const)(
+    'takes canonical Scenario %s through six decisions to Decision Review',
+    (path) => {
+      const result = playGoldenPath(fridayState(path));
+      expect(result.view.phase).toBe('final');
+      expect(result.view.decisionCount).toBe(6);
+      expect(result.decisions).toHaveLength(6);
+      expect(result.state.stage).toBe('review');
+      expect(result.state.matchSpeed).toBe('pause');
+      expect(result.view.plays[0]?.t).toMatch(/^FINAL — Westfield/);
+      expect(
+        result.view.log.some((entry) => /Accepted risk/.test(entry.title)),
+      ).toBe(true);
+      if (path === 'A') {
+        expect([result.view.wScore, result.view.cScore]).toEqual([20, 3]);
+        expect(result.view.mom).toBe(89);
+        expect(result.view.plays[0]?.t).toBe(
+          'FINAL — Westfield 20, Central Catholic 3. The district runs through Wildcat Stadium.',
+        );
+      } else {
+        expect([result.view.wScore, result.view.cScore]).toEqual([16, 14]);
+        expect(result.view.plays[0]?.t).toBe(
+          'FINAL — Westfield 16, Central Catholic 14. The district runs through Wildcat Stadium.',
+        );
+      }
+    },
+  );
+
+  it('keeps post-final quick-adjust and speed calls from changing final output', () => {
+    const result = playGoldenPath(fridayState('A'));
+    const baseline = result.view;
+    const baselineEvents = result.state.matchEvents;
+    const baselineSummary = baseline.plays[0]?.t;
+
+    const quickAdjusted = setQuickAdjust(result.state, scenario, 'Prevent');
+    expect(quickAdjusted).toBe(result.state);
+    expect(quickAdjusted.matchEvents).toBe(baselineEvents);
+    const afterQuickAdjust = deriveMatch(quickAdjusted, scenario);
+    expect(afterQuickAdjust.phase).toBe('final');
+    expect(afterQuickAdjust.plays).toEqual(baseline.plays);
+    expect(afterQuickAdjust.log).toEqual(baseline.log);
+    expect([afterQuickAdjust.wScore, afterQuickAdjust.cScore]).toEqual([
+      baseline.wScore,
+      baseline.cScore,
+    ]);
+    expect(afterQuickAdjust.plays[0]?.t).toBe(baselineSummary);
+
+    const speedChanged = setMatchSpeed(result.state, 'fast');
+    expect(speedChanged).toBe(result.state);
+    expect(speedChanged.matchEvents).toBe(baselineEvents);
+    const afterSpeedChange = deriveMatch(speedChanged, scenario);
+    expect(afterSpeedChange.phase).toBe('final');
+    expect(afterSpeedChange.plays).toEqual(baseline.plays);
+    expect(afterSpeedChange.log).toEqual(baseline.log);
+    expect([afterSpeedChange.wScore, afterSpeedChange.cScore]).toEqual([
+      baseline.wScore,
+      baseline.cScore,
+    ]);
+    expect(afterSpeedChange.plays[0]?.t).toBe(baselineSummary);
+  });
+
+  it('builds the same queue shape for the same take-field snapshot', () => {
+    const context = deriveTakeFieldContext(fridayState('A'), scenario);
+    const first = buildGame(context);
+    const second = buildGame(context);
+    expect(first.length).toBe(second.length);
+    expect(
+      first
+        .filter((item) => 'dec' in item)
+        .map((item) => ('dec' in item ? item.dec.id : '')),
+    ).toEqual(['s_power', 's_fourth', 's_clock', 's_flood']);
+    expect(playGoldenPath(fridayState('A')).view).toEqual(
+      playGoldenPath(fridayState('A')).view,
+    );
+  });
+
+  it('matches both canonical preparation snapshots and their risk/preparation tags', () => {
+    const contextA = deriveTakeFieldContext(fridayState('A'), scenario);
+    const contextB = deriveTakeFieldContext(fridayState('B'), scenario);
+    expect(contextA.lvl).toEqual({
+      o1: 3,
+      o2: 3,
+      o3: 2,
+      o4: 0,
+      o5: 1,
+      o6: 2,
+    });
+    expect(contextB.lvl).toEqual({
+      o1: 0,
+      o2: 2,
+      o3: 3,
+      o4: 3,
+      o5: 0,
+      o6: 1,
+    });
+    expect([execSeedFor(contextA), execSeedFor(contextB)]).toEqual([
+      1_768_531_688, 3_857_828_646,
+    ]);
+
+    for (const path of ['A', 'B'] as const) {
+      const view = playGoldenPath(fridayState(path)).view;
+      expect(view.log.some((entry) => /^Accepted risk/.test(entry.title))).toBe(
+        true,
+      );
+      expect(view.log.some((entry) => /^Practiced/.test(entry.title))).toBe(
+        true,
+      );
+    }
+  });
+});

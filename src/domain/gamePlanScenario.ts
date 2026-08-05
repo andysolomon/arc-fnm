@@ -1,0 +1,398 @@
+/** Canonical UI-3 ANS/OBJ concepts, restated as typed production data. */
+
+import type { GamePlanAnswer, PracticeObjective } from './types.ts';
+
+export const GAME_PLAN_OBJECTIVES: readonly PracticeObjective[] = [
+  {
+    id: 'o1',
+    name: 'Puller recognition and fit integrity',
+    unit: 'DEF',
+    group: 'Front seven',
+    hypothesisId: 'h1',
+    coach: 'Tillman',
+    contact: true,
+  },
+  {
+    id: 'o2',
+    name: 'Boundary sprint-out contain',
+    unit: 'DEF',
+    group: 'Edge / overhang',
+    hypothesisId: 'h2',
+    coach: 'Tillman',
+    contact: false,
+  },
+  {
+    id: 'o3',
+    name: 'Trips-side flood vs Cover 3',
+    unit: 'OFF',
+    group: 'Quarterbacks / receivers',
+    hypothesisId: 'h3',
+    coach: 'Pruitt',
+    contact: false,
+  },
+  {
+    id: 'o4',
+    name: 'Kick coverage lane discipline',
+    unit: 'ST',
+    group: 'Kick coverage',
+    hypothesisId: 'h4',
+    coach: 'Ames',
+    contact: false,
+  },
+  {
+    id: 'o5',
+    name: 'Right tackle protection with a backup',
+    unit: 'OFF',
+    group: 'Offensive line',
+    hypothesisId: null,
+    coach: 'Pruitt',
+    contact: true,
+    note: 'Standing objective — right tackle protection reps.',
+  },
+  {
+    id: 'o6',
+    name: 'Third down and red-zone situational',
+    unit: 'BOTH',
+    group: 'Team offense / defense',
+    hypothesisId: null,
+    coach: 'Pruitt',
+    contact: false,
+    note: 'Standing objective — last week we went 1 for 4 inside the 10.',
+  },
+];
+
+export const GAME_PLAN_ANSWERS: readonly GamePlanAnswer[] = [
+  {
+    id: 'a11',
+    hypothesisId: 'h1',
+    name: 'Spill the puller, scrape Okafor over the top',
+    gist: 'Wrong-arm every pull and make the ball run to our speed.',
+    how: 'End and 3-tech wrong-arm the pull. Okafor replaces over the top and takes the ball to the sideline.',
+    personnel: 'Base nickel — Okafor at Will, Bates at 3-tech',
+    owner: 'B. Tillman',
+    ownerRole: 'Defensive Coordinator',
+    buys: 'Nothing hits downhill inside. Every power run finishes on the perimeter, where we are faster than they are.',
+    exposes:
+      'A cutback creases us if the backside safety is late — and McCoy, the only scout back who runs the counter right, cannot take contact.',
+    counterRisk:
+      'Keep the backside safety at nine yards and tag a boot alert so the cutback player never chases the pull.',
+    successCue:
+      'The back bounces outside the tight end and Okafor meets him at the numbers.',
+    packageName: '4-2-5 spill-and-scrape',
+    personnelDependencies: [
+      { role: 'Will', player: 'S. Okafor', requires: 'Active' },
+      { role: '3-tech', player: 'Bates', requires: 'Active' },
+    ],
+    objectiveId: 'o1',
+    targetReps: 18,
+    contact: true,
+    schemeRequirement: {
+      decision: 'defenseScheme',
+      value: '4-2-5',
+      label: '4-2-5 nickel front',
+    },
+  },
+  {
+    id: 'a12',
+    hypothesisId: 'h1',
+    name: 'Crowd the box — walk the strong safety down on early downs',
+    gist: 'Eight defenders against seven blockers before the ball is snapped.',
+    how: 'Bear front, Cruz walked down to the tight-end surface on every early down from I-formation.',
+    personnel: '46 Bear — Cruz in the box, single high behind it',
+    owner: 'B. Tillman',
+    ownerRole: 'Defensive Coordinator',
+    buys: 'The pull has nowhere to turn up. Nine of their eleven early-down runs go into an extra body.',
+    exposes:
+      'Single high behind it. If Herrera play-actions off power we are one missed jam from a touchdown.',
+    counterRisk:
+      'Cruz carries a hard pass-alert check; if the tight end releases, the corner stays high instead of fitting the run.',
+    successCue:
+      'The pulling guard has to log instead of kick — the play spills backward.',
+    packageName: '46 Bear early-down check',
+    personnelDependencies: [
+      { role: 'Strong safety', player: 'J. Cruz', requires: 'Active' },
+      { role: 'Post safety', player: 'Starting FS', requires: 'Active' },
+    ],
+    objectiveId: 'o1',
+    targetReps: 14,
+    contact: true,
+    schemeRequirement: {
+      decision: 'defenseScheme',
+      value: '46 Bear',
+      label: '46 Bear front',
+    },
+  },
+  {
+    id: 'a13',
+    hypothesisId: 'h1',
+    name: 'Two-gap the front and keep both linebackers clean',
+    gist: 'Let the front eat blocks so Okafor and Dean run free.',
+    how: 'Three-down front two-gaps, linebackers play at depth and read the guards.',
+    personnel: '3-4 Stack — Bates at nose, Dean and Okafor stacked',
+    owner: 'B. Tillman',
+    ownerRole: 'Defensive Coordinator',
+    buys: 'Simplest fits we can teach in a week, and our two best players are never blocked.',
+    exposes:
+      'We do not have a true nose. Bates gets moved on the double team and the front gives ground on first contact.',
+    counterRisk:
+      'Slant Bates away from the tight end on heavy sets and scrape Dean into the first open interior gap.',
+    successCue:
+      'The center cannot reach — the double team never climbs to the second level.',
+    packageName: '3-4 two-gap stack',
+    personnelDependencies: [
+      { role: 'Nose', player: 'Bates', requires: 'Active' },
+      {
+        role: 'Stack linebackers',
+        player: 'Dean + Okafor',
+        requires: 'Active',
+      },
+    ],
+    objectiveId: 'o1',
+    targetReps: 16,
+    contact: true,
+    schemeRequirement: {
+      decision: 'defenseScheme',
+      value: '3-4 Stack',
+      label: '3-4 Stack front',
+    },
+  },
+  {
+    id: 'a21',
+    hypothesisId: 'h2',
+    name: 'Squat the boundary corner, end contains flat-footed',
+    gist: 'Take away the edge and make him throw over a squatting corner.',
+    how: 'Cruz squats at 6 yards on the boundary, Pham peels as contain instead of rushing upfield.',
+    personnel: 'Base personnel — no substitution required',
+    owner: 'B. Tillman',
+    ownerRole: 'Defensive Coordinator',
+    buys: 'Nothing gets outside without a throw over a defender already sitting in the window.',
+    exposes:
+      'Soft inside. A quick hitch behind the squat is free yardage all night if they take it.',
+    counterRisk:
+      'The hook defender widens under the hitch and the safety drives it only after Herrera clears the pocket.',
+    successCue:
+      'Herrera pulls up at the numbers instead of getting to the edge.',
+    packageName: 'Boundary squat check',
+    personnelDependencies: [
+      { role: 'Boundary corner', player: 'J. Cruz', requires: 'Active' },
+      { role: 'Contain end', player: 'Starting DE', requires: 'Active' },
+    ],
+    objectiveId: 'o2',
+    targetReps: 12,
+    contact: false,
+  },
+  {
+    id: 'a22',
+    hypothesisId: 'h2',
+    name: 'Spy and chase — Reyes carries the sprint-out, no pressure',
+    gist: 'One defender owns the boundary. Nothing else in the call changes.',
+    how: 'Reyes plays the sprint-out on every negative-play down and third and medium. Everyone else plays base.',
+    personnel: 'Reyes at Sam — he is the fastest linebacker we have',
+    owner: 'B. Tillman',
+    ownerRole: 'Defensive Coordinator',
+    buys: 'Cheapest answer on the board. It costs one player and no install time.',
+    exposes:
+      'We rush three. Central gets a full read against a static picture, and the pocket clips show what he does with time.',
+    counterRisk:
+      'Show simulated pressure, then drop the boundary end into the first inside window to change Herrera’s picture.',
+    successCue: 'Reyes is at the sideline before the throw comes out.',
+    packageName: 'Boundary spy check',
+    personnelDependencies: [
+      { role: 'Spy', player: 'N. Reyes', requires: 'Active' },
+    ],
+    objectiveId: 'o2',
+    targetReps: 10,
+    contact: false,
+  },
+  {
+    id: 'a23',
+    hypothesisId: 'h2',
+    name: 'Pressure the boundary — nickel off the edge on 3rd & 4–7',
+    gist: 'Run the blitz into the side he wants to sprint to.',
+    how: 'Nickel comes off the boundary edge on the exact down and distance the clips flag.',
+    personnel: 'Nickel Joel Cruz off the edge, safety rotates over the slot',
+    owner: 'B. Tillman',
+    ownerRole: 'Defensive Coordinator',
+    buys: 'The sprint-out runs directly into an unblocked rusher. This is the answer that ends drives.',
+    exposes:
+      'Three of the fourteen clips show him staying in the pocket. If he does, the nickel is gone and the slot is uncovered.',
+    counterRisk:
+      'The safety replaces Cruz over the slot and the end aborts the rush if Herrera does not open to the boundary.',
+    successCue: 'Herrera reverses out, or the ball is on the ground.',
+    packageName: 'Boundary nickel pressure',
+    personnelDependencies: [
+      { role: 'Blitz nickel', player: 'J. Cruz', requires: 'Active' },
+      { role: 'Rotation safety', player: 'Starting FS', requires: 'Active' },
+    ],
+    objectiveId: 'o2',
+    targetReps: 14,
+    contact: false,
+  },
+  {
+    id: 'a31',
+    hypothesisId: 'h3',
+    name: 'Trips flood — three levels at the curl-flat defender',
+    gist: 'Attack the exact window seven clips show open.',
+    how: 'Trips right, flat-corner-dig. Reed reads the curl-flat defender and throws off his depth.',
+    personnel: '11 personnel trips — Reed, Jackson to the field',
+    owner: 'D. Pruitt',
+    ownerRole: 'Offensive Coordinator',
+    buys: 'It is the highest-percentage throw on the board, and Reed has made it all year.',
+    exposes:
+      'Five-step and hold. It needs a right tackle who can protect — and Kowalski is ineligible.',
+    counterRisk:
+      'Reed carries a built-in flat throw at three steps; if the edge wins early, the ball leaves before the flood develops.',
+    successCue:
+      'The curl-flat defender chases the flat and the intermediate window opens behind him.',
+    packageName: 'Five-step trips flood',
+    personnelDependencies: [
+      { role: 'QB', player: 'M. Reed', requires: 'Active' },
+      {
+        role: 'RT',
+        player: 'Eligible depth-chart starter',
+        requires: 'Eligible Friday',
+      },
+    ],
+    objectiveId: 'o3',
+    targetReps: 12,
+    contact: false,
+    schemeRequirement: {
+      decision: 'offenseScheme',
+      value: 'Spread',
+      label: 'Spread offense',
+    },
+  },
+  {
+    id: 'a32',
+    hypothesisId: 'h3',
+    name: 'Play-action glance off the walked-down safety',
+    gist: 'Max protect, one read, behind the eighth man in the box.',
+    how: '12 personnel, Brooks attached, full slide protection with the back checking the edge.',
+    personnel: '12 personnel — Brooks attached, seven-man protection',
+    owner: 'D. Pruitt',
+    ownerRole: 'Offensive Coordinator',
+    buys: 'Max protection hides the tackle problem, and the glance hits behind the safety they walk down.',
+    exposes:
+      'Slow developing, and it only works if they respect our run. One read — if the safety stays home, throw it away.',
+    counterRisk:
+      'Tag the back into the flat against an unchanged safety so Reed has a safe outlet instead of holding the ball.',
+    successCue: 'The free safety takes a false step down on the fake.',
+    packageName: '12-personnel max-protect glance',
+    personnelDependencies: [
+      { role: 'Attached TE', player: 'Brooks', requires: 'Active' },
+      { role: 'QB', player: 'M. Reed', requires: 'Active' },
+    ],
+    objectiveId: 'o3',
+    targetReps: 10,
+    contact: false,
+  },
+  {
+    id: 'a33',
+    hypothesisId: 'h3',
+    name: 'Orbit motion to break the shell before the snap',
+    gist: 'Make them declare the coverage for free.',
+    how: 'Orbit motion on early downs. If they spin to quarters we check the run; if they stay, we throw the flood.',
+    personnel: '11 personnel — Jackson in motion',
+    owner: 'D. Pruitt',
+    ownerRole: 'Offensive Coordinator',
+    buys: 'They checked out of Cover 3 the one time they saw orbit motion. Knowing the shell is worth a lot on early downs.',
+    exposes:
+      'One clip. If that was a call and not a rule, we spend a week of practice on a picture we never see Friday.',
+    counterRisk:
+      'If the shell does not spin, Reed kills the flood and checks to the base run instead of forcing a thin tendency.',
+    successCue: 'The corner bails and the safety spins before the snap.',
+    packageName: 'Orbit-motion coverage check',
+    personnelDependencies: [
+      { role: 'Motion receiver', player: 'T. Jackson', requires: 'Active' },
+      { role: 'QB', player: 'M. Reed', requires: 'Active' },
+    ],
+    objectiveId: 'o3',
+    targetReps: 8,
+    contact: false,
+  },
+  {
+    id: 'a41',
+    hypothesisId: 'h4',
+    name: 'Sky kick to the pylon — hang time over distance',
+    gist: 'Never let Malone field it in the middle of the field.',
+    how: 'Ramsey kicks it high and short to the boundary pylon. Coverage squeezes from the sideline in.',
+    personnel: 'Ramsey kicking, Silva and Pierce as boundary gunners',
+    owner: 'K. Ames',
+    ownerRole: 'Special Teams',
+    buys: 'Malone never gets a clean seam. The return dies at the sideline where we have help.',
+    exposes:
+      'Short field if the hang time is off. Ramsey hits it about seven times in ten in practice.',
+    counterRisk:
+      'If Ramsey misses the landmark twice, Ames automatically calls the deep-lane kick for the next attempt.',
+    successCue:
+      'The ball lands inside the numbers with our gunners already at the 20.',
+    packageName: 'Boundary sky-kick coverage',
+    personnelDependencies: [
+      { role: 'Kicker', player: 'C. Ramsey', requires: 'Active' },
+      {
+        role: 'Boundary gunners',
+        player: 'Silva + Pierce',
+        requires: 'Active',
+      },
+    ],
+    objectiveId: 'o4',
+    targetReps: 10,
+    contact: false,
+  },
+  {
+    id: 'a42',
+    hypothesisId: 'h4',
+    name: 'Squib it and cover',
+    gist: 'Make a lineman field the ball instead of their best returner.',
+    how: 'Low driven kick to the front line. No return unit, no seam, no decision.',
+    personnel: 'Standard coverage unit',
+    owner: 'K. Ames',
+    ownerRole: 'Special Teams',
+    buys: 'Removes the return threat completely. Costs almost no practice time to install.',
+    exposes:
+      'We hand them the ball near their own 40 every single time. Across a game that is real field position.',
+    counterRisk:
+      'Use it only after a score or with a two-possession lead, when denying the explosive return is worth the field position.',
+    successCue: 'Somebody other than Malone picks it up.',
+    packageName: 'Front-line squib',
+    personnelDependencies: [
+      { role: 'Kicker', player: 'C. Ramsey', requires: 'Active' },
+      {
+        role: 'Hands coverage',
+        player: 'Standard kickoff unit',
+        requires: 'Available',
+      },
+    ],
+    objectiveId: 'o4',
+    targetReps: 6,
+    contact: false,
+  },
+  {
+    id: 'a43',
+    hypothesisId: 'h4',
+    name: 'Kick it deep and trust the lanes',
+    gist: 'Touchback or nothing — fix the coverage, not the kick.',
+    how: 'Kick for the end zone and rep lane integrity until the whole unit arrives at the same depth.',
+    personnel: 'Standard coverage unit — no personnel change',
+    owner: 'K. Ames',
+    ownerRole: 'Special Teams',
+    buys: 'Costs no scheme and no field position. Touchbacks end the discussion.',
+    exposes:
+      'Three of their six returns went 24 yards or more. This answer trusts the exact thing the film flags.',
+    counterRisk:
+      'Ames owns a one-series hook: any lane break beyond the 30 immediately changes the next kick to the boundary.',
+    successCue: 'Every lane is at the same depth crossing the 30.',
+    packageName: 'Deep kick with lane integrity',
+    personnelDependencies: [
+      { role: 'Kicker', player: 'C. Ramsey', requires: 'Active' },
+      {
+        role: 'Coverage unit',
+        player: 'Starting kickoff unit',
+        requires: 'Available',
+      },
+    ],
+    objectiveId: 'o4',
+    targetReps: 12,
+    contact: false,
+  },
+];

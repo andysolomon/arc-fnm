@@ -28,7 +28,7 @@ Boundaries:
 ### Repository
 
 - No app implementation is present; only agent skills and newly created product/planning documents exist.
-- Stack is therefore unconfirmed. Unless replaced by a product decision, the planning default is Next.js + TypeScript + shadcn/ui, Convex, Clerk, Vercel, Jest, and Playwright.
+- Stack is now confirmed as Vite + React + TypeScript, Tailwind CSS v4, Convex, Vitest + Testing Library, and npm-managed dependencies. The production foundation, deterministic Coaching Week slices, and optional typed Convex repository live at the repository root; Convex deployment/authentication, full shell coverage, and browser automation remain later deliverables.
 
 ### External v1.4.2 prototype observed on 2026-07-31
 

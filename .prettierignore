@@ -1,0 +1,12 @@
+# Build output and dependencies
+dist
+node_modules
+package-lock.json
+
+# Canonical prototype and planning records — never reformat
+prototypes
+docs
+.agents
+.claude
+CONTEXT.md
+skills-lock.json
