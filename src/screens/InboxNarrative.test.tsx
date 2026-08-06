@@ -25,8 +25,16 @@ import {
   takeField,
 } from '../domain/matchDay.ts';
 import { deriveNarrativeContext } from '../domain/narrative.ts';
+import {
+  ACADEMIC_RESPONSES,
+  NO_ACADEMIC_RESPONSE_CONSEQUENCE,
+} from '../domain/programEvents.ts';
 import { WEEK_8_SCENARIO } from '../domain/scenario.ts';
-import type { RtStarterId, WeekState } from '../domain/types.ts';
+import type {
+  AcademicResponse,
+  RtStarterId,
+  WeekState,
+} from '../domain/types.ts';
 import { createSeedState } from '../domain/week.ts';
 import { WeekProvider } from '../state/WeekProvider.tsx';
 import { DecisionReview } from './DecisionReview.tsx';
@@ -68,9 +76,24 @@ function reviewWeek(starter: RtStarterId | null): WeekState {
   };
 }
 
-function closedWeek(starter: RtStarterId): WeekState {
-  return { ...reviewWeek(starter), reviewClosed: true };
+function closedWeek(
+  starter: RtStarterId,
+  academicResponse: AcademicResponse | null = null,
+): WeekState {
+  return { ...reviewWeek(starter), reviewClosed: true, academicResponse };
 }
+
+/** Thursday, alert delivered, the support decision still open to the coach. */
+function alertedWeek(): WeekState {
+  return {
+    ...createSeedState(),
+    stage: 'disruption',
+    practicePlanLocked: true,
+  };
+}
+
+const TUTOR = ACADEMIC_RESPONSES[0];
+const STUDY_HALL = ACADEMIC_RESPONSES[1];
 
 /** The canonical played week: seeded queue, first option every time. */
 function playedWeek(): WeekState {
@@ -131,6 +154,17 @@ describe('deriveNarrativeContext', () => {
     });
     expect(noStarter.postGameOpen).toBe(false);
     expect(noStarter.rtStarterName).toBeNull();
+  });
+
+  it('carries the academic-support decision and the consequence it produced', () => {
+    expect(deriveNarrativeContext(createSeedState())).toMatchObject({
+      academicResponse: null,
+      academicConsequence: NO_ACADEMIC_RESPONSE_CONSEQUENCE,
+    });
+    expect(deriveNarrativeContext(closedWeek('webb', 'tutor'))).toMatchObject({
+      academicResponse: 'tutor',
+      academicConsequence: TUTOR.consequence,
+    });
   });
 
   it('reports the disruption gate separately so Thursday mail is unaffected', () => {
@@ -233,6 +267,110 @@ describe('Inbox narrative visibility', () => {
       expect(screen.queryByText(/\{rtStarter\}/)).not.toBeInTheDocument();
     },
   );
+
+  it('records the coach’s support plan as a decision the coach can change', async () => {
+    const user = userEvent.setup();
+    render(
+      <WeekProvider repository={repositoryFor(alertedWeek())}>
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Unread: Eligibility alert: Ryan Kowalski',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: TUTOR.label }));
+
+    const assigned = screen.getByRole('button', {
+      name: TUTOR.acknowledgedLabel,
+    });
+    expect(assigned).toBeDisabled();
+    // The plan not taken stays available while the week is open.
+    const alternative = screen.getByRole('button', { name: STUDY_HALL.label });
+    expect(alternative).toBeEnabled();
+
+    await user.click(alternative);
+
+    expect(
+      screen.getByRole('button', { name: STUDY_HALL.acknowledgedLabel }),
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: TUTOR.label })).toBeEnabled();
+  });
+
+  it('closes the support decision once the week is closed', async () => {
+    const user = userEvent.setup();
+    render(
+      <WeekProvider repository={repositoryFor(closedWeek('webb', 'tutor'))}>
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Unread: Eligibility alert: Ryan Kowalski',
+      }),
+    );
+
+    expect(
+      screen.getByRole('button', { name: TUTOR.acknowledgedLabel }),
+    ).toBeDisabled();
+    // The deadline has passed: the plan not taken can no longer be taken.
+    expect(
+      screen.getByRole('button', { name: STUDY_HALL.label }),
+    ).toBeDisabled();
+  });
+
+  it.each([[TUTOR], [STUDY_HALL]])(
+    'names the support plan the coach chose in the counselor’s follow-up (%#)',
+    async (option) => {
+      const user = userEvent.setup();
+      render(
+        <WeekProvider repository={repositoryFor(closedWeek('webb', option.id))}>
+          <Inbox />
+        </WeekProvider>,
+      );
+
+      await user.click(
+        await screen.findByRole('button', {
+          name: 'Kowalski: nothing changes before Oct 26',
+        }),
+      );
+
+      expect(screen.getByText(option.consequence)).toBeVisible();
+      expect(
+        screen.queryByText(NO_ACADEMIC_RESPONSE_CONSEQUENCE),
+      ).not.toBeInTheDocument();
+      // The counselor still owns the date, whatever the coach assigned.
+      expect(
+        screen.getByText(/Eligibility for competition moves only/),
+      ).toBeVisible();
+      expect(
+        screen.queryByText(/\{academicResponse\}/),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it('says nothing was assigned when the coach never answered the alert', async () => {
+    const user = userEvent.setup();
+    render(
+      <WeekProvider repository={repositoryFor(closedWeek('webb'))}>
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Kowalski: nothing changes before Oct 26',
+      }),
+    );
+
+    expect(screen.getByText(NO_ACADEMIC_RESPONSE_CONSEQUENCE)).toBeVisible();
+    for (const option of ACADEMIC_RESPONSES) {
+      expect(screen.queryByText(option.consequence)).not.toBeInTheDocument();
+    }
+  });
 
   it('leaves the deterministic result to Decision Review instead of narrative copy', async () => {
     const played = playedWeek();

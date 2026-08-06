@@ -8,6 +8,13 @@ import type { ScreenId, TacticsTab } from '../domain/types.ts';
  */
 export const RT_STARTER_TOKEN = '{rtStarter}';
 
+/**
+ * Replaced with what the coach's academic-support decision produced. The
+ * counselor's follow-up therefore reports the response actually on file —
+ * including its absence — instead of asserting one that was never assigned.
+ */
+export const ACADEMIC_RESPONSE_TOKEN = '{academicResponse}';
+
 export type InboxMessageKind =
   'Academics' | 'Injury' | 'Scouting' | 'Press' | 'Boosters' | 'District';
 
@@ -215,6 +222,7 @@ export const INBOX_MESSAGES: readonly InboxMessage[] = [
       'Make-up work is in. He stays ineligible until the Oct 26 grading checkpoint.',
     body: [
       'Coach — Ryan Kowalski turned in the Algebra II work he had missed and his teacher has it graded. That is the right trend, and it changes nothing this week.',
+      ACADEMIC_RESPONSE_TOKEN,
       'Eligibility for competition moves only at an official grading checkpoint, and his is Oct 26. Until then he remains ineligible for games; neither of us can move that date. He may keep practicing in the meantime.',
       '— L. Whitmore, Guidance Counselor',
     ],
@@ -272,18 +280,24 @@ export function visibleStaffNotes(narrative: NarrativeContext) {
 }
 
 /**
- * Resolve the right-tackle token against the coach's actual choice. Messages
- * without the token are returned untouched, so canonical copy is never rewritten.
+ * Resolve narrative tokens against the coach's actual decisions. Paragraphs
+ * without a token come back unchanged, so canonical copy is never rewritten.
+ * The right-tackle token is left alone while no legal starter exists — the only
+ * message carrying it is invisible until one does.
  */
 export function inboxMessageBody(
   message: InboxMessage,
   narrative: NarrativeContext,
 ): readonly string[] {
   const starter = narrative.rtStarterName;
-  if (starter === null) return message.body;
-  return message.body.map((paragraph) =>
-    paragraph.split(RT_STARTER_TOKEN).join(starter),
-  );
+  return message.body.map((paragraph) => {
+    const resolved = paragraph
+      .split(ACADEMIC_RESPONSE_TOKEN)
+      .join(narrative.academicConsequence);
+    return starter === null
+      ? resolved
+      : resolved.split(RT_STARTER_TOKEN).join(starter);
+  });
 }
 
 /**

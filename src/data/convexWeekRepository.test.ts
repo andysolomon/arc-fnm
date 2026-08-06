@@ -107,6 +107,7 @@ function fullyDecidedWeek(): WeekState {
     rtStarter: 'webb',
     rtFix: 'promote',
     disruptionConfirmed: true,
+    academicResponse: 'study-hall',
     policies: { fourth: 'Short', pat: 'Feel', clock: 'Fix', auto: 'Tempo' },
     matchStarted: true,
     matchSpeed: 'fast',

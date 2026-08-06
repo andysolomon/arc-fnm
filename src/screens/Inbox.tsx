@@ -2,6 +2,11 @@ import { useMemo, useState } from 'react';
 
 import { Button, StatusDot, type StatusTone } from '../components/ui.tsx';
 import { deriveNarrativeContext } from '../domain/narrative.ts';
+import {
+  academicEvent,
+  ACADEMIC_RESPONSES,
+  type AcademicResponseOption,
+} from '../domain/programEvents.ts';
 import { useWeek } from '../state/weekContext.ts';
 import {
   INBOX_MESSAGES,
@@ -22,9 +27,12 @@ const KIND_TONE: Readonly<Record<InboxMessageKind, StatusTone>> = {
   District: 'neutral',
 };
 
+/**
+ * Session-only acknowledgements. The eligibility alert is deliberately absent:
+ * its two support actions are a persisted Coaching Decision, so their labels
+ * come from `ACADEMIC_RESPONSES` and survive a reload.
+ */
 const ACKNOWLEDGED_LABELS: Readonly<Record<string, string>> = {
-  'Assign Tutor': 'Tutor assigned',
-  'Schedule Study Hall': 'Study hall scheduled',
   'Rest 2 Weeks': 'Rest plan confirmed',
   'Prep Highlight Tape': 'Tape queued with Soto',
   Reply: 'Replied',
@@ -43,6 +51,7 @@ export function Inbox() {
   const [acknowledged, setAcknowledged] = useState<readonly string[]>([]);
   const selected =
     messages.find((message) => message.id === selectedId) ?? INBOX_MESSAGES[2]!;
+  const academic = academicEvent(state.week);
   const unreadCount = inboxUnreadCount(
     narrative.disrupted,
     state.nav.inboxReadMessageIds ?? [],
@@ -56,6 +65,16 @@ export function Inbox() {
     dispatch({ type: 'mark-inbox-read', messageId });
   }
 
+  /** The support option this action records, or null for ordinary Inbox mail. */
+  function academicOptionFor(
+    action: InboxAction,
+  ): AcademicResponseOption | null {
+    if (selected.id !== 'kowalski-eligibility') return null;
+    return (
+      ACADEMIC_RESPONSES.find((option) => option.label === action.label) ?? null
+    );
+  }
+
   function runAction(action: InboxAction) {
     if (action.screen !== undefined) {
       dispatch({
@@ -65,6 +84,11 @@ export function Inbox() {
           ? {}
           : { tacticsTab: action.tacticsTab }),
       });
+      return;
+    }
+    const option = academicOptionFor(action);
+    if (option !== null) {
+      dispatch({ type: 'choose-academic-response', response: option.id });
       return;
     }
     setAcknowledged((current) =>
@@ -196,16 +220,28 @@ export function Inbox() {
           ))}
           <div className="mt-7 flex flex-wrap gap-2.5">
             {selected.actions.map((action) => {
-              const isAcknowledged = acknowledged.includes(action.label);
-              const acknowledgedLabel = ACKNOWLEDGED_LABELS[action.label];
+              const option = academicOptionFor(action);
+              // A support plan reads from the decision on file; ordinary mail
+              // keeps its session-only acknowledgement.
+              const onFile =
+                option === null
+                  ? acknowledged.includes(action.label)
+                  : academic !== null && academic.response === option.id;
+              const acknowledgedLabel =
+                option === null
+                  ? ACKNOWLEDGED_LABELS[action.label]
+                  : option.acknowledgedLabel;
+              // Once the week is closed the record is final, so the option the
+              // coach did not take can no longer be taken.
+              const closed = option !== null && academic?.open !== true;
               return (
                 <Button
                   key={action.label}
                   variant={action.primary ? 'primary' : 'secondary'}
-                  disabled={isAcknowledged}
+                  disabled={onFile || closed}
                   onClick={() => runAction(action)}
                 >
-                  {isAcknowledged && acknowledgedLabel !== undefined
+                  {onFile && acknowledgedLabel !== undefined
                     ? acknowledgedLabel
                     : action.label}
                 </Button>

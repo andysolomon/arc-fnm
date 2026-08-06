@@ -19,6 +19,7 @@ import {
 import { v } from 'convex/values';
 
 import {
+  academicResponseValidator,
   dispositionValidator,
   matchEventValidator,
   matchSpeedValidator,
@@ -75,6 +76,7 @@ export const save = mutation({
     rtStarter: v.union(rtStarterValidator, v.null()),
     rtFix: v.union(rtFixValidator, v.null()),
     disruptionConfirmed: v.boolean(),
+    academicResponse: v.union(academicResponseValidator, v.null()),
     policies: policiesValidator,
     matchStarted: v.boolean(),
     matchSpeed: matchSpeedValidator,

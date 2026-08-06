@@ -20,6 +20,12 @@ slice: a pure deriveNarrativeContext selector gates two post-game messages and
 one staff note on reviewClosed + chosen rtStarter; canonical UI-3 copy and 20-3
 outcome remain byte-for-byte untouched.
 
+Updated 2026-08-05: Phase 4.1 eligibility event slice shipped. The Kowalski
+Inbox actions are now a persisted academicResponse Coaching Decision with
+authority (Guidance Office), deadline (Oct 26 checkpoint), and a token-resolved
+post-game consequence. Staff/film/environment/emergency event types remain open
+under 4.1.
+
 [ ] 0.0 - Phase 0 - Define boundaries and the real workflow
     [x] 0.1 - Exercise and critique the shared v1.4.2 artifact on desktop and mobile
     [x] 0.2 - Research evidence-backed coaching decisions and safety/rules boundaries
@@ -49,7 +55,7 @@ outcome remain byte-for-byte untouched.
     [x] 3.3 - Implement Decision Review separating choice, execution, randomness, and outcome
     [x] 3.4 - Test priority game-state and unavailable-player scenarios
 [ ] 4.0 - Phase 4 - Complete and validate the Simulation Experience
-    [ ] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
+    [x] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
     [ ] 4.2 - Implement Head Coach staff delegation and authority boundaries
     [ ] 4.3 - Implement multi-season cohort development and succession
     [x] 4.4 - Tie small-town narrative events to real program state and decisions

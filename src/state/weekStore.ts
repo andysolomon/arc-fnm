@@ -5,6 +5,7 @@
  */
 
 import type {
+  AcademicResponse,
   AnswerId,
   Disposition,
   DecisionProcessRating,
@@ -38,6 +39,7 @@ import {
   skipToDecision,
   takeField,
 } from '../domain/matchDay.ts';
+import { chooseAcademicResponse } from '../domain/programEvents.ts';
 import {
   acceptRisk,
   adoptAnswerScheme,
@@ -113,6 +115,7 @@ export type WeekAction =
   | { type: 'select-rt-starter'; starter: RtStarterId }
   | { type: 'select-rt-fix'; fix: RtFix }
   | { type: 'confirm-disruption' }
+  | { type: 'choose-academic-response'; response: AcademicResponse }
   | { type: 'set-policy'; id: PolicyId; value: PolicyValue }
   | { type: 'take-field' }
   | { type: 'match-advance'; plays?: number }
@@ -302,6 +305,12 @@ export function weekReducer(
 
     case 'confirm-disruption':
       return { ...state, week: confirmDisruption(state.week, scenario) };
+
+    case 'choose-academic-response':
+      return {
+        ...state,
+        week: chooseAcademicResponse(state.week, action.response),
+      };
 
     case 'set-policy':
       return {

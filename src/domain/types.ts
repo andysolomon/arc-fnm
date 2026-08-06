@@ -140,6 +140,12 @@ export type RtStarterId = 'webb' | 'ruiz' | 'slide';
 
 export type RtFix = 'promote' | 'simplify' | 'switch' | 'accept';
 
+/**
+ * The coach's academic-support answer to the eligibility alert. It is support
+ * only: eligibility and its checkpoint belong to the Guidance Office.
+ */
+export type AcademicResponse = 'tutor' | 'study-hall';
+
 /** A coach may park (`hold`) or discard (`reject`) a hypothesis. */
 export type Disposition = 'hold' | 'reject';
 
@@ -469,6 +475,8 @@ export interface WeekState {
   readonly rtStarter: RtStarterId | null;
   readonly rtFix: RtFix | null;
   readonly disruptionConfirmed: boolean;
+  /** The academic-support response on file. It never moves eligibility. */
+  readonly academicResponse: AcademicResponse | null;
   /** Friday standing policies. Frozen once the coach takes the field. */
   readonly policies: PolicyState;
   /** The take-the-field decision. The snapshot itself is derived, not stored. */

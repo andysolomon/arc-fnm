@@ -171,6 +171,8 @@ describe('seeded Week 8 scenario', () => {
     expect(state.selectedHypotheses).toEqual([]);
     expect(state.acceptedRisk).toBeNull();
     expect(state.dispositions).toEqual({});
+    // No program event has been answered yet — the alert has not arrived.
+    expect(state.academicResponse).toBeNull();
   });
 
   it('seeds Westfield vs Central Catholic with four hypotheses and 32 clips', () => {
@@ -903,6 +905,7 @@ describe('practice plan gate and block actions', () => {
       rtStarter: null,
       rtFix: null,
       disruptionConfirmed: false,
+      academicResponse: null,
       stage: 'evidence',
     });
   });

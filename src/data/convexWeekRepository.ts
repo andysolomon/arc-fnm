@@ -94,6 +94,7 @@ export type PersistedWeekState = Pick<
   | 'rtStarter'
   | 'rtFix'
   | 'disruptionConfirmed'
+  | 'academicResponse'
   | 'policies'
   | 'matchStarted'
   | 'matchSpeed'
@@ -142,6 +143,7 @@ function decisionsFrom(state: WeekState): PersistedWeekState {
     rtStarter: state.rtStarter,
     rtFix: state.rtFix,
     disruptionConfirmed: state.disruptionConfirmed,
+    academicResponse: state.academicResponse,
     policies: state.policies,
     matchStarted: state.matchStarted,
     matchSpeed: state.matchSpeed,
@@ -168,6 +170,7 @@ function stateFrom(document: StoredWeekDocument): WeekState {
     rtStarter: document.rtStarter ?? null,
     rtFix: document.rtFix ?? null,
     disruptionConfirmed: document.disruptionConfirmed ?? false,
+    academicResponse: document.academicResponse ?? null,
     policies: document.policies ?? {
       fourth: 'Chart',
       pat: 'Kick',

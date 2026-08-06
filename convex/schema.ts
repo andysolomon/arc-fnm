@@ -57,6 +57,11 @@ export const rtFixValidator = v.union(
   v.literal('accept'),
 );
 
+export const academicResponseValidator = v.union(
+  v.literal('tutor'),
+  v.literal('study-hall'),
+);
+
 /** Friday standing policies. Values are canonical UI-3 tokens. */
 export const policiesValidator = v.object({
   fourth: v.union(v.literal('Chart'), v.literal('Short'), v.literal('Kick')),
@@ -122,6 +127,7 @@ const schema = defineSchema({
     rtStarter: v.optional(v.union(rtStarterValidator, v.null())),
     rtFix: v.optional(v.union(rtFixValidator, v.null())),
     disruptionConfirmed: v.optional(v.boolean()),
+    academicResponse: v.optional(v.union(academicResponseValidator, v.null())),
     policies: v.optional(policiesValidator),
     matchStarted: v.optional(v.boolean()),
     matchSpeed: v.optional(matchSpeedValidator),

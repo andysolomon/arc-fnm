@@ -206,6 +206,7 @@ describe('Convex week adapter', () => {
     });
     expect(Object.keys(mutation.mock.calls[0]?.[1] ?? {}).sort()).toEqual(
       [
+        'academicResponse',
         'acceptedRisk',
         'answers',
         'careerId',

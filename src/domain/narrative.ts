@@ -13,7 +13,8 @@
  */
 
 import { deriveDisruptionGate } from './disruption.ts';
-import type { RtStarterId, WeekState } from './types.ts';
+import { academicConsequence, academicEvent } from './programEvents.ts';
+import type { AcademicResponse, RtStarterId, WeekState } from './types.ts';
 
 export interface NarrativeContext {
   /** Thursday's authority alerts are live — the practice script is locked. */
@@ -26,6 +27,10 @@ export interface NarrativeContext {
   readonly rtStarterName: string | null;
   /** Post-game beats are visible only once both causes are true. */
   readonly postGameOpen: boolean;
+  /** The academic-support response on file, or null when none was recorded. */
+  readonly academicResponse: AcademicResponse | null;
+  /** What that response produced. Authored in the domain, never in copy. */
+  readonly academicConsequence: string;
 }
 
 /**
@@ -35,11 +40,15 @@ export interface NarrativeContext {
 export function deriveNarrativeContext(state: WeekState): NarrativeContext {
   const disruption = deriveDisruptionGate(state);
   const starterName = disruption.starterName;
+  const academic = academicEvent(state);
   return {
     disrupted: state.practicePlanLocked,
     reviewClosed: state.reviewClosed,
     rtStarter: starterName === null ? null : state.rtStarter,
     rtStarterName: starterName,
     postGameOpen: state.reviewClosed && starterName !== null,
+    academicResponse: academic === null ? null : academic.response,
+    academicConsequence:
+      academic === null ? academicConsequence(null) : academic.consequence,
   };
 }
