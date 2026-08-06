@@ -78,7 +78,7 @@ export function Inbox() {
     >
       <section
         aria-labelledby="inbox-list-heading"
-        className={`${detailOpen ? 'hidden min-[768px]:block' : 'block'} bg-surface-sunken w-full shrink-0 overflow-auto shadow-[inset_-1px_0_0_rgba(0,0,0,0.08)] min-[768px]:w-[380px]`}
+        className={`${detailOpen ? 'hidden min-[1024px]:block' : 'block'} bg-surface-sunken w-full shrink-0 overflow-auto shadow-[inset_-1px_0_0_rgba(0,0,0,0.08)] min-[1024px]:w-[380px]`}
       >
         <header className="bg-surface-sunken sticky top-0 z-10 flex items-baseline gap-2.5 px-4 pt-[18px] pb-3 shadow-[0_1px_0_rgba(0,0,0,0.06)]">
           <h1
@@ -144,13 +144,13 @@ export function Inbox() {
 
       <article
         aria-labelledby="message-subject"
-        className={`${detailOpen ? 'block' : 'hidden min-[768px]:block'} min-w-0 flex-1 overflow-auto p-4 min-[768px]:p-[clamp(20px,4vw,40px)]`}
+        className={`${detailOpen ? 'block' : 'hidden min-[1024px]:block'} min-w-0 flex-1 overflow-auto p-4 min-[768px]:p-[clamp(20px,4vw,40px)]`}
       >
         <div className="max-w-[720px]">
           <button
             type="button"
             onClick={() => setDetailOpen(false)}
-            className="text-ink-subtle hover:text-ink mb-3.5 cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-medium min-[768px]:hidden"
+            className="text-ink-subtle hover:text-ink mb-3.5 cursor-pointer border-0 bg-transparent p-0 text-[12.5px] font-medium min-[1024px]:hidden"
           >
             ← All messages
           </button>

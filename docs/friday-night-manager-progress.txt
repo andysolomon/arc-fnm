@@ -6,6 +6,10 @@ Synced 2026-08-05 against production commit on main (UI-3 port + 133 Vitest test
 Still open outside this sync: field research (0.5), live Convex/auth, browser visual QA,
 full jurisdiction provenance, deeper roster/mastery/development, and Playwright-style journeys.
 
+Updated 2026-08-05: Phase 2.4, 2.5, and 2.6 marked complete after shipping
+typed RT/protection roster, Texas UIL 2026-27 jurisdiction provenance, contact-cap
+causality, McCoy availability fallback, and named Phase 2.6 plan-change tests on main.
+
 [ ] 0.0 - Phase 0 - Define boundaries and the real workflow
     [x] 0.1 - Exercise and critique the shared v1.4.2 artifact on desktop and mobile
     [x] 0.2 - Research evidence-backed coaching decisions and safety/rules boundaries
@@ -26,9 +30,9 @@ full jurisdiction provenance, deeper roster/mastery/development, and Playwright-
     [x] 2.1 - Implement sourced play Evidence and conditional tagging
     [x] 2.2 - Implement Scouting Hypotheses and Evidence-backed Game Plan answers
     [x] 2.3 - Implement constrained Practice Plan, reps, contact level, and plan-versus-actual
-    [ ] 2.4 - Implement Player Availability, eligibility, package depth, mastery, and development
-    [ ] 2.5 - Implement versioned Texas Jurisdiction Rule Set validation and provenance
-    [ ] 2.6 - Add user-focused tests proving evidence, roster, and rule changes alter the plan
+    [x] 2.4 - Implement Player Availability, eligibility, package depth, mastery, and development
+    [x] 2.5 - Implement versioned Texas Jurisdiction Rule Set validation and provenance
+    [x] 2.6 - Add user-focused tests proving evidence, roster, and rule changes alter the plan
 [ ] 3.0 - Phase 3 - Make Friday decisions and post-game learning playable
     [x] 3.1 - Implement coach-owned situational policies and legal game-day presentation
     [x] 3.2 - Implement the uncertainty-aware game simulation slice

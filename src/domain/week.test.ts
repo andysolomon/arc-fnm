@@ -15,7 +15,13 @@ import {
   playerAvailability,
   resolvePracticePersonnel,
 } from './roster.ts';
-import type { RtFix, RtStarterId, WeekScenario, WeekState } from './types.ts';
+import type {
+  ReadinessLabel,
+  RtFix,
+  RtStarterId,
+  WeekScenario,
+  WeekState,
+} from './types.ts';
 import {
   acceptRisk,
   allocatePracticeBlock,
@@ -96,6 +102,67 @@ function scenarioWithFullContactCap(maximumMinutes: number): WeekScenario {
   };
 }
 
+/** Webb off Friday — the roster constraint that withdraws the promote path. */
+function unavailableWebbScenario(): WeekScenario {
+  return {
+    ...scenario,
+    rosterPlanning: {
+      ...scenario.rosterPlanning,
+      availability: scenario.rosterPlanning.availability.map((entry) =>
+        entry.playerId === 'player-webb'
+          ? {
+              ...entry,
+              participation: 'ineligible' as const,
+              label: 'Unavailable Friday',
+              authority: 'Guidance Office' as const,
+            }
+          : entry,
+      ),
+    },
+  };
+}
+
+/** Webb still available, but less of the protection package is actually his. */
+function webbMasteryScenario(readiness: ReadinessLabel): WeekScenario {
+  return {
+    ...scenario,
+    rosterPlanning: {
+      ...scenario.rosterPlanning,
+      packageMastery: scenario.rosterPlanning.packageMastery.map((entry) =>
+        entry.playerId === 'player-webb' ? { ...entry, readiness } : entry,
+      ),
+    },
+  };
+}
+
+function lockedPlan(): WeekState {
+  return lockPracticePlan(fullPracticePlan(), scenario);
+}
+
+function webbPromote(): WeekState {
+  return selectRtFix(
+    selectRtStarter(lockedPlan(), scenario, 'webb'),
+    'promote',
+  );
+}
+
+/** The staff allocation, materialized onto the state so reps can be read off it. */
+function withStaffPlan(state: WeekState, against: WeekScenario): WeekState {
+  return { ...state, practiceBlocks: [...staffPracticeBlocks(state, against)] };
+}
+
+function repsByObjective(
+  state: WeekState,
+  against: WeekScenario,
+): Record<string, number> {
+  return Object.fromEntries(
+    practiceObjectiveSummaries(state, against).map((summary) => [
+      summary.objective.id,
+      summary.expectedReps,
+    ]),
+  );
+}
+
 describe('seeded Week 8 scenario', () => {
   it('opens on the evidence stage with an empty board', () => {
     const state = createSeedState();
@@ -142,7 +209,6 @@ describe('seeded Week 8 scenario', () => {
 });
 
 describe('Thursday disruption and authority', () => {
-  const lockedPlan = () => lockPracticePlan(fullPracticePlan(), scenario);
   const summary = (state: WeekState, objectiveId: string) =>
     practiceObjectiveSummaries(state, scenario).find(
       (item) => item.objective.id === objectiveId,
@@ -289,26 +355,6 @@ describe('Thursday disruption and authority', () => {
 });
 
 describe('RT protection roster hardening', () => {
-  const lockedPlan = () => lockPracticePlan(fullPracticePlan(), scenario);
-  const webbPromote = () =>
-    selectRtFix(selectRtStarter(lockedPlan(), scenario, 'webb'), 'promote');
-  const unavailableWebbScenario = (): WeekScenario => ({
-    ...scenario,
-    rosterPlanning: {
-      ...scenario.rosterPlanning,
-      availability: scenario.rosterPlanning.availability.map((entry) =>
-        entry.playerId === 'player-webb'
-          ? {
-              ...entry,
-              participation: 'ineligible' as const,
-              label: 'Unavailable Friday',
-              authority: 'Guidance Office' as const,
-            }
-          : entry,
-      ),
-    },
-  });
-
   it('derives eligible package depth and preserves non-coach authority', () => {
     expect(
       eligiblePackageDepth(scenario.rosterPlanning, FIVE_STEP_TRIPS_FLOOD).map(
@@ -373,17 +419,7 @@ describe('RT protection roster hardening', () => {
   });
 
   it('caps package readiness and the Friday snapshot when Webb mastery falls', () => {
-    const lowerMasteryScenario = {
-      ...scenario,
-      rosterPlanning: {
-        ...scenario.rosterPlanning,
-        packageMastery: scenario.rosterPlanning.packageMastery.map((entry) =>
-          entry.playerId === 'player-webb'
-            ? { ...entry, readiness: 'Introduced' as const }
-            : entry,
-        ),
-      },
-    };
+    const lowerMasteryScenario = webbMasteryScenario('Introduced');
     const state = webbPromote();
     const baseline = practiceObjectiveSummaries(state, scenario).find(
       (summary) => summary.objective.id === 'o5',
@@ -1105,5 +1141,172 @@ describe('reset week', () => {
 
     expect(runA).toEqual(runB);
     expect(runA.stage).toBe('plan');
+  });
+});
+
+/**
+ * Phase 2.6, stated verbatim by the Phase 2 acceptance criteria:
+ *
+ *   "User-focused tests prove that changing a hypothesis or roster constraint
+ *    changes the planned reps and available Friday choices."
+ *
+ * One test per axis the coach can actually move — the evidence they accept as
+ * risk, the roster they have, and the rule set they practice under. Each proves
+ * the change is causal against seeded Week 8 held as the golden baseline.
+ */
+describe('Phase 2.6 — evidence, roster, and rule changes alter the plan', () => {
+  it('moves planned reps and the Friday board when the accepted risk changes', () => {
+    let swapped = acceptRisk(boardWith('h1', 'h2', 'h4'), scenario, 'h3');
+    swapped = chooseAnswer(swapped, scenario, 'h1', 'a11');
+    swapped = chooseAnswer(swapped, scenario, 'h2', 'a21');
+    swapped = chooseAnswer(swapped, scenario, 'h4', 'a41');
+
+    const canonical = withStaffPlan(cleanPlan(), scenario);
+    const alternate = withStaffPlan(swapped, scenario);
+    const canonicalReps = repsByObjective(canonical, scenario);
+    const alternateReps = repsByObjective(alternate, scenario);
+
+    // Accepting h3 instead of h4 hands o3's practice time straight to o4.
+    expect(canonicalReps).toMatchObject({ o3: 6, o4: 0 });
+    expect(alternateReps).toMatchObject({ o3: 0, o4: 6 });
+    expect(
+      staffPracticeBlocks(swapped, scenario).map((block) => block.objectiveId),
+    ).toContain('o4');
+
+    // Friday sees a different board: a different uncovered concern, a
+    // different answer set, and therefore a different execution seed.
+    expect(
+      deriveFieldSnapshot(canonical, scenario).uncovered.map(
+        (item) => item.name,
+      ),
+    ).toEqual(['Kick coverage lane discipline']);
+    expect(
+      deriveFieldSnapshot(alternate, scenario).uncovered.map(
+        (item) => item.name,
+      ),
+    ).toEqual(['Trips-side flood vs Cover 3']);
+    expect(
+      Object.keys(deriveTakeFieldContext(alternate, scenario).ansBy).sort(),
+    ).toEqual(['h1', 'h2', 'h4']);
+    expect(execSeedFor(deriveTakeFieldContext(alternate, scenario))).not.toBe(
+      execSeedFor(deriveTakeFieldContext(canonical, scenario)),
+    );
+  });
+
+  it('withdraws the Friday RT choice and rewrites the snapshot when Webb is out', () => {
+    const shortHanded = unavailableWebbScenario();
+    const locked = lockedPlan();
+
+    // The choice is gone, not merely discouraged: Webb leaves the eligible
+    // depth chart and the transition refuses him even when asked directly.
+    expect(
+      eligiblePackageDepth(
+        shortHanded.rosterPlanning,
+        FIVE_STEP_TRIPS_FLOOD,
+      ).map((entry) => entry.playerId),
+    ).toEqual(['player-ruiz', 'player-mendes']);
+    expect(selectRtStarter(locked, shortHanded, 'webb')).toBe(locked);
+
+    const canonical = confirmDisruption(webbPromote(), scenario);
+    const substitute = confirmDisruption(
+      selectRtFix(selectRtStarter(locked, shortHanded, 'slide'), 'simplify'),
+      shortHanded,
+    );
+    const canonicalSnapshot = deriveFieldSnapshot(canonical, scenario);
+    const shortSnapshot = deriveFieldSnapshot(substitute, shortHanded);
+
+    expect(canonicalSnapshot.thin).toContainEqual({
+      name: 'Right tackle protection with a backup',
+      note: 'Repped · 10 reps',
+    });
+    expect(shortSnapshot.uncovered.map((item) => item.name)).toContain(
+      'Right tackle protection with a backup',
+    );
+    expect(
+      shortSnapshot.uncovered.some((item) =>
+        item.note.includes('L. Webb unavailable'),
+      ),
+    ).toBe(true);
+    expect(
+      execSeedFor(deriveTakeFieldContext(substitute, shortHanded)),
+    ).not.toBe(execSeedFor(deriveTakeFieldContext(canonical, scenario)));
+
+    // Seeded Week 8 is the golden baseline and the alternate roster never touches it.
+    expect(execSeedInputFor(deriveTakeFieldContext(canonical, scenario))).toBe(
+      'h4|promote|Levi Webb|Chart|Kick|Bank|Ask|o1:2|o2:3|o3:3|o4:0|o5:2|o6:2',
+    );
+    expect(execSeedFor(deriveTakeFieldContext(canonical, scenario))).toBe(
+      3_427_930_963,
+    );
+  });
+
+  it('caps the prepared package and the Friday seed when Webb mastery falls', () => {
+    const state = confirmDisruption(webbPromote(), scenario);
+    const lowered = webbMasteryScenario('Introduced');
+    const canonicalContext = deriveTakeFieldContext(state, scenario);
+    const loweredContext = deriveTakeFieldContext(state, lowered);
+
+    // Same blocks, same reps — mastery moves what those reps are worth.
+    expect(repsByObjective(state, lowered)).toEqual(
+      repsByObjective(state, scenario),
+    );
+    expect(canonicalContext.lvl).toMatchObject({ o3: 3, o5: 2 });
+    expect(loweredContext.lvl).toMatchObject({ o3: 1, o5: 1 });
+    expect(execSeedInputFor(loweredContext)).not.toBe(
+      execSeedInputFor(canonicalContext),
+    );
+    expect(execSeedInputFor(canonicalContext)).toBe(
+      'h4|promote|Levi Webb|Chart|Kick|Bank|Ask|o1:2|o2:3|o3:3|o4:0|o5:2|o6:2',
+    );
+  });
+
+  it('demotes implicit Tuesday reps a lower full-contact cap no longer allows', () => {
+    const clean = cleanPlan();
+    const restrictedScenario = scenarioWithFullContactCap(20);
+    const canonical = withStaffPlan(clean, scenario);
+    const restricted = withStaffPlan(clean, restrictedScenario);
+
+    expect(scenario.jurisdictionRuleSet.weeklyFullContact.maximumMinutes).toBe(
+      90,
+    );
+    expect(canonical.practiceBlocks.filter((block) => block.live)).toHaveLength(
+      3,
+    );
+    expect(
+      restricted.practiceBlocks.filter((block) => block.live),
+    ).toHaveLength(2);
+    // Identical objectives on identical days — only the contact level moved.
+    expect(
+      restricted.practiceBlocks.map(
+        (block) => `${block.objectiveId}:${block.day}`,
+      ),
+    ).toEqual(
+      canonical.practiceBlocks.map(
+        (block) => `${block.objectiveId}:${block.day}`,
+      ),
+    );
+    expect(repsByObjective(canonical, scenario).o5).toBe(8);
+    expect(repsByObjective(restricted, restrictedScenario).o5).toBe(6);
+
+    // An implicit Tuesday placement lands off-air once the cap is spent, and
+    // both plans remain legal under the rule set that produced them.
+    let spent = allocatePracticeBlock(clean, restrictedScenario, 'o1', 'TUE');
+    spent = allocatePracticeBlock(spent, restrictedScenario, 'o5', 'TUE');
+    const implicit = allocatePracticeBlock(
+      spent,
+      restrictedScenario,
+      'o6',
+      'TUE',
+    );
+    expect(implicit.practiceBlocks[2]).toMatchObject({
+      day: 'TUE',
+      live: false,
+    });
+    expect(derivePracticeGate(canonical, scenario).ready).toBe(true);
+    expect(derivePracticeGate(restricted, restrictedScenario).ready).toBe(true);
+    // The canonical 90-minute rule set still yields the golden staff plan.
+    expect(canonical.practiceBlocks).toEqual(
+      staffPracticeBlocks(clean, scenario),
+    );
   });
 });

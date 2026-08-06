@@ -171,6 +171,21 @@ describe('Inbox', () => {
     await user.click(await screen.findByRole('button', { name: 'Open Week' }));
     expect(screen.getByText('Week source')).toBeVisible();
   });
+
+  it('collapses the list-detail stack at the 1024px narrow=phone||compact tier', () => {
+    // Prototype semantics: narrow = phone || compact (vw < 1024). The list and
+    // detail reflow to a side-by-side layout only at min-[1024px], so the stack
+    // must persist through the compact (768–1023px) tier.
+    expect(inboxSource).toContain('hidden min-[1024px]:block');
+    // Above the breakpoint the message list is a fixed 380px rail.
+    expect(inboxSource).toContain('min-[1024px]:w-[380px]');
+    // The "← All messages" back button only exists while the panes are stacked,
+    // so it is hidden once they sit side-by-side at min-[1024px].
+    expect(inboxSource).toContain('min-[1024px]:hidden');
+    // Guard against regressing the stack breakpoint back to the compact tier.
+    expect(inboxSource).not.toContain('min-[768px]:w-[380px]');
+    expect(inboxSource).not.toContain('min-[768px]:hidden');
+  });
 });
 
 describe('Schedule', () => {

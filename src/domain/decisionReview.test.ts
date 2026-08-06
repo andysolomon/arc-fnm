@@ -14,6 +14,7 @@ import {
   deriveTakeFieldContext,
   skipToDecision,
   takeField,
+  unavailablePlayersOf,
   type MatchLogDecision,
   type MatchView,
 } from './matchDay.ts';
@@ -367,5 +368,53 @@ describe('Decision Review derivation', () => {
     expect(reviewSource).not.toMatch(
       /Math\.random\s*\(|Date\.now\s*\(|new Date\s*\(|dangerouslySetInnerHTML|\.innerHTML\s*=|<svg/i,
     );
+  });
+});
+
+/**
+ * Phase 2.6, stated verbatim by the Phase 2 acceptance criteria:
+ *
+ *   "User-focused tests prove that changing a hypothesis or roster constraint
+ *    changes the planned reps and available Friday choices."
+ *
+ * The Decision Review end of that claim: a roster constraint the week never
+ * planned around has to survive all the way to Monday's rows, while seeded
+ * Week 8 stays the golden baseline it was before the constraint existed.
+ */
+describe('Phase 2.6 — a roster constraint changes the Decision Review', () => {
+  it('carries an unavailable Mendes into execution and result, not into the plan', () => {
+    const mendesOut = mendesOutScenario();
+    const canonical = deriveDecisionReview(
+      playToFinal(fridayState('A')).state,
+      scenario,
+    );
+    const short = deriveDecisionReview(
+      playToFinal(fridayState('A'), mendesOut).state,
+      mendesOut,
+    );
+
+    // The constraint reaches Friday through the snapshot, not through copy.
+    expect(
+      unavailablePlayersOf(deriveTakeFieldContext(fridayState('A'), scenario)),
+    ).toEqual([]);
+    expect(
+      unavailablePlayersOf(deriveTakeFieldContext(fridayState('A'), mendesOut)),
+    ).toEqual(['player-mendes']);
+
+    // Same six decisions and the same planned reps behind them — Mendes took
+    // no reps off anyone — but a different Friday and a different scoreboard.
+    expect(short.rows.map((row) => row.decisionId)).toEqual(
+      canonical.rows.map((row) => row.decisionId),
+    );
+    expect(short.rows.map((row) => row.preparation)).toEqual(
+      canonical.rows.map((row) => row.preparation),
+    );
+    expect(short.rows.map((row) => row.execution)).not.toEqual(
+      canonical.rows.map((row) => row.execution),
+    );
+    expect(short.score).not.toBe(canonical.score);
+
+    expect(canonical.score).toBe('Westfield 20 — 3 Central Catholic');
+    expect(short.score).toBe('Westfield 20 — 6 Central Catholic');
   });
 });
