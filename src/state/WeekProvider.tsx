@@ -9,6 +9,7 @@ import {
 
 import type { WeekScenario } from '../domain/types.ts';
 import { deriveDisruptionGate } from '../domain/disruption.ts';
+import { staffFilmDelegateEvent } from '../domain/staffDelegation.ts';
 import {
   canAdvanceStage,
   deriveEvidenceGate,
@@ -160,6 +161,7 @@ export function WeekProvider({
       planGate: derivePlanGate(state.week, scenario),
       practiceGate: derivePracticeGate(state.week, scenario),
       disruptionGate: deriveDisruptionGate(state.week),
+      staffFilmDelegateEvent: staffFilmDelegateEvent(state.week),
       practiceSummaries: practiceObjectiveSummaries(state.week, scenario),
       views: hypothesisViews(state.week, scenario),
       next: nextStep(state.week, scenario),

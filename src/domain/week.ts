@@ -61,6 +61,7 @@ export function createSeedState(): WeekState {
     rtFix: null,
     disruptionConfirmed: false,
     academicResponse: null,
+    staffAssignments: { cut: null },
     policies: { fourth: 'Chart', pat: 'Kick', clock: 'Bank', auto: 'Ask' },
     matchStarted: false,
     matchSpeed: '1x',

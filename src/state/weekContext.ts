@@ -15,6 +15,7 @@ import type {
   PracticeObjectiveSummary,
   WeekScenario,
 } from '../domain/types.ts';
+import type { StaffDelegationEvent } from '../domain/staffDelegation.ts';
 import type { WeekRepository } from '../data/weekRepository.ts';
 import type { AppState, WeekAction } from './weekStore.ts';
 
@@ -27,6 +28,7 @@ export interface WeekContextValue {
   readonly planGate: PlanGate;
   readonly practiceGate: PracticeGate;
   readonly disruptionGate: DisruptionGate;
+  readonly staffFilmDelegateEvent: StaffDelegationEvent;
   readonly practiceSummaries: readonly PracticeObjectiveSummary[];
   readonly views: readonly HypothesisView[];
   readonly next: NextStep;

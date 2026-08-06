@@ -173,6 +173,7 @@ describe('seeded Week 8 scenario', () => {
     expect(state.dispositions).toEqual({});
     // No program event has been answered yet — the alert has not arrived.
     expect(state.academicResponse).toBeNull();
+    expect(state.staffAssignments).toEqual({ cut: null });
   });
 
   it('seeds Westfield vs Central Catholic with four hypotheses and 32 clips', () => {

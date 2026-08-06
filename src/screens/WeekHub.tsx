@@ -175,11 +175,13 @@ export function WeekHub() {
     practiceGate,
     practiceSummaries,
     disruptionGate,
+    staffFilmDelegateEvent,
     dispatch,
   } = useWeek();
   const { week } = state;
   const review = deriveDecisionReview(week, scenario);
   const disrupted = week.practicePlanLocked;
+  const cutAssigned = staffFilmDelegateEvent.response !== null;
   const baseDecision = DECISIONS[week.stage];
   const decision: DecisionCopy = week.reviewClosed
     ? {
@@ -812,6 +814,16 @@ export function WeekHub() {
                   M. Soto · Graduate Assistant · Film
                 </p>
               </div>
+              {cutAssigned && (
+                <div>
+                  <p className="text-ink-muted m-0 text-[12.5px] leading-[1.6] text-pretty">
+                    “{staffFilmDelegateEvent.consequence}”
+                  </p>
+                  <p className="text-ink-subtle mt-1 mb-0 text-[11px]">
+                    M. Soto · Graduate Assistant · Film
+                  </p>
+                </div>
+              )}
               <div>
                 <p className="text-ink-muted m-0 text-[12.5px] leading-[1.6] text-pretty">
                   “If we spend Tuesday on run fits, sprint-out contain becomes a

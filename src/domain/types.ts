@@ -146,6 +146,15 @@ export type RtFix = 'promote' | 'simplify' | 'switch' | 'accept';
  */
 export type AcademicResponse = 'tutor' | 'study-hall';
 
+/**
+ * Who the coach assigns to cut Friday-morning film. The film desk (Soto) still
+ * owns the deadline and the note; this is only the coaching delegation.
+ */
+export type StaffAssignmentId = 'soto' | 'pruitt';
+
+/** Scout assignment tasks that persist as Coaching Decisions. */
+export type StaffAssignmentTaskId = 'cut';
+
 /** A coach may park (`hold`) or discard (`reject`) a hypothesis. */
 export type Disposition = 'hold' | 'reject';
 
@@ -477,6 +486,13 @@ export interface WeekState {
   readonly disruptionConfirmed: boolean;
   /** The academic-support response on file. It never moves eligibility. */
   readonly academicResponse: AcademicResponse | null;
+  /**
+   * Staff film-cut delegation. Optional so older WeekState literals stay valid;
+   * seed and choose paths always write `{ cut: null | StaffAssignmentId }`.
+   */
+  readonly staffAssignments?: {
+    readonly cut: StaffAssignmentId | null;
+  };
   /** Friday standing policies. Frozen once the coach takes the field. */
   readonly policies: PolicyState;
   /** The take-the-field decision. The snapshot itself is derived, not stored. */

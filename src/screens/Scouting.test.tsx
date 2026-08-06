@@ -55,10 +55,56 @@ describe('canonical Scouting surface', () => {
     await user.click(within(jv).getByRole('button', { name: 'K. Ames' }));
     expect(within(jv).getByText(/Ames misses Thursday/i)).toBeInTheDocument();
 
+    const cut = screen.getByRole('region', {
+      name: /Cut and tag the Friday-morning walkthrough reel/i,
+    });
+    expect(
+      within(cut).getByRole('button', { name: 'M. Soto' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await user.click(within(cut).getByRole('button', { name: 'D. Pruitt' }));
+    expect(
+      within(cut).getByRole('button', { name: 'D. Pruitt' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      within(cut).getByText(/Pruitt cuts it himself/i),
+    ).toBeInTheDocument();
+
     await user.click(screen.getByRole('tab', { name: /Hypotheses/ }));
     expect(
       screen.getByRole('heading', { name: /Prioritize 3 more concerns/i }),
     ).toBeInTheDocument();
+  });
+
+  it('persists the Friday-morning cut as a staff delegation decision', async () => {
+    const user = userEvent.setup();
+    await openFilmRoom(user);
+
+    await user.click(screen.getByRole('tab', { name: /^Assignments$/ }));
+    const cut = screen.getByRole('region', {
+      name: /Cut and tag the Friday-morning walkthrough reel/i,
+    });
+    await user.click(within(cut).getByRole('button', { name: 'D. Pruitt' }));
+    expect(
+      within(cut).getByText(/Pruitt cuts it himself/i),
+    ).toBeInTheDocument();
+
+    // Leave and return — the cut stays on file; JV / ST session rows do not gate it.
+    await user.click(screen.getByRole('tab', { name: /^Overview$/ }));
+    await user.click(screen.getByRole('tab', { name: /^Assignments$/ }));
+    expect(
+      within(
+        screen.getByRole('region', {
+          name: /Cut and tag the Friday-morning walkthrough reel/i,
+        }),
+      ).getByRole('button', { name: 'D. Pruitt' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      within(
+        screen.getByRole('region', {
+          name: /Central Catholic JV game/i,
+        }),
+      ).getByRole('button', { name: 'B. Tillman' }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows all 32 clips, explicit relationship text, and the canonical selected viewer', async () => {

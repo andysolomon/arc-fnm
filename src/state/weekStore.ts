@@ -19,6 +19,8 @@ import type {
   QuickAdjustCall,
   ScoutingTab,
   ScreenId,
+  StaffAssignmentId,
+  StaffAssignmentTaskId,
   RtFix,
   RtStarterId,
   TacticsTab,
@@ -40,6 +42,7 @@ import {
   takeField,
 } from '../domain/matchDay.ts';
 import { chooseAcademicResponse } from '../domain/programEvents.ts';
+import { chooseStaffDelegate } from '../domain/staffDelegation.ts';
 import {
   acceptRisk,
   adoptAnswerScheme,
@@ -116,6 +119,11 @@ export type WeekAction =
   | { type: 'select-rt-fix'; fix: RtFix }
   | { type: 'confirm-disruption' }
   | { type: 'choose-academic-response'; response: AcademicResponse }
+  | {
+      type: 'choose-staff-delegate';
+      task: StaffAssignmentTaskId;
+      delegate: StaffAssignmentId;
+    }
   | { type: 'set-policy'; id: PolicyId; value: PolicyValue }
   | { type: 'take-field' }
   | { type: 'match-advance'; plays?: number }
@@ -310,6 +318,12 @@ export function weekReducer(
       return {
         ...state,
         week: chooseAcademicResponse(state.week, action.response),
+      };
+
+    case 'choose-staff-delegate':
+      return {
+        ...state,
+        week: chooseStaffDelegate(state.week, action.task, action.delegate),
       };
 
     case 'set-policy':

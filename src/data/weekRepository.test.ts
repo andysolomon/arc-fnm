@@ -200,9 +200,11 @@ describe('Convex week adapter', () => {
 
     await repository.save(key, state);
 
+    const persisted = { ...state };
+    delete persisted.staffAssignments;
     expect(mutation).toHaveBeenCalledWith(weekFunctions.save, {
       ...key,
-      ...state,
+      ...persisted,
     });
     expect(Object.keys(mutation.mock.calls[0]?.[1] ?? {}).sort()).toEqual(
       [

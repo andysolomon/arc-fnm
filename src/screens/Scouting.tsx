@@ -15,6 +15,7 @@ import type {
   HypothesisId,
   ScoutingTab,
 } from '../domain/types.ts';
+import { STAFF_FILM_DELEGATES } from '../domain/staffDelegation.ts';
 import { useWeek } from '../state/weekContext.ts';
 import { Hypotheses } from './Hypotheses.tsx';
 
@@ -840,64 +841,90 @@ const ASSIGNMENTS = [
   },
 ] as const;
 
+const CUT_LABEL_TO_ID = {
+  'M. Soto': 'soto',
+  'D. Pruitt': 'pruitt',
+} as const;
+
 function Assignments({ onOpenFilm }: { readonly onOpenFilm: () => void }) {
+  const { dispatch, staffFilmDelegateEvent } = useWeek();
   const [assigned, setAssigned] = useState<Readonly<Record<string, string>>>({
     jv: 'B. Tillman',
-    cut: 'M. Soto',
     st: 'K. Ames',
   });
+  // UI-3 keeps Soto visually selected until a cut is on file; persistence starts null.
+  const cutLabel =
+    staffFilmDelegateEvent.response === null
+      ? 'M. Soto'
+      : (STAFF_FILM_DELEGATES.find(
+          (option) => option.id === staffFilmDelegateEvent.response,
+        )?.label ?? 'M. Soto');
+
   return (
     <div className="flex flex-wrap items-start gap-4">
       <Card className="min-w-0 flex-[1_1_420px] overflow-hidden p-0">
         <h2 className="m-0 border-b border-black/5 px-4 py-3 text-[13px] font-medium">
           Scout assignments · this week
         </h2>
-        {ASSIGNMENTS.map((assignment) => (
-          <section
-            key={assignment.id}
-            aria-label={assignment.task}
-            className="border-b border-black/5 p-4 last:border-0"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="m-0 min-w-0 flex-[1_1_200px] text-[12.5px] font-medium">
-                {assignment.task}
-              </h3>
-              <span className="text-ink-subtle font-mono text-[11px]">
-                {assignment.when}
-              </span>
-            </div>
-            <p className="text-ink-subtle mt-1.5 mb-0 text-[11.5px] leading-relaxed">
-              {assignment.detail}
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <span className="text-ink-subtle mr-1 font-mono text-[10px] font-medium tracking-[0.05em] uppercase">
-                Assigned to
-              </span>
-              {assignment.options.map((option) => (
-                <PillButton
-                  key={option}
-                  pressed={assigned[assignment.id] === option}
-                  className="h-[26px] px-3 text-[11.5px]"
-                  onClick={() =>
-                    setAssigned((current) => ({
-                      ...current,
-                      [assignment.id]: option,
-                    }))
-                  }
-                >
-                  {option}
-                </PillButton>
-              ))}
-            </div>
-            <p className="text-ink-muted mt-2 mb-0 text-[11.5px] leading-relaxed">
-              {
-                assignment.costs[
-                  assigned[assignment.id] as keyof typeof assignment.costs
-                ]
-              }
-            </p>
-          </section>
-        ))}
+        {ASSIGNMENTS.map((assignment) => {
+          const selected =
+            assignment.id === 'cut' ? cutLabel : assigned[assignment.id];
+          return (
+            <section
+              key={assignment.id}
+              aria-label={assignment.task}
+              className="border-b border-black/5 p-4 last:border-0"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="m-0 min-w-0 flex-[1_1_200px] text-[12.5px] font-medium">
+                  {assignment.task}
+                </h3>
+                <span className="text-ink-subtle font-mono text-[11px]">
+                  {assignment.when}
+                </span>
+              </div>
+              <p className="text-ink-subtle mt-1.5 mb-0 text-[11.5px] leading-relaxed">
+                {assignment.detail}
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <span className="text-ink-subtle mr-1 font-mono text-[10px] font-medium tracking-[0.05em] uppercase">
+                  Assigned to
+                </span>
+                {assignment.options.map((option) => (
+                  <PillButton
+                    key={option}
+                    pressed={selected === option}
+                    className="h-[26px] px-3 text-[11.5px]"
+                    onClick={() => {
+                      if (assignment.id === 'cut') {
+                        const delegate =
+                          CUT_LABEL_TO_ID[
+                            option as keyof typeof CUT_LABEL_TO_ID
+                          ];
+                        if (delegate === undefined) return;
+                        dispatch({
+                          type: 'choose-staff-delegate',
+                          task: 'cut',
+                          delegate,
+                        });
+                        return;
+                      }
+                      setAssigned((current) => ({
+                        ...current,
+                        [assignment.id]: option,
+                      }));
+                    }}
+                  >
+                    {option}
+                  </PillButton>
+                ))}
+              </div>
+              <p className="text-ink-muted mt-2 mb-0 text-[11.5px] leading-relaxed">
+                {assignment.costs[selected as keyof typeof assignment.costs]}
+              </p>
+            </section>
+          );
+        })}
       </Card>
       <div className="max-w-[420px] min-w-0 flex-[1_1_280px] space-y-4">
         <Card>
