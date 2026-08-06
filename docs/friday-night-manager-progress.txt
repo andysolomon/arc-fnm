@@ -31,6 +31,12 @@ Assignments 'cut' task is a persisted Coaching Decision under Soto film staff
 (deadline THU 9:00 PM). JV/ST rows remain session-only UI; canonical UI-3 copy,
 Match Day seed, and authority restrictions are untouched.
 
+Updated 2026-08-05: Phase 4.3 cohort carry-over slice shipped. A pure
+deriveCohortCarryOver selector surfaces a deterministic lessons
+carry-over note via data-cohort-note on DecisionReview NextOpponentCard
+and WeekHub Lessons pinned for Riverside. No WeekState/Convex/authority
+changes; canonical UI-3 copy and Match Day seed untouched.
+
 [ ] 0.0 - Phase 0 - Define boundaries and the real workflow
     [x] 0.1 - Exercise and critique the shared v1.4.2 artifact on desktop and mobile
     [x] 0.2 - Research evidence-backed coaching decisions and safety/rules boundaries
@@ -62,7 +68,7 @@ Match Day seed, and authority restrictions are untouched.
 [ ] 4.0 - Phase 4 - Complete and validate the Simulation Experience
     [x] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
     [x] 4.2 - Implement Head Coach staff delegation and authority boundaries
-    [ ] 4.3 - Implement multi-season cohort development and succession
+    [x] 4.3 - Implement multi-season cohort development and succession
     [x] 4.4 - Tie small-town narrative events to real program state and decisions
     [ ] 4.5 - Validate simulation fun, replayability, accessibility, and decision-learning transfer
 [ ] 5.0 - Phase 5 - Build and pilot the Program Workspace

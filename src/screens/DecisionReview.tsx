@@ -452,59 +452,61 @@ function LessonsCard() {
 }
 
 function NextOpponentCard() {
-  const { state, scenario, dispatch } = useWeek();
+  const { state, scenario, dispatch, cohortCarryOver } = useWeek();
   const review = deriveDecisionReview(state.week, scenario);
   return (
-    <Card aria-labelledby="next-opponent-heading" className="p-[15px_16px]">
-      <div className="flex items-center gap-2">
-        <StatusDot tone="accent" />
-        <h2
-          id="next-opponent-heading"
-          className="m-0 text-[12.5px] font-semibold"
-        >
-          Next — Week 9 · at Riverside
-        </h2>
-      </div>
-      <p className="text-ink-subtle mt-[5px] mb-0 text-[11.5px] leading-[1.55] text-pretty">
-        Fri Oct 23 · away · 5-2 and winners of three straight. Soto’s first cut
-        of film arrives Sunday night with your saved lessons pinned to the
-        board.
-      </p>
-      {review.savedLessons.length > 0 && (
-        <div className="mt-2.5 flex flex-col gap-1.5 pt-[9px] shadow-[0_-1px_0_0_rgba(0,0,0,0.06)]">
-          <h3 className="text-ink-subtle m-0 font-mono text-[10px] font-medium tracking-[0.5px] uppercase">
-            Pinned to Riverside
-          </h3>
-          {review.savedLessons.map((lesson) => (
-            <p
-              key={lesson.id}
-              className="text-ink-muted m-0 flex gap-2 text-[11px] leading-[1.5] text-pretty"
-            >
-              <span className="mt-1">
-                <StatusDot tone="accent" />
-              </span>
-              {lesson.text}
-            </p>
-          ))}
+    <div data-cohort-note={cohortCarryOver.note}>
+      <Card aria-labelledby="next-opponent-heading" className="p-[15px_16px]">
+        <div className="flex items-center gap-2">
+          <StatusDot tone="accent" />
+          <h2
+            id="next-opponent-heading"
+            className="m-0 text-[12.5px] font-semibold"
+          >
+            Next — Week 9 · at Riverside
+          </h2>
         </div>
-      )}
-      <Button
-        variant="primary"
-        className="mt-3 w-full justify-center"
-        disabled={!review.canClose}
-        aria-describedby="close-review-note"
-        onClick={() => dispatch({ type: 'review-close' })}
-      >
-        Close out the week
-      </Button>
-      <p
-        id="close-review-note"
-        className="text-ink-subtle mt-[7px] mb-0 text-[11px] leading-[1.5] text-pretty"
-      >
-        {review.canClose
-          ? 'Returns you to the Week hub with the result filed and your lessons pinned.'
-          : 'Save at least one lesson first — that is the point of the film session.'}
-      </p>
-    </Card>
+        <p className="text-ink-subtle mt-[5px] mb-0 text-[11.5px] leading-[1.55] text-pretty">
+          Fri Oct 23 · away · 5-2 and winners of three straight. Soto’s first
+          cut of film arrives Sunday night with your saved lessons pinned to the
+          board.
+        </p>
+        {review.savedLessons.length > 0 && (
+          <div className="mt-2.5 flex flex-col gap-1.5 pt-[9px] shadow-[0_-1px_0_0_rgba(0,0,0,0.06)]">
+            <h3 className="text-ink-subtle m-0 font-mono text-[10px] font-medium tracking-[0.5px] uppercase">
+              Pinned to Riverside
+            </h3>
+            {review.savedLessons.map((lesson) => (
+              <p
+                key={lesson.id}
+                className="text-ink-muted m-0 flex gap-2 text-[11px] leading-[1.5] text-pretty"
+              >
+                <span className="mt-1">
+                  <StatusDot tone="accent" />
+                </span>
+                {lesson.text}
+              </p>
+            ))}
+          </div>
+        )}
+        <Button
+          variant="primary"
+          className="mt-3 w-full justify-center"
+          disabled={!review.canClose}
+          aria-describedby="close-review-note"
+          onClick={() => dispatch({ type: 'review-close' })}
+        >
+          Close out the week
+        </Button>
+        <p
+          id="close-review-note"
+          className="text-ink-subtle mt-[7px] mb-0 text-[11px] leading-[1.5] text-pretty"
+        >
+          {review.canClose
+            ? 'Returns you to the Week hub with the result filed and your lessons pinned.'
+            : 'Save at least one lesson first — that is the point of the film session.'}
+        </p>
+      </Card>
+    </div>
   );
 }

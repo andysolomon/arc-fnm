@@ -8,6 +8,7 @@ import {
 } from 'react';
 
 import type { WeekScenario } from '../domain/types.ts';
+import { deriveCohortCarryOver } from '../domain/cohortCarryOver.ts';
 import { deriveDisruptionGate } from '../domain/disruption.ts';
 import { staffFilmDelegateEvent } from '../domain/staffDelegation.ts';
 import {
@@ -162,6 +163,7 @@ export function WeekProvider({
       practiceGate: derivePracticeGate(state.week, scenario),
       disruptionGate: deriveDisruptionGate(state.week),
       staffFilmDelegateEvent: staffFilmDelegateEvent(state.week),
+      cohortCarryOver: deriveCohortCarryOver(state.week),
       practiceSummaries: practiceObjectiveSummaries(state.week, scenario),
       views: hypothesisViews(state.week, scenario),
       next: nextStep(state.week, scenario),

@@ -4,20 +4,36 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import type { WeekRepository } from '../data/weekRepository.ts';
+import { deriveCohortCarryOver } from '../domain/cohortCarryOver.ts';
 import {
   chooseMatchOption,
   deriveMatch,
+  deriveTakeFieldContext,
+  execSeedFor,
+  execSeedInputFor,
   skipToDecision,
   takeField,
 } from '../domain/matchDay.ts';
 import { WEEK_8_SCENARIO } from '../domain/scenario.ts';
 import type { WeekState } from '../domain/types.ts';
-import { createSeedState } from '../domain/week.ts';
+import {
+  acceptRisk,
+  allocatePracticeBlock,
+  chooseAnswer,
+  confirmDisruption,
+  createSeedState,
+  lockPracticePlan,
+  selectRtFix,
+  selectRtStarter,
+  togglePriority,
+} from '../domain/week.ts';
 import { WeekProvider } from '../state/WeekProvider.tsx';
 import { useWeek } from '../state/weekContext.ts';
 import { Scouting } from './Scouting.tsx';
 import { WeekHub } from './WeekHub.tsx';
 import { DecisionReview } from './DecisionReview.tsx';
+
+const scenario = WEEK_8_SCENARIO;
 
 function fridayState(): WeekState {
   return {
@@ -41,6 +57,37 @@ function fridayState(): WeekState {
     rtFix: 'promote',
     disruptionConfirmed: true,
   };
+}
+
+/** The canonical Week 8 Webb/promote route for seed re-assertion. */
+function webbPromoteConfirmed(): WeekState {
+  let state = ['h1', 'h2', 'h3'].reduce(
+    (current, id) => togglePriority(current, scenario, id),
+    createSeedState(),
+  );
+  state = acceptRisk(state, scenario, 'h4');
+  state = chooseAnswer(state, scenario, 'h1', 'a11');
+  state = chooseAnswer(state, scenario, 'h2', 'a21');
+  state = chooseAnswer(state, scenario, 'h3', 'a31');
+  state = (
+    [
+      ['o2', 'MON'],
+      ['o3', 'MON'],
+      ['o1', 'TUE'],
+      ['o5', 'TUE'],
+      ['o6', 'TUE'],
+      ['o2', 'WED'],
+      ['o3', 'WED'],
+      ['o6', 'THU'],
+    ] as const
+  ).reduce(
+    (current, [objectiveId, day]) =>
+      allocatePracticeBlock(current, scenario, objectiveId, day),
+    state,
+  );
+  state = lockPracticePlan(state, scenario);
+  state = selectRtFix(selectRtStarter(state, scenario, 'webb'), 'promote');
+  return confirmDisruption(state, scenario);
 }
 
 function finalState(): WeekState {
@@ -191,6 +238,11 @@ describe('Decision Review screen', () => {
     });
     await user.click(lessonButtons[0]!);
     expect(close).toBeEnabled();
+    expect(
+      document
+        .querySelector('[data-cohort-note]')
+        ?.getAttribute('data-cohort-note'),
+    ).toBe('1 saved lesson ride to the Week 9 opponent board.');
     await user.click(close);
     expect(
       await screen.findByRole('heading', {
@@ -202,6 +254,11 @@ describe('Decision Review screen', () => {
         name: /Beat Central Catholic — Riverside is next/i,
       }),
     ).toBeVisible();
+    const hubNote = document.querySelector('[data-cohort-note]');
+    expect(hubNote).toHaveAttribute(
+      'data-cohort-note',
+      '1 saved lesson ride to the Week 9 opponent board.',
+    );
   });
 
   it('shows the canonical swap message when a fourth lesson is attempted', async () => {
@@ -219,5 +276,43 @@ describe('Decision Review screen', () => {
       'Three lessons travel. More than that is a binder nobody opens — swap one out instead.',
     );
     expect(screen.getByText('3 of 3 saved')).toBeVisible();
+    expect(
+      document
+        .querySelector('[data-cohort-note]')
+        ?.getAttribute('data-cohort-note'),
+    ).toBe('3 saved lessons ride to the Week 9 opponent board.');
+  });
+
+  it('exposes an empty cohort note until a lesson is saved, and keeps the Week 8 seed', async () => {
+    const friday = webbPromoteConfirmed();
+    const context = deriveTakeFieldContext(friday, scenario);
+    expect(execSeedInputFor(context)).toBe(
+      'h4|promote|Levi Webb|Chart|Kick|Bank|Ask|o1:2|o2:3|o3:3|o4:0|o5:2|o6:2',
+    );
+    expect(execSeedFor(context)).toBe(3_427_930_963);
+    expect(execSeedFor(context)).toBe(execSeedFor(context));
+
+    const played = finalState();
+    expect(deriveCohortCarryOver(played).note).toBe('');
+    expect([
+      deriveMatch(played, WEEK_8_SCENARIO).wScore,
+      deriveMatch(played, WEEK_8_SCENARIO).cScore,
+    ]).toEqual([20, 3]);
+
+    render(
+      <WeekProvider repository={repositoryFor(played)}>
+        <DecisionReview />
+      </WeekProvider>,
+    );
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Westfield 20 — 3 Central Catholic',
+      }),
+    ).toBeVisible();
+    expect(
+      document
+        .querySelector('[data-cohort-note]')
+        ?.getAttribute('data-cohort-note'),
+    ).toBe('');
   });
 });

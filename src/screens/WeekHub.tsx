@@ -122,15 +122,18 @@ function Section({
   children,
   labelledBy,
   className = '',
+  ...rest
 }: {
   children: ReactNode;
   labelledBy: string;
   className?: string;
+  'data-cohort-note'?: string;
 }) {
   return (
     <section
       aria-labelledby={labelledBy}
       className={`edge-raised overflow-hidden rounded-xl bg-white ${className}`}
+      {...rest}
     >
       {children}
     </section>
@@ -176,6 +179,7 @@ export function WeekHub() {
     practiceSummaries,
     disruptionGate,
     staffFilmDelegateEvent,
+    cohortCarryOver,
     dispatch,
   } = useWeek();
   const { week } = state;
@@ -453,7 +457,10 @@ export function WeekHub() {
           </Section>
 
           {week.reviewClosed && review.savedLessons.length > 0 && (
-            <Section labelledBy="hub-lessons-heading">
+            <Section
+              labelledBy="hub-lessons-heading"
+              data-cohort-note={cohortCarryOver.note}
+            >
               <div className="edge flex items-center gap-2 px-4 py-[13px]">
                 <StatusDot tone="accent" />
                 <h2
