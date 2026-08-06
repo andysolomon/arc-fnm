@@ -15,6 +15,11 @@ branch, exercising the body-short thin snapshot tier, and adding Decision Review
 rows for end-of-half, two-minute, and overtime (canonical seed and 20-3 outcome
 re-asserted in every new variant).
 
+Updated 2026-08-05: Phase 4.4 marked complete after shipping the narrative Inbox
+slice: a pure deriveNarrativeContext selector gates two post-game messages and
+one staff note on reviewClosed + chosen rtStarter; canonical UI-3 copy and 20-3
+outcome remain byte-for-byte untouched.
+
 [ ] 0.0 - Phase 0 - Define boundaries and the real workflow
     [x] 0.1 - Exercise and critique the shared v1.4.2 artifact on desktop and mobile
     [x] 0.2 - Research evidence-backed coaching decisions and safety/rules boundaries
@@ -47,7 +52,7 @@ re-asserted in every new variant).
     [ ] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
     [ ] 4.2 - Implement Head Coach staff delegation and authority boundaries
     [ ] 4.3 - Implement multi-season cohort development and succession
-    [ ] 4.4 - Tie small-town narrative events to real program state and decisions
+    [x] 4.4 - Tie small-town narrative events to real program state and decisions
     [ ] 4.5 - Validate simulation fun, replayability, accessibility, and decision-learning transfer
 [ ] 5.0 - Phase 5 - Build and pilot the Program Workspace
     [ ] 5.1 - Establish separate live-data authorization, audit, retention, and school-approval controls

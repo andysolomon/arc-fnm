@@ -1,4 +1,12 @@
+import type { NarrativeContext } from '../domain/narrative.ts';
 import type { ScreenId, TacticsTab } from '../domain/types.ts';
+
+/**
+ * Replaced with the coach's chosen right tackle when a post-game message is
+ * rendered. The name is never authored into copy, so a narrative beat cannot
+ * drift from the decision that produced it.
+ */
+export const RT_STARTER_TOKEN = '{rtStarter}';
 
 export type InboxMessageKind =
   'Academics' | 'Injury' | 'Scouting' | 'Press' | 'Boosters' | 'District';
@@ -18,6 +26,8 @@ export interface InboxMessage {
   readonly time: string;
   readonly initiallyUnread: boolean;
   readonly disruptionOnly?: boolean;
+  /** Arrives only after the coach closes Saturday's Decision Review. */
+  readonly postGameOnly?: boolean;
   readonly preview: string;
   readonly body: readonly string[];
   readonly actions: readonly InboxAction[];
@@ -29,6 +39,7 @@ export interface StaffNote {
   readonly role: string;
   readonly note: string;
   readonly disruptionOnly?: boolean;
+  readonly postGameOnly?: boolean;
 }
 
 export const INBOX_MESSAGES: readonly InboxMessage[] = [
@@ -169,6 +180,50 @@ export const INBOX_MESSAGES: readonly InboxMessage[] = [
     actions: [{ label: 'Open Academics', primary: true, screen: 'academics' }],
     sourceScreen: 'academics',
   },
+  {
+    id: 'herald-monday-notebook',
+    kind: 'Press',
+    sender: 'Westfield Herald',
+    subject: 'Notebook: the right tackle nobody planned on',
+    time: 'Sat 7:05 AM',
+    initiallyUnread: false,
+    postGameOnly: true,
+    preview:
+      'A follow-up on how Thursday’s right-tackle decision came together.',
+    body: [
+      'Coach — the angle I want is Thursday, not Friday. With Ryan Kowalski ineligible on two days’ notice, ' +
+        RT_STARTER_TOKEN +
+        ' ended up taking the right-tackle snaps against Central Catholic.',
+      'The result is in the box score and I can read that myself. What readers do not have is the decision: who else was on the board, what the protection package cost you, and what you told the line room Thursday afternoon.',
+      '— T. Alvarez, Westfield Herald',
+    ],
+    actions: [
+      { label: 'Open Decision Review', primary: true, screen: 'review' },
+      { label: 'View Schedule', primary: false, screen: 'schedule' },
+    ],
+    sourceScreen: 'review',
+  },
+  {
+    id: 'kowalski-checkpoint',
+    kind: 'Academics',
+    sender: 'Guidance Office',
+    subject: 'Kowalski: nothing changes before Oct 26',
+    time: 'Mon 7:30 AM',
+    initiallyUnread: false,
+    postGameOnly: true,
+    preview:
+      'Make-up work is in. He stays ineligible until the Oct 26 grading checkpoint.',
+    body: [
+      'Coach — Ryan Kowalski turned in the Algebra II work he had missed and his teacher has it graded. That is the right trend, and it changes nothing this week.',
+      'Eligibility for competition moves only at an official grading checkpoint, and his is Oct 26. Until then he remains ineligible for games; neither of us can move that date. He may keep practicing in the meantime.',
+      '— L. Whitmore, Guidance Counselor',
+    ],
+    actions: [
+      { label: 'Open Academics', primary: true, screen: 'academics' },
+      { label: 'View Schedule', primary: false, screen: 'schedule' },
+    ],
+    sourceScreen: 'academics',
+  },
 ] as const;
 
 export const STAFF_NOTES: readonly StaffNote[] = [
@@ -188,26 +243,62 @@ export const STAFF_NOTES: readonly StaffNote[] = [
     note: 'McCoy can condition. He does not take contact this week. That one is not a coaching decision.',
     disruptionOnly: true,
   },
+  {
+    person: 'R. Pruitt',
+    role: 'Offensive Coordinator',
+    note: 'Whatever Friday said about the tackle, we found out in a game instead of a practice. Before Riverside I want those protection reps on the script while the week is still calm.',
+    postGameOnly: true,
+  },
 ] as const;
 
-export function visibleInboxMessages(disrupted: boolean) {
-  return INBOX_MESSAGES.filter(
-    (message) => disrupted || message.disruptionOnly !== true,
+interface NarrativeGates {
+  readonly disruptionOnly?: boolean;
+  readonly postGameOnly?: boolean;
+}
+
+/** One gate rule for messages and staff notes: state must justify the item. */
+function isVisible(item: NarrativeGates, narrative: NarrativeContext): boolean {
+  if (item.disruptionOnly === true && !narrative.disrupted) return false;
+  if (item.postGameOnly === true && !narrative.postGameOpen) return false;
+  return true;
+}
+
+export function visibleInboxMessages(narrative: NarrativeContext) {
+  return INBOX_MESSAGES.filter((message) => isVisible(message, narrative));
+}
+
+export function visibleStaffNotes(narrative: NarrativeContext) {
+  return STAFF_NOTES.filter((note) => isVisible(note, narrative));
+}
+
+/**
+ * Resolve the right-tackle token against the coach's actual choice. Messages
+ * without the token are returned untouched, so canonical copy is never rewritten.
+ */
+export function inboxMessageBody(
+  message: InboxMessage,
+  narrative: NarrativeContext,
+): readonly string[] {
+  const starter = narrative.rtStarterName;
+  if (starter === null) return message.body;
+  return message.body.map((paragraph) =>
+    paragraph.split(RT_STARTER_TOKEN).join(starter),
   );
 }
 
-export function visibleStaffNotes(disrupted: boolean) {
-  return STAFF_NOTES.filter(
-    (note) => disrupted || note.disruptionOnly !== true,
-  );
-}
-
+/**
+ * Unread badging stays week-scoped. Post-game mail lands after the week is
+ * closed and never carries an unread dot, so this count depends only on the
+ * disruption gate and reads identically in the Inbox header and the nav badge.
+ */
 export function inboxUnreadCount(
   disrupted: boolean,
   readMessageIds: readonly string[],
 ) {
-  return visibleInboxMessages(disrupted).filter(
+  return INBOX_MESSAGES.filter(
     (message) =>
-      message.initiallyUnread && !readMessageIds.includes(message.id),
+      (disrupted || message.disruptionOnly !== true) &&
+      message.initiallyUnread &&
+      !readMessageIds.includes(message.id),
   ).length;
 }

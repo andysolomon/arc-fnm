@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
 
 import { Button, StatusDot, type StatusTone } from '../components/ui.tsx';
+import { deriveNarrativeContext } from '../domain/narrative.ts';
 import { useWeek } from '../state/weekContext.ts';
 import {
   INBOX_MESSAGES,
+  inboxMessageBody,
   inboxUnreadCount,
   visibleInboxMessages,
   visibleStaffNotes,
@@ -33,16 +35,16 @@ const ACKNOWLEDGED_LABELS: Readonly<Record<string, string>> = {
 
 export function Inbox() {
   const { state, dispatch } = useWeek();
-  const disrupted = state.week.practicePlanLocked;
-  const messages = visibleInboxMessages(disrupted);
-  const staffNotes = visibleStaffNotes(disrupted);
+  const narrative = deriveNarrativeContext(state.week);
+  const messages = visibleInboxMessages(narrative);
+  const staffNotes = visibleStaffNotes(narrative);
   const [selectedId, setSelectedId] = useState('state-u-scout');
   const [detailOpen, setDetailOpen] = useState(false);
   const [acknowledged, setAcknowledged] = useState<readonly string[]>([]);
   const selected =
     messages.find((message) => message.id === selectedId) ?? INBOX_MESSAGES[2]!;
   const unreadCount = inboxUnreadCount(
-    disrupted,
+    narrative.disrupted,
     state.nav.inboxReadMessageIds ?? [],
   );
 
@@ -184,7 +186,7 @@ export function Inbox() {
               {selected.sender}
             </button>
           </p>
-          {selected.body.map((paragraph) => (
+          {inboxMessageBody(selected, narrative).map((paragraph) => (
             <p
               key={paragraph}
               className="text-ink-muted mt-0 mb-3.5 text-[14px] leading-[1.7] text-pretty"
