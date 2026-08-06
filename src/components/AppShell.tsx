@@ -13,6 +13,7 @@ import type {
   TacticsTab,
 } from '../domain/types.ts';
 import { useWeek } from '../state/weekContext.ts';
+import { repositoryStatus } from '../data/weekRepository.ts';
 import { inboxUnreadCount } from '../screens/inboxData.ts';
 
 type IconId =
@@ -152,8 +153,17 @@ function MenuIcon() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { state, dispatch, gate, planGate, practiceGate, next, scenario } =
-    useWeek();
+  const {
+    state,
+    dispatch,
+    gate,
+    planGate,
+    practiceGate,
+    next,
+    scenario,
+    repository,
+  } = useWeek();
+  const storage = repositoryStatus(repository);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const drawer = useRef<HTMLElement>(null);
@@ -457,6 +467,25 @@ export function AppShell({ children }: { children: ReactNode }) {
         </span>
         <span>
           Booster Fund <span className="text-ink font-medium">$12,400</span>
+        </span>
+        <span aria-hidden="true" className="text-hairline">
+          ·
+        </span>
+        <span
+          className="inline-flex items-center gap-1.5"
+          title={storage.detail}
+        >
+          Storage <span className="text-ink font-medium">{storage.label}</span>
+          <span
+            aria-hidden="true"
+            className={`inline-block size-[7px] rounded-full ${
+              storage.configError !== null
+                ? 'bg-danger'
+                : storage.mode === 'convex'
+                  ? 'bg-good'
+                  : 'bg-hairline'
+            }`}
+          />
         </span>
       </footer>
     </div>

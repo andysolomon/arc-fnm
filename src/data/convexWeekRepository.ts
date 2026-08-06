@@ -2,7 +2,81 @@ import { ConvexHttpClient } from 'convex/browser';
 import { makeFunctionReference } from 'convex/server';
 
 import type { WeekState } from '../domain/types.ts';
-import type { WeekRepository } from './weekRepository.ts';
+import { CONVEX_STATUS, type WeekRepository } from './weekRepository.ts';
+
+export type WeekOperation = 'load' | 'save' | 'clear';
+
+export type WeekRepositoryErrorCode = 'timeout' | 'failed';
+
+/**
+ * A repository failure the app can reason about: which operation broke, and
+ * whether the deployment answered at all. Callers get one error type instead of
+ * whatever the transport happened to throw.
+ */
+export class WeekRepositoryError extends Error {
+  readonly operation: WeekOperation;
+  readonly code: WeekRepositoryErrorCode;
+
+  constructor(
+    operation: WeekOperation,
+    code: WeekRepositoryErrorCode,
+    message: string,
+    options?: { readonly cause?: unknown },
+  ) {
+    super(message, options);
+    this.name = 'WeekRepositoryError';
+    this.operation = operation;
+    this.code = code;
+  }
+}
+
+/**
+ * A hung deployment must not hang the week. Long enough to absorb a cold start,
+ * short enough that the coach is told something is wrong.
+ */
+export const CONVEX_TIMEOUT_MS = 8_000;
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * Bound one Convex call. `Promise.race` already attaches a handler to `work`, so
+ * a late rejection after a timeout stays handled rather than surfacing as an
+ * unhandled rejection.
+ */
+async function withTimeout<T>(
+  operation: WeekOperation,
+  timeoutMs: number,
+  work: () => Promise<T>,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expiry = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(
+        new WeekRepositoryError(
+          operation,
+          'timeout',
+          `Convex ${operation} timed out after ${timeoutMs}ms.`,
+        ),
+      );
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([work(), expiry]);
+  } catch (error) {
+    if (error instanceof WeekRepositoryError) throw error;
+    throw new WeekRepositoryError(
+      operation,
+      'failed',
+      `Convex ${operation} failed: ${messageOf(error)}`,
+      { cause: error },
+    );
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
 
 /** The decision fields stored for a week. Derived gates never cross this boundary. */
 export type PersistedWeekState = Pick<
@@ -110,29 +184,47 @@ function stateFrom(document: StoredWeekDocument): WeekState {
   };
 }
 
+export interface ConvexWeekRepositoryOptions {
+  /** Per-call budget. Overridden in tests to keep timeout coverage fast. */
+  readonly timeoutMs?: number;
+}
+
 /** Convex-backed implementation of the existing repository boundary. */
 export function createConvexWeekRepository(
   client: WeekConvexClient,
+  options: ConvexWeekRepositoryOptions = {},
 ): WeekRepository {
+  const timeoutMs = options.timeoutMs ?? CONVEX_TIMEOUT_MS;
+
   return {
     name: 'Convex persistence',
     persists: true,
+    status: CONVEX_STATUS,
     async load(key) {
-      const document = await client.query(weekFunctions.get, key);
+      const document = await withTimeout('load', timeoutMs, () =>
+        client.query(weekFunctions.get, key),
+      );
       return document === null ? null : stateFrom(document);
     },
     async save(key, state) {
-      await client.mutation(weekFunctions.save, {
-        ...key,
-        ...decisionsFrom(state),
-      });
+      await withTimeout('save', timeoutMs, () =>
+        client.mutation(weekFunctions.save, {
+          ...key,
+          ...decisionsFrom(state),
+        }),
+      );
     },
     async clear(key) {
-      await client.mutation(weekFunctions.reset, key);
+      await withTimeout('clear', timeoutMs, () =>
+        client.mutation(weekFunctions.reset, key),
+      );
     },
   };
 }
 
-export function createConvexHttpWeekRepository(url: string): WeekRepository {
-  return createConvexWeekRepository(new ConvexHttpClient(url));
+export function createConvexHttpWeekRepository(
+  url: string,
+  options: ConvexWeekRepositoryOptions = {},
+): WeekRepository {
+  return createConvexWeekRepository(new ConvexHttpClient(url), options);
 }

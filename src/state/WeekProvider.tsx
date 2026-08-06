@@ -35,6 +35,15 @@ import {
 /** No authentication in this slice; the demo career is a fixed opaque key. */
 const DEMO_WEEK_KEY: WeekKey = { careerId: 'demo', weekNumber: 8 };
 
+/**
+ * Persistence is best-effort: the week is fully playable from in-memory state,
+ * so a repository failure is reported and never thrown into the render tree.
+ */
+function reportRepositoryFailure(operation: string, error: unknown): void {
+  const detail = error instanceof Error ? error.message : String(error);
+  console.error(`Week repository ${operation} failed: ${detail}`);
+}
+
 interface WeekProviderProps {
   readonly children: ReactNode;
   readonly scenario?: WeekScenario;
@@ -64,7 +73,13 @@ export function WeekProvider({
   }, [state.week]);
   const writeQueue = useRef(Promise.resolve());
   const enqueueWrite = useCallback((write: () => Promise<void>) => {
-    writeQueue.current = writeQueue.current.then(write, write);
+    // A failed write must not poison the queue or escape as an unhandled
+    // rejection: the coach keeps working locally, and the reason is reported.
+    writeQueue.current = writeQueue.current
+      .then(write, write)
+      .catch((error: unknown) => {
+        reportRepositoryFailure('save', error);
+      });
     void writeQueue.current;
   }, []);
 
@@ -77,7 +92,12 @@ export function WeekProvider({
     skipNextSave.current = false;
     const hydrateVersion = weekMutationVersion.current;
     let cancelled = false;
-    void repo.load(DEMO_WEEK_KEY).then((stored) => {
+    const loaded = repo.load(DEMO_WEEK_KEY).catch((error: unknown) => {
+      // A failed read is a miss: the seeded week stands and writes resume.
+      reportRepositoryFailure('load', error);
+      return null;
+    });
+    void loaded.then((stored) => {
       if (cancelled) return;
       hydrated.current = true;
       if (weekMutationVersion.current !== hydrateVersion) {
