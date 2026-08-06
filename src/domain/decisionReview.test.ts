@@ -12,6 +12,7 @@ import {
   chooseMatchOption,
   deriveMatch,
   deriveTakeFieldContext,
+  execSeedFor,
   skipToDecision,
   takeField,
   unavailablePlayersOf,
@@ -416,5 +417,120 @@ describe('Phase 2.6 — a roster constraint changes the Decision Review', () => 
 
     expect(canonical.score).toBe('Westfield 20 — 3 Central Catholic');
     expect(short.score).toBe('Westfield 20 — 6 Central Catholic');
+  });
+});
+
+/**
+ * Phase 3.4 — the late-game priority periods the canonical week never prepares.
+ *
+ * Seeded Week 8 declares no priority situation, and the existing coverage only
+ * names four-minute. End-of-half, two-minute, and overtime each hash into a
+ * different execution seed, so each one has to be shown landing in Monday's
+ * rows — including the honest case where a different seed lands the same six
+ * rows. Every test re-asserts the canonical 20–3 review alongside its variant.
+ */
+describe('Phase 3.4 — prepared late-game periods reach the Decision Review', () => {
+  const canonicalReview = () =>
+    deriveDecisionReview(playToFinal(fridayState('A')).state, scenario);
+
+  it.each([
+    ['end-of-half', 595_169_807],
+    ['overtime', 3_096_729_405],
+  ] as const)(
+    'turns a prepared %s period into a different flood row and a 24–3 review',
+    (situation, seed) => {
+      const situational = situationScenario('o6', situation);
+      const baseline = canonicalReview();
+      const review = deriveDecisionReview(
+        playToFinal(fridayState('A'), situational).state,
+        situational,
+      );
+
+      expect(
+        deriveTakeFieldContext(fridayState('A'), situational).sits,
+      ).toEqual([situation]);
+      expect(
+        execSeedFor(deriveTakeFieldContext(fridayState('A'), situational)),
+      ).toBe(seed);
+
+      // Same six decisions, three different rows: the flood cashes instead of
+      // sailing, and both later titles carry the wider scoreboard with them.
+      expect(review.rows.map((row) => row.decisionId)).toEqual(
+        baseline.rows.map((row) => row.decisionId),
+      );
+      expect(review.score).toBe('Westfield 24 — 3 Central Catholic');
+      expect(review.rows[3]?.decisionId).toBe('s_flood');
+      expect(review.rows[3]?.execution).toBe(
+        'Practiced — trips flood · Repped. The window from film, hit in a game.',
+      );
+      expect(review.rows[3]?.result).toBe(
+        'Westfield +7 · Central +3 across the sequence',
+      );
+      expect(review.rows[3]?.resultTone).toBe('good');
+      expect(review.rows[4]?.title).toBe('Up 20 — take the point or press it?');
+      expect(review.rows[5]?.title).toBe(
+        'Their last drive — protect a 21-point lead',
+      );
+      // Preparation is unmoved — the period changed execution, not the plan.
+      expect(review.rows.map((row) => row.preparation)).toEqual(
+        baseline.rows.map((row) => row.preparation),
+      );
+
+      expect(baseline.score).toBe('Westfield 20 — 3 Central Catholic');
+      expect(baseline.rows[3]?.execution).toBe(
+        'Rehearsed — right call, missed throw',
+      );
+      expect(baseline.rows[4]?.title).toBe(
+        'Up 16 — take the point or press it?',
+      );
+    },
+  );
+
+  it('lands end-of-half and overtime on the same rows from two different seeds', () => {
+    const endOfHalf = situationScenario('o6', 'end-of-half');
+    const overtime = situationScenario('o6', 'overtime');
+    const endOfHalfRun = playToFinal(fridayState('A'), endOfHalf);
+    const overtimeRun = playToFinal(fridayState('A'), overtime);
+
+    expect(
+      execSeedFor(deriveTakeFieldContext(fridayState('A'), endOfHalf)),
+    ).not.toBe(execSeedFor(deriveTakeFieldContext(fridayState('A'), overtime)));
+    // Two seeds, two feeds — a Q2 sprint-out contain resolves differently —
+    // and still one shared set of Monday rows.
+    expect(overtimeRun.view.plays).not.toEqual(endOfHalfRun.view.plays);
+    expect(deriveDecisionReview(overtimeRun.state, overtime).rows).toEqual(
+      deriveDecisionReview(endOfHalfRun.state, endOfHalf).rows,
+    );
+    expect(canonicalReview().score).toBe('Westfield 20 — 3 Central Catholic');
+  });
+
+  it('reseeds a prepared two-minute period without moving this route’s rows', () => {
+    const twoMinute = situationScenario('o6', 'two-minute');
+    const baseline = canonicalReview();
+    const run = playToFinal(fridayState('A'), twoMinute);
+    const review = deriveDecisionReview(run.state, twoMinute);
+
+    expect(deriveTakeFieldContext(fridayState('A'), twoMinute).sits).toEqual([
+      'two-minute',
+    ]);
+    expect(
+      execSeedFor(deriveTakeFieldContext(fridayState('A'), twoMinute)),
+    ).toBe(1_338_690_115);
+    expect(
+      execSeedFor(deriveTakeFieldContext(fridayState('A'), scenario)),
+    ).toBe(1_768_531_688);
+
+    // A different seed that happens to resolve every roll the same way: the
+    // review has to report that honestly rather than invent a difference.
+    expect(review.rows).toEqual(baseline.rows);
+    expect(review.score).toBe('Westfield 20 — 3 Central Catholic');
+    expect(review.risk).toEqual(baseline.risk);
+    expect(review.lessonCandidates.map((lesson) => lesson.id)).toEqual([
+      'l_risk',
+      'l_rt',
+      'l_ex',
+      'l_sample',
+    ]);
+    expect(baseline.score).toBe('Westfield 20 — 3 Central Catholic');
   });
 });

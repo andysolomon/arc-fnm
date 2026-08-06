@@ -162,6 +162,36 @@ function playerOutScenario(
   };
 }
 
+/**
+ * Play to the horn choosing an explicit option index at each key situation.
+ * `playGoldenPath` always takes option 0; this reaches the branches that only
+ * a different call opens, without touching the canonical route it leaves alone.
+ */
+function playChosenPath(
+  initial: WeekState,
+  picks: readonly number[],
+  against: WeekScenario = scenario,
+): {
+  state: WeekState;
+  view: MatchView;
+  decisions: readonly string[];
+} {
+  let state = takeField(initial);
+  const decisions: string[] = [];
+  for (let guard = 0; guard < 12; guard += 1) {
+    state = skipToDecision(state, against);
+    const view = deriveMatch(state, against);
+    if (view.phase === 'final') return { state, view, decisions };
+    expect(view.pending).not.toBeNull();
+    const pending = view.pending!;
+    const index = picks[decisions.length] ?? 0;
+    expect(pending.opts[index]).toBeDefined();
+    decisions.push(pending.id);
+    state = chooseMatchOption(state, against, pending.id, index);
+  }
+  throw new Error('chosen path did not reach the final horn');
+}
+
 function playGoldenPath(
   initial: WeekState,
   against: WeekScenario = scenario,
@@ -746,6 +776,144 @@ describe('priority situations and unavailable players', () => {
     const result = playGoldenPath(fridayState('A'));
     expect([result.view.wScore, result.view.cScore]).toEqual([20, 3]);
     expect(result.view.plays[0]?.t).toBe(
+      'FINAL — Westfield 20, Central Catholic 3. The district runs through Wildcat Stadium.',
+    );
+    expect(deriveFieldSnapshot(fridayState('A'), scenario).thin).toHaveLength(
+      3,
+    );
+  });
+});
+
+/**
+ * Phase 3.4 — the named causal routes the seeded McCoy path never reaches.
+ *
+ * The golden paths always take option 0 and always run the canonical Week 8
+ * roster, so two production branches stay dark: the overtime queue, which only
+ * opens when the closing decision leaves a three-point lead against a Prevent
+ * shell, and the snapshot's "body short" tier, which only opens when a package
+ * that is Rehearsed on paper loses a body nothing else in the week accounts
+ * for. Each test names its route, and each one re-asserts canonical Week 8.
+ */
+describe('overtime and body-short routes', () => {
+  it('drives the overtime queue when a Prevent shell concedes the tying field goal', () => {
+    // Scenario B, choosing Bend / Punt / Timeout / Take the shot / Kick and
+    // then Prevent: the shell gives up the field goal that ties it, and the
+    // repped rules (o2 Repped) carry the extra period.
+    const picks = [2, 1, 0, 0, 0, 1] as const;
+    const overtime = playChosenPath(fridayState('B'), picks);
+
+    expect(overtime.decisions).toEqual([
+      's_power',
+      's_fourth',
+      's_clock',
+      's_flood',
+      's_pat',
+      's_close_def',
+    ]);
+    expect(
+      overtime.view.log.some(
+        (entry) => entry.title === 'Their last drive — protect a 3-point lead',
+      ),
+    ).toBe(true);
+    expect(
+      overtime.view.plays
+        .filter((play) => play.q === 'OT')
+        .map((play) => [play.c, play.t, play.tag]),
+    ).toEqual([
+      [
+        '13:40',
+        'Carter punches in the winner from the 4 — TOUCHDOWN WESTFIELD',
+        '',
+      ],
+      [
+        '15:00',
+        'OVERTIME — the repped rules force a field goal on Central’s possession',
+        'Practiced — the fits held one more time',
+      ],
+    ]);
+    expect(overtime.view.phase).toBe('final');
+    expect([overtime.view.wScore, overtime.view.cScore]).toEqual([20, 16]);
+    expect(overtime.view.mom).toBe(76);
+    expect(overtime.view.decisionCount).toBe(6);
+    expect(overtime.view.plays[0]?.t).toBe(
+      'FINAL — Westfield 20, Central Catholic 16. The district runs through Wildcat Stadium.',
+    );
+    expect(overtime.state.stage).toBe('review');
+    expect(overtime.state.matchSpeed).toBe('pause');
+    // Same picks, same overtime — the extra period carries no fresh entropy.
+    expect(playChosenPath(fridayState('B'), picks).view).toEqual(overtime.view);
+
+    // The option-0 route off the same Friday never sees an extra period.
+    const goldenB = playGoldenPath(fridayState('B'));
+    expect(goldenB.view.plays.some((play) => play.q === 'OT')).toBe(false);
+    expect([goldenB.view.wScore, goldenB.view.cScore]).toEqual([16, 14]);
+
+    const canonical = playGoldenPath(fridayState('A'));
+    expect([canonical.view.wScore, canonical.view.cScore]).toEqual([20, 3]);
+    expect(
+      execSeedFor(deriveTakeFieldContext(webbPromoteConfirmed(), scenario)),
+    ).toBe(3_427_930_963);
+  });
+
+  it('calls a Rehearsed package thin — not uncovered — when it is only a body short', () => {
+    // Scenario B reps the trips flood three times, so o3 is Rehearsed. Ruiz is
+    // third on that package's depth chart and Mendes is the slide starter, so
+    // nothing else in the snapshot speaks for Ruiz being out.
+    const ruizOut = playerOutScenario('player-ruiz');
+    const baseline = deriveFieldSnapshot(fridayState('B'), scenario);
+    const short = deriveFieldSnapshot(fridayState('B'), ruizOut);
+
+    expect(
+      baseline.prepared.map((item) => [item.name, item.note]),
+    ).toContainEqual([
+      'Trips-side flood vs Cover 3',
+      '18 reps across 3 blocks',
+    ]);
+    expect(short.prepared.map((item) => item.name)).toEqual([
+      'Kick coverage lane discipline',
+    ]);
+    expect(short.thin.map((item) => [item.name, item.note])).toContainEqual([
+      'Trips-side flood vs Cover 3',
+      'Rehearsed on paper · P. Ruiz unavailable, the package is a body short',
+    ]);
+    // Unseen in the same short package still drops all the way to uncovered.
+    expect(short.uncovered.map((item) => [item.name, item.note])).toEqual([
+      [
+        'Puller recognition and fit integrity',
+        'Accepted risk — no practice time, by choice.',
+      ],
+      [
+        'Right tackle protection with a backup',
+        'P. Ruiz unavailable — the package has no repped body left.',
+      ],
+    ]);
+
+    const canonicalB = deriveTakeFieldContext(fridayState('B'), scenario);
+    const shortContext = deriveTakeFieldContext(fridayState('B'), ruizOut);
+    expect(shortContext.outs).toEqual(['player-ruiz']);
+    expect(shortContext.lvl).toEqual(canonicalB.lvl);
+    expect(execSeedInputFor(shortContext)).toBe(
+      `${execSeedInputFor(canonicalB)}|out:player-ruiz`,
+    );
+    expect(execSeedFor(shortContext)).toBe(2_123_723_806);
+    expect(execSeedFor(canonicalB)).toBe(3_857_828_646);
+
+    // Mendes is the slide starter, so his absence is already represented and
+    // the same Friday hashes exactly what it hashed before.
+    const mendesOut = deriveTakeFieldContext(
+      fridayState('B'),
+      playerOutScenario('player-mendes'),
+    );
+    expect(mendesOut.outs).toEqual([]);
+    expect(execSeedFor(mendesOut)).toBe(3_857_828_646);
+
+    // A body short changes what the snapshot admits, not this route's horn.
+    const shortView = playGoldenPath(fridayState('B'), ruizOut).view;
+    expect([shortView.wScore, shortView.cScore]).toEqual([16, 14]);
+
+    const canonical = playGoldenPath(fridayState('A'));
+    expect([canonical.view.wScore, canonical.view.cScore]).toEqual([20, 3]);
+    expect(canonical.view.plays[0]?.t).toBe(
       'FINAL — Westfield 20, Central Catholic 3. The district runs through Wildcat Stadium.',
     );
     expect(deriveFieldSnapshot(fridayState('A'), scenario).thin).toHaveLength(

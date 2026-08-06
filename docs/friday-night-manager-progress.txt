@@ -10,6 +10,11 @@ Updated 2026-08-05: Phase 2.4, 2.5, and 2.6 marked complete after shipping
 typed RT/protection roster, Texas UIL 2026-27 jurisdiction provenance, contact-cap
 causality, McCoy availability fallback, and named Phase 2.6 plan-change tests on main.
 
+Updated 2026-08-05: Phase 3.4 marked complete after driving the overtime queue
+branch, exercising the body-short thin snapshot tier, and adding Decision Review
+rows for end-of-half, two-minute, and overtime (canonical seed and 20-3 outcome
+re-asserted in every new variant).
+
 [ ] 0.0 - Phase 0 - Define boundaries and the real workflow
     [x] 0.1 - Exercise and critique the shared v1.4.2 artifact on desktop and mobile
     [x] 0.2 - Research evidence-backed coaching decisions and safety/rules boundaries
@@ -37,7 +42,7 @@ causality, McCoy availability fallback, and named Phase 2.6 plan-change tests on
     [x] 3.1 - Implement coach-owned situational policies and legal game-day presentation
     [x] 3.2 - Implement the uncertainty-aware game simulation slice
     [x] 3.3 - Implement Decision Review separating choice, execution, randomness, and outcome
-    [ ] 3.4 - Test priority game-state and unavailable-player scenarios
+    [x] 3.4 - Test priority game-state and unavailable-player scenarios
 [ ] 4.0 - Phase 4 - Complete and validate the Simulation Experience
     [ ] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
     [ ] 4.2 - Implement Head Coach staff delegation and authority boundaries
