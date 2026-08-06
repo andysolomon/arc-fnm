@@ -147,13 +147,15 @@ export type RtFix = 'promote' | 'simplify' | 'switch' | 'accept';
 export type AcademicResponse = 'tutor' | 'study-hall';
 
 /**
- * Who the coach assigns to cut Friday-morning film. The film desk (Soto) still
- * owns the deadline and the note; this is only the coaching delegation.
+ * Who the coach assigns to a scout-assignment task. The desks still own their
+ * deadlines and their notes; this is only the coaching delegation. Which ids a
+ * task actually accepts is task-scoped — `nobody` is a real answer to the
+ * return-unit breakdown, and never a legal cutter.
  */
-export type StaffAssignmentId = 'soto' | 'pruitt';
+export type StaffAssignmentId = 'soto' | 'pruitt' | 'ames' | 'nobody';
 
 /** Scout assignment tasks that persist as Coaching Decisions. */
-export type StaffAssignmentTaskId = 'cut';
+export type StaffAssignmentTaskId = 'cut' | 'st';
 
 /** A coach may park (`hold`) or discard (`reject`) a hypothesis. */
 export type Disposition = 'hold' | 'reject';
@@ -487,11 +489,13 @@ export interface WeekState {
   /** The academic-support response on file. It never moves eligibility. */
   readonly academicResponse: AcademicResponse | null;
   /**
-   * Staff film-cut delegation. Optional so older WeekState literals stay valid;
-   * seed and choose paths always write `{ cut: null | StaffAssignmentId }`.
+   * Scout-assignment delegations. Optional — and `st` optional within it — so
+   * older WeekState literals and the canonical seed stay valid; every absent
+   * task reads as "no delegate on file".
    */
   readonly staffAssignments?: {
     readonly cut: StaffAssignmentId | null;
+    readonly st?: StaffAssignmentId | null;
   };
   /** Friday standing policies. Frozen once the coach takes the field. */
   readonly policies: PolicyState;

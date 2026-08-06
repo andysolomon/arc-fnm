@@ -107,6 +107,59 @@ describe('canonical Scouting surface', () => {
     ).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('persists the return-unit breakdown as a staff delegation decision', async () => {
+    const user = userEvent.setup();
+    await openFilmRoom(user);
+
+    await user.click(screen.getByRole('tab', { name: /^Assignments$/ }));
+    const returnUnit = () =>
+      screen.getByRole('region', {
+        name: /Central Catholic return-unit breakdown/i,
+      });
+    expect(
+      within(returnUnit()).getByRole('button', { name: 'K. Ames' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(within(returnUnit()).getByText('WED 4:00 PM')).toBeInTheDocument();
+
+    await user.click(
+      within(returnUnit()).getByRole('button', { name: 'M. Soto' }),
+    );
+    expect(
+      within(returnUnit()).getByRole('button', { name: 'M. Soto' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      within(returnUnit()).getByText(/Soto adds it to his plate/i),
+    ).toBeInTheDocument();
+
+    // Leave and return — the breakdown stays on file, and the cut is untouched.
+    await user.click(screen.getByRole('tab', { name: /^Overview$/ }));
+    await user.click(screen.getByRole('tab', { name: /^Assignments$/ }));
+    expect(
+      within(returnUnit()).getByRole('button', { name: 'M. Soto' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      within(
+        screen.getByRole('region', {
+          name: /Cut and tag the Friday-morning walkthrough reel/i,
+        }),
+      ).getByRole('button', { name: 'M. Soto' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+
+    // “Nobody” is an answer, and the Week Hub reports it back as a staff note.
+    await user.click(
+      within(returnUnit()).getByRole('button', { name: 'Nobody' }),
+    );
+    // The sidebar item carries its pending-decision badge in the same label.
+    await user.click(screen.getByRole('button', { name: /^Week\d*$/ }));
+    const staff = screen.getByRole('region', { name: 'From the staff' });
+    expect(
+      within(staff).getByText(/six returns and no breakdown/i),
+    ).toBeInTheDocument();
+    expect(
+      within(staff).getByText(/Scouting Coordinator · WED 4:00 PM/i),
+    ).toBeInTheDocument();
+  });
+
   it('shows all 32 clips, explicit relationship text, and the canonical selected viewer', async () => {
     const user = userEvent.setup();
     await openFilmRoom(user);

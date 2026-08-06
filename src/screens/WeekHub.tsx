@@ -179,6 +179,7 @@ export function WeekHub() {
     practiceSummaries,
     disruptionGate,
     staffFilmDelegateEvent,
+    returnScoutDelegateEvent,
     cohortCarryOver,
     dispatch,
   } = useWeek();
@@ -186,6 +187,7 @@ export function WeekHub() {
   const review = deriveDecisionReview(week, scenario);
   const disrupted = week.practicePlanLocked;
   const cutAssigned = staffFilmDelegateEvent.response !== null;
+  const returnScoutAssigned = returnScoutDelegateEvent.response !== null;
   const baseDecision = DECISIONS[week.stage];
   const decision: DecisionCopy = week.reviewClosed
     ? {
@@ -828,6 +830,17 @@ export function WeekHub() {
                   </p>
                   <p className="text-ink-subtle mt-1 mb-0 text-[11px]">
                     M. Soto · Graduate Assistant · Film
+                  </p>
+                </div>
+              )}
+              {returnScoutAssigned && (
+                <div>
+                  <p className="text-ink-muted m-0 text-[12.5px] leading-[1.6] text-pretty">
+                    “{returnScoutDelegateEvent.consequence}”
+                  </p>
+                  <p className="text-ink-subtle mt-1 mb-0 text-[11px]">
+                    {returnScoutDelegateEvent.authority} ·{' '}
+                    {returnScoutDelegateEvent.deadline}
                   </p>
                 </div>
               )}

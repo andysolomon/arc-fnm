@@ -14,8 +14,12 @@ import type {
   FilmClip,
   HypothesisId,
   ScoutingTab,
+  StaffAssignmentTaskId,
 } from '../domain/types.ts';
-import { STAFF_FILM_DELEGATES } from '../domain/staffDelegation.ts';
+import {
+  staffTaskDelegates,
+  type StaffDelegationEvent,
+} from '../domain/staffDelegation.ts';
 import { useWeek } from '../state/weekContext.ts';
 import { Hypotheses } from './Hypotheses.tsx';
 
@@ -841,24 +845,36 @@ const ASSIGNMENTS = [
   },
 ] as const;
 
-const CUT_LABEL_TO_ID = {
-  'M. Soto': 'soto',
-  'D. Pruitt': 'pruitt',
-} as const;
+/**
+ * UI-3 keeps the staff's own pick visually selected until the coach puts a
+ * decision on file; persistence starts null for both delegated tasks.
+ */
+const DELEGATED_DEFAULT_LABEL: Readonly<Record<StaffAssignmentTaskId, string>> =
+  {
+    cut: 'M. Soto',
+    st: 'K. Ames',
+  };
+
+function delegatedLabel(
+  task: StaffAssignmentTaskId,
+  event: StaffDelegationEvent,
+): string {
+  return (
+    staffTaskDelegates(task).find((option) => option.id === event.response)
+      ?.label ?? DELEGATED_DEFAULT_LABEL[task]
+  );
+}
 
 function Assignments({ onOpenFilm }: { readonly onOpenFilm: () => void }) {
-  const { dispatch, staffFilmDelegateEvent } = useWeek();
+  const { dispatch, staffFilmDelegateEvent, returnScoutDelegateEvent } =
+    useWeek();
   const [assigned, setAssigned] = useState<Readonly<Record<string, string>>>({
     jv: 'B. Tillman',
-    st: 'K. Ames',
   });
-  // UI-3 keeps Soto visually selected until a cut is on file; persistence starts null.
-  const cutLabel =
-    staffFilmDelegateEvent.response === null
-      ? 'M. Soto'
-      : (STAFF_FILM_DELEGATES.find(
-          (option) => option.id === staffFilmDelegateEvent.response,
-        )?.label ?? 'M. Soto');
+  const delegated: Readonly<Record<StaffAssignmentTaskId, string>> = {
+    cut: delegatedLabel('cut', staffFilmDelegateEvent),
+    st: delegatedLabel('st', returnScoutDelegateEvent),
+  };
 
   return (
     <div className="flex flex-wrap items-start gap-4">
@@ -868,7 +884,9 @@ function Assignments({ onOpenFilm }: { readonly onOpenFilm: () => void }) {
         </h2>
         {ASSIGNMENTS.map((assignment) => {
           const selected =
-            assignment.id === 'cut' ? cutLabel : assigned[assignment.id];
+            assignment.id === 'jv'
+              ? assigned[assignment.id]
+              : delegated[assignment.id];
           return (
             <section
               key={assignment.id}
@@ -896,23 +914,22 @@ function Assignments({ onOpenFilm }: { readonly onOpenFilm: () => void }) {
                     pressed={selected === option}
                     className="h-[26px] px-3 text-[11.5px]"
                     onClick={() => {
-                      if (assignment.id === 'cut') {
-                        const delegate =
-                          CUT_LABEL_TO_ID[
-                            option as keyof typeof CUT_LABEL_TO_ID
-                          ];
-                        if (delegate === undefined) return;
-                        dispatch({
-                          type: 'choose-staff-delegate',
-                          task: 'cut',
-                          delegate,
-                        });
+                      if (assignment.id === 'jv') {
+                        setAssigned((current) => ({
+                          ...current,
+                          [assignment.id]: option,
+                        }));
                         return;
                       }
-                      setAssigned((current) => ({
-                        ...current,
-                        [assignment.id]: option,
-                      }));
+                      const delegate = staffTaskDelegates(assignment.id).find(
+                        (item) => item.label === option,
+                      );
+                      if (delegate === undefined) return;
+                      dispatch({
+                        type: 'choose-staff-delegate',
+                        task: assignment.id,
+                        delegate: delegate.id,
+                      });
                     }}
                   >
                     {option}

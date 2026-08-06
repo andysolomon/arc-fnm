@@ -30,6 +30,7 @@ export interface WeekContextValue {
   readonly practiceGate: PracticeGate;
   readonly disruptionGate: DisruptionGate;
   readonly staffFilmDelegateEvent: StaffDelegationEvent;
+  readonly returnScoutDelegateEvent: StaffDelegationEvent;
   readonly cohortCarryOver: CohortCarryOver;
   readonly practiceSummaries: readonly PracticeObjectiveSummary[];
   readonly views: readonly HypothesisView[];
