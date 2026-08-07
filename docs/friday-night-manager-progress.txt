@@ -51,6 +51,11 @@ end-zone camera funding promoted to a persisted Coaching Decision
 with a token-resolved Soto consequence echoed on the Week Hub. Film
 deadline and emergency-process event types remain open under 4.1.
 
+Updated 2026-08-05: Phase 4.1 closed. Film-deadline slice shipped
+(Prep Highlight Tape persisted under Recruiting Desk, c273ba8);
+emergency-process slice shipped (district reseed persisted under
+District Office, cdbd497). All five 4.1 event types now in place.
+
 [ ] 0.0 - Phase 0 - Define boundaries and the real workflow
     [x] 0.1 - Exercise and critique the shared v1.4.2 artifact on desktop and mobile
     [x] 0.2 - Research evidence-backed coaching decisions and safety/rules boundaries
@@ -80,12 +85,12 @@ deadline and emergency-process event types remain open under 4.1.
     [x] 3.3 - Implement Decision Review separating choice, execution, randomness, and outcome
     [x] 3.4 - Test priority game-state and unavailable-player scenarios
 [ ] 4.0 - Phase 4 - Complete and validate the Simulation Experience
-    [ ] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
+    [x] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
         - eligibility: done (Kowalski academic response, ab3084c)
-        - staff responsibility: done (Soto/Pruitt cut task, bafd5aa)
+        - staff responsibility: done (Soto/Pruitt cut task, 24b7af9 + st task bafd5aa)
         - environment: done (Boosters end-zone camera funding, 97a3f64)
-        - film-deadline: open
-        - emergency-process: open
+        - film-deadline: done (Prep Highlight Tape, c273ba8)
+        - emergency-process: done (district reseed, cdbd497)
     [x] 4.2 - Implement Head Coach staff delegation and authority boundaries
     [x] 4.3 - Implement multi-season cohort development and succession
     [x] 4.4 - Tie small-town narrative events to real program state and decisions
