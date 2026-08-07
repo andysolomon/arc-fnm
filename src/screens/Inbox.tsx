@@ -2,6 +2,10 @@ import { useMemo, useState } from 'react';
 
 import { Button, StatusDot, type StatusTone } from '../components/ui.tsx';
 import {
+  EMERGENCY_RESEED_OPTIONS,
+  type EmergencyReseedOption,
+} from '../domain/emergencyProcess.ts';
+import {
   HIGHLIGHT_TAPE_OPTIONS,
   type HighlightTapeOption,
 } from '../domain/filmDeadline.ts';
@@ -19,6 +23,7 @@ import {
   visibleInboxMessages,
   visibleStaffNotes,
   type InboxAction,
+  type InboxMessage,
   type InboxMessageKind,
 } from './inboxData.ts';
 
@@ -46,10 +51,27 @@ const ACKNOWLEDGED_LABELS: Readonly<Record<string, string>> = {
 
 type PersistedInboxOption =
   | { readonly kind: 'academic'; readonly option: AcademicResponseOption }
-  | { readonly kind: 'highlight-tape'; readonly option: HighlightTapeOption };
+  | { readonly kind: 'highlight-tape'; readonly option: HighlightTapeOption }
+  | {
+      readonly kind: 'emergency-reseed';
+      readonly option: EmergencyReseedOption;
+    };
+
+/** District reseed decision buttons sit ahead of the existing View Schedule nav. */
+function actionsFor(message: InboxMessage): readonly InboxAction[] {
+  if (message.id !== 'district-reseed') return message.actions;
+  return [
+    ...EMERGENCY_RESEED_OPTIONS.map((option, index) => ({
+      label: option.label,
+      primary: index === 0,
+    })),
+    ...message.actions,
+  ];
+}
 
 export function Inbox() {
-  const { state, dispatch, highlightTapeEvent } = useWeek();
+  const { state, dispatch, highlightTapeEvent, emergencyProcessEvent } =
+    useWeek();
   const narrative = deriveNarrativeContext(state.week);
   const messages = visibleInboxMessages(narrative);
   const staffNotes = visibleStaffNotes(narrative);
@@ -58,6 +80,7 @@ export function Inbox() {
   const [acknowledged, setAcknowledged] = useState<readonly string[]>([]);
   const selected =
     messages.find((message) => message.id === selectedId) ?? INBOX_MESSAGES[2]!;
+  const selectedActions = actionsFor(selected);
   const academic = academicEvent(state.week);
   const unreadCount = inboxUnreadCount(
     narrative.disrupted,
@@ -88,7 +111,32 @@ export function Inbox() {
         null;
       return option === null ? null : { kind: 'highlight-tape', option };
     }
+    if (selected.id === 'district-reseed' && action.screen === undefined) {
+      const option =
+        EMERGENCY_RESEED_OPTIONS.find(
+          (entry) => entry.label === action.label,
+        ) ?? null;
+      return option === null ? null : { kind: 'emergency-reseed', option };
+    }
     return null;
+  }
+
+  function decisionOnFile(persisted: PersistedInboxOption): boolean {
+    if (persisted.kind === 'academic') {
+      return academic !== null && academic.response === persisted.option.id;
+    }
+    if (persisted.kind === 'highlight-tape') {
+      return highlightTapeEvent.response === persisted.option.id;
+    }
+    return emergencyProcessEvent.response === persisted.option.id;
+  }
+
+  function decisionClosed(persisted: PersistedInboxOption): boolean {
+    if (persisted.kind === 'academic') return academic?.open !== true;
+    if (persisted.kind === 'highlight-tape') {
+      return highlightTapeEvent.open !== true;
+    }
+    return emergencyProcessEvent.open !== true;
   }
 
   function runAction(action: InboxAction) {
@@ -114,6 +162,14 @@ export function Inbox() {
       dispatch({
         type: 'choose-highlight-tape',
         request: 'tape',
+        response: persisted.option.id,
+      });
+      return;
+    }
+    if (persisted?.kind === 'emergency-reseed') {
+      dispatch({
+        type: 'choose-emergency-process',
+        request: 'reseed',
         response: persisted.option.id,
       });
       return;
@@ -246,28 +302,21 @@ export function Inbox() {
             </p>
           ))}
           <div className="mt-7 flex flex-wrap gap-2.5">
-            {selected.actions.map((action) => {
+            {selectedActions.map((action) => {
               const persisted = persistedOptionFor(action);
               // A persisted decision reads from the answer on file; ordinary mail
               // keeps its session-only acknowledgement.
               const onFile =
                 persisted === null
                   ? acknowledged.includes(action.label)
-                  : persisted.kind === 'academic'
-                    ? academic !== null &&
-                      academic.response === persisted.option.id
-                    : highlightTapeEvent.response === persisted.option.id;
+                  : decisionOnFile(persisted);
               const acknowledgedLabel =
                 persisted === null
                   ? ACKNOWLEDGED_LABELS[action.label]
                   : persisted.option.acknowledgedLabel;
               // Once the week is closed the record is final, so the option the
               // coach did not take can no longer be taken.
-              const closed =
-                persisted !== null &&
-                (persisted.kind === 'academic'
-                  ? academic?.open !== true
-                  : highlightTapeEvent.open !== true);
+              const closed = persisted !== null && decisionClosed(persisted);
               return (
                 <Button
                   key={action.label}

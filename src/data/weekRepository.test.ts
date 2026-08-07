@@ -5,6 +5,10 @@ import {
   boosterFundingOf,
   chooseBoosterFunding,
 } from '../domain/boosterFunding.ts';
+import {
+  chooseEmergencyProcess,
+  emergencyProcessOf,
+} from '../domain/emergencyProcess.ts';
 import { chooseHighlightTape, filmDeadlineOf } from '../domain/filmDeadline.ts';
 import type { WeekState } from '../domain/types.ts';
 import { createSeedState } from '../domain/week.ts';
@@ -210,6 +214,7 @@ describe('Convex week adapter', () => {
     delete persisted.staffAssignments;
     delete persisted.boosterFunding;
     delete persisted.filmDeadline;
+    delete persisted.emergencyProcess;
     expect(mutation).toHaveBeenCalledWith(weekFunctions.save, {
       ...key,
       ...persisted,
@@ -261,6 +266,7 @@ describe('Convex week adapter', () => {
     expect(loaded?.boosterFunding).toEqual({ camera: null });
     expect(loaded?.staffAssignments).toEqual({ cut: null });
     expect(loaded?.filmDeadline).toEqual({ tape: null });
+    expect(loaded?.emergencyProcess).toEqual({ reseed: null });
   });
 
   it('maps repository clear to the Convex reset mutation', async () => {
@@ -303,6 +309,23 @@ describe('local adapter round-trip', () => {
     expect(filmDeadlineOf(loaded ?? createSeedState()).tape).toBe('queued');
   });
 
+  it('carries the emergency-process reseed answer through save and load for the session', async () => {
+    const repository = createLocalWeekRepository();
+    const decided = chooseEmergencyProcess(
+      createSeedState(),
+      'reseed',
+      'staff-only',
+    );
+
+    await repository.save(key, decided);
+    const loaded = await repository.load(key);
+
+    expect(loaded).toEqual(decided);
+    expect(emergencyProcessOf(loaded ?? createSeedState()).reseed).toBe(
+      'staff-only',
+    );
+  });
+
   it('drops the answer on clear, so the next load is the seeded week again', async () => {
     const repository = createLocalWeekRepository();
     await repository.save(
@@ -315,5 +338,6 @@ describe('local adapter round-trip', () => {
     await expect(repository.load(key)).resolves.toBeNull();
     expect(boosterFundingOf(createSeedState()).camera).toBeNull();
     expect(filmDeadlineOf(createSeedState()).tape).toBeNull();
+    expect(emergencyProcessOf(createSeedState()).reseed).toBeNull();
   });
 });

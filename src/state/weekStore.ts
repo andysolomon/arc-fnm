@@ -9,6 +9,7 @@ import type {
   AnswerId,
   Disposition,
   DecisionProcessRating,
+  EmergencyProcessResponse,
   FundingOutcome,
   HighlightTapeResponse,
   HypothesisId,
@@ -47,6 +48,10 @@ import {
   chooseBoosterFunding,
   type BoosterFundingRequestId,
 } from '../domain/boosterFunding.ts';
+import {
+  chooseEmergencyProcess,
+  type EmergencyProcessRequestId,
+} from '../domain/emergencyProcess.ts';
 import {
   chooseHighlightTape,
   type FilmDeadlineRequestId,
@@ -143,6 +148,11 @@ export type WeekAction =
       type: 'choose-highlight-tape';
       request: FilmDeadlineRequestId;
       response: HighlightTapeResponse;
+    }
+  | {
+      type: 'choose-emergency-process';
+      request: EmergencyProcessRequestId;
+      response: EmergencyProcessResponse;
     }
   | { type: 'set-policy'; id: PolicyId; value: PolicyValue }
   | { type: 'take-field' }
@@ -356,6 +366,16 @@ export function weekReducer(
       return {
         ...state,
         week: chooseHighlightTape(state.week, action.request, action.response),
+      };
+
+    case 'choose-emergency-process':
+      return {
+        ...state,
+        week: chooseEmergencyProcess(
+          state.week,
+          action.request,
+          action.response,
+        ),
       };
 
     case 'set-policy':

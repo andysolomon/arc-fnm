@@ -172,6 +172,13 @@ export type FundingOutcome = 'approved' | 'deferred';
  */
 export type HighlightTapeResponse = 'queued';
 
+/**
+ * The coach's answer to the District Office reseed. How the building carries
+ * the news is the only coaching call; the standings and Friday's title stake
+ * stay with the District Office. No medical, legal, or rules claim is recorded.
+ */
+export type EmergencyProcessResponse = 'read-aloud' | 'staff-only';
+
 /** A coach may park (`hold`) or discard (`reject`) a hypothesis. */
 export type Disposition = 'hold' | 'reject';
 
@@ -527,6 +534,14 @@ export interface WeekState {
    */
   readonly filmDeadline?: {
     readonly tape: HighlightTapeResponse | null;
+  };
+  /**
+   * Emergency-process answers. Optional so older WeekState literals and the
+   * canonical seed stay valid; an absent reseed reads as "no answer on file",
+   * which is distinct from a carry the coach actually recorded.
+   */
+  readonly emergencyProcess?: {
+    readonly reseed: EmergencyProcessResponse | null;
   };
   /** Friday standing policies. Frozen once the coach takes the field. */
   readonly policies: PolicyState;

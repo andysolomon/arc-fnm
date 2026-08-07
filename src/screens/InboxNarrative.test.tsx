@@ -33,6 +33,10 @@ import {
   HIGHLIGHT_TAPE_OPTIONS,
   NO_HIGHLIGHT_TAPE_NOTE,
 } from '../domain/filmDeadline.ts';
+import {
+  EMERGENCY_RESEED_OPTIONS,
+  NO_EMERGENCY_RESEED_NOTE,
+} from '../domain/emergencyProcess.ts';
 import { WEEK_8_SCENARIO } from '../domain/scenario.ts';
 import type {
   AcademicResponse,
@@ -99,6 +103,8 @@ function alertedWeek(): WeekState {
 const TUTOR = ACADEMIC_RESPONSES[0];
 const STUDY_HALL = ACADEMIC_RESPONSES[1];
 const HIGHLIGHT_TAPE = HIGHLIGHT_TAPE_OPTIONS[0];
+const READ_ALOUD = EMERGENCY_RESEED_OPTIONS[0];
+const STAFF_ONLY = EMERGENCY_RESEED_OPTIONS[1];
 
 /** The canonical played week: seeded queue, first option every time. */
 function playedWeek(): WeekState {
@@ -389,6 +395,79 @@ describe('Inbox narrative visibility', () => {
     ).toBeVisible();
     expect(screen.queryByText(NO_HIGHLIGHT_TAPE_NOTE)).not.toBeInTheDocument();
     expect(screen.queryByText(HIGHLIGHT_TAPE.note)).not.toBeInTheDocument();
+  });
+
+  it('records Read Aloud as a persisted Coaching Decision on district-reseed', async () => {
+    const user = userEvent.setup();
+    render(
+      <WeekProvider repository={repositoryFor(createSeedState())}>
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Reseeding: Central Catholic moves to #1',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: READ_ALOUD.label }));
+
+    expect(
+      screen.getByRole('button', { name: READ_ALOUD.acknowledgedLabel }),
+    ).toBeDisabled();
+    // Staff Only stays available so the coach can switch the carry.
+    expect(
+      screen.getByRole('button', { name: STAFF_ONLY.label }),
+    ).toBeEnabled();
+    // View Schedule stays a nav action, not a Coaching Decision.
+    expect(screen.getByRole('button', { name: 'View Schedule' })).toBeEnabled();
+  });
+
+  it('closes the district-reseed decision once the week is closed', async () => {
+    const user = userEvent.setup();
+    render(
+      <WeekProvider
+        repository={repositoryFor({
+          ...closedWeek('webb'),
+          emergencyProcess: { reseed: null },
+        })}
+      >
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Reseeding: Central Catholic moves to #1',
+      }),
+    );
+
+    expect(
+      screen.getByRole('button', { name: READ_ALOUD.label }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: STAFF_ONLY.label }),
+    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'View Schedule' })).toBeEnabled();
+  });
+
+  it('keeps the unanswered district-reseed consequence off the Inbox body', async () => {
+    render(
+      <WeekProvider repository={repositoryFor(createSeedState())}>
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    expect(
+      await screen.findByRole('button', {
+        name: 'Reseeding: Central Catholic moves to #1',
+      }),
+    ).toBeVisible();
+    expect(
+      screen.queryByText(NO_EMERGENCY_RESEED_NOTE),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(READ_ALOUD.note)).not.toBeInTheDocument();
+    expect(screen.queryByText(STAFF_ONLY.note)).not.toBeInTheDocument();
   });
 
   it.each([[TUTOR], [STUDY_HALL]])(
