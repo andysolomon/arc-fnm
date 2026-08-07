@@ -45,6 +45,12 @@ copy, byte-identical Reset Week, round-identical rerun, and canonical
 Week 8 determinism. No production code, shipped test, prototype, or
 package change. LEARN-1 / A11Y-1..2 documented as open follow-ups.
 
+Updated 2026-08-05: Phase 4.1 environment slice shipped. Boosters
+end-zone camera funding promoted to a persisted Coaching Decision
+(approved/deferred/null) under Westfield Gridiron Boosters authority
+with a token-resolved Soto consequence echoed on the Week Hub. Film
+deadline and emergency-process event types remain open under 4.1.
+
 [ ] 0.0 - Phase 0 - Define boundaries and the real workflow
     [x] 0.1 - Exercise and critique the shared v1.4.2 artifact on desktop and mobile
     [x] 0.2 - Research evidence-backed coaching decisions and safety/rules boundaries
@@ -74,7 +80,12 @@ package change. LEARN-1 / A11Y-1..2 documented as open follow-ups.
     [x] 3.3 - Implement Decision Review separating choice, execution, randomness, and outcome
     [x] 3.4 - Test priority game-state and unavailable-player scenarios
 [ ] 4.0 - Phase 4 - Complete and validate the Simulation Experience
-    [x] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
+    [ ] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
+        - eligibility: done (Kowalski academic response, ab3084c)
+        - staff responsibility: done (Soto/Pruitt cut task, bafd5aa)
+        - environment: done (Boosters end-zone camera funding, 97a3f64)
+        - film-deadline: open
+        - emergency-process: open
     [x] 4.2 - Implement Head Coach staff delegation and authority boundaries
     [x] 4.3 - Implement multi-season cohort development and succession
     [x] 4.4 - Tie small-town narrative events to real program state and decisions
