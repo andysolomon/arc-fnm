@@ -10,6 +10,7 @@ import type {
   Disposition,
   DecisionProcessRating,
   FundingOutcome,
+  HighlightTapeResponse,
   HypothesisId,
   MatchSpeed,
   PolicyId,
@@ -46,6 +47,10 @@ import {
   chooseBoosterFunding,
   type BoosterFundingRequestId,
 } from '../domain/boosterFunding.ts';
+import {
+  chooseHighlightTape,
+  type FilmDeadlineRequestId,
+} from '../domain/filmDeadline.ts';
 import { chooseAcademicResponse } from '../domain/programEvents.ts';
 import { chooseStaffDelegate } from '../domain/staffDelegation.ts';
 import {
@@ -133,6 +138,11 @@ export type WeekAction =
       type: 'choose-booster-funding';
       request: BoosterFundingRequestId;
       outcome: FundingOutcome;
+    }
+  | {
+      type: 'choose-highlight-tape';
+      request: FilmDeadlineRequestId;
+      response: HighlightTapeResponse;
     }
   | { type: 'set-policy'; id: PolicyId; value: PolicyValue }
   | { type: 'take-field' }
@@ -340,6 +350,12 @@ export function weekReducer(
       return {
         ...state,
         week: chooseBoosterFunding(state.week, action.request, action.outcome),
+      };
+
+    case 'choose-highlight-tape':
+      return {
+        ...state,
+        week: chooseHighlightTape(state.week, action.request, action.response),
       };
 
     case 'set-policy':

@@ -165,6 +165,13 @@ export type StaffAssignmentTaskId = 'cut' | 'st';
  */
 export type FundingOutcome = 'approved' | 'deferred';
 
+/**
+ * The coach's answer to the Recruiting Desk highlight-tape request. Queuing is
+ * the only accepted answer; the desk still owns the Saturday exchange and who
+ * asked for the film.
+ */
+export type HighlightTapeResponse = 'queued';
+
 /** A coach may park (`hold`) or discard (`reject`) a hypothesis. */
 export type Disposition = 'hold' | 'reject';
 
@@ -512,6 +519,14 @@ export interface WeekState {
    */
   readonly boosterFunding?: {
     readonly camera: FundingOutcome | null;
+  };
+  /**
+   * Film-deadline answers. Optional so older WeekState literals and the
+   * canonical seed stay valid; an absent tape reads as "no answer on file",
+   * which is distinct from a queue the coach actually recorded.
+   */
+  readonly filmDeadline?: {
+    readonly tape: HighlightTapeResponse | null;
   };
   /** Friday standing policies. Frozen once the coach takes the field. */
   readonly policies: PolicyState;

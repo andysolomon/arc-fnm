@@ -5,6 +5,7 @@ import {
   boosterFundingOf,
   chooseBoosterFunding,
 } from '../domain/boosterFunding.ts';
+import { chooseHighlightTape, filmDeadlineOf } from '../domain/filmDeadline.ts';
 import type { WeekState } from '../domain/types.ts';
 import { createSeedState } from '../domain/week.ts';
 import {
@@ -208,6 +209,7 @@ describe('Convex week adapter', () => {
     const persisted = { ...state };
     delete persisted.staffAssignments;
     delete persisted.boosterFunding;
+    delete persisted.filmDeadline;
     expect(mutation).toHaveBeenCalledWith(weekFunctions.save, {
       ...key,
       ...persisted,
@@ -258,6 +260,7 @@ describe('Convex week adapter', () => {
 
     expect(loaded?.boosterFunding).toEqual({ camera: null });
     expect(loaded?.staffAssignments).toEqual({ cut: null });
+    expect(loaded?.filmDeadline).toEqual({ tape: null });
   });
 
   it('maps repository clear to the Convex reset mutation', async () => {
@@ -289,6 +292,17 @@ describe('local adapter round-trip', () => {
     );
   });
 
+  it('carries the highlight-tape answer through save and load for the session', async () => {
+    const repository = createLocalWeekRepository();
+    const decided = chooseHighlightTape(createSeedState(), 'tape', 'queued');
+
+    await repository.save(key, decided);
+    const loaded = await repository.load(key);
+
+    expect(loaded).toEqual(decided);
+    expect(filmDeadlineOf(loaded ?? createSeedState()).tape).toBe('queued');
+  });
+
   it('drops the answer on clear, so the next load is the seeded week again', async () => {
     const repository = createLocalWeekRepository();
     await repository.save(
@@ -300,5 +314,6 @@ describe('local adapter round-trip', () => {
 
     await expect(repository.load(key)).resolves.toBeNull();
     expect(boosterFundingOf(createSeedState()).camera).toBeNull();
+    expect(filmDeadlineOf(createSeedState()).tape).toBeNull();
   });
 });

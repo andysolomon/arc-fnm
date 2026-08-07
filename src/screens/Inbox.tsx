@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
 
 import { Button, StatusDot, type StatusTone } from '../components/ui.tsx';
+import {
+  HIGHLIGHT_TAPE_OPTIONS,
+  type HighlightTapeOption,
+} from '../domain/filmDeadline.ts';
 import { deriveNarrativeContext } from '../domain/narrative.ts';
 import {
   academicEvent,
@@ -28,21 +32,24 @@ const KIND_TONE: Readonly<Record<InboxMessageKind, StatusTone>> = {
 };
 
 /**
- * Session-only acknowledgements. The eligibility alert is deliberately absent:
- * its two support actions are a persisted Coaching Decision, so their labels
- * come from `ACADEMIC_RESPONSES` and survive a reload.
+ * Session-only acknowledgements. Persisted Coaching Decisions are deliberately
+ * absent: eligibility support and the State U highlight tape read their labels
+ * from the decision on file and survive a reload.
  */
 const ACKNOWLEDGED_LABELS: Readonly<Record<string, string>> = {
   'Rest 2 Weeks': 'Rest plan confirmed',
-  'Prep Highlight Tape': 'Tape queued with Soto',
   Reply: 'Replied',
   'Pin to Bulletin': 'Pinned to the bulletin',
   'Approve Halftime Check': 'Halftime check approved',
   'Send Thanks': 'Thanks sent',
 };
 
+type PersistedInboxOption =
+  | { readonly kind: 'academic'; readonly option: AcademicResponseOption }
+  | { readonly kind: 'highlight-tape'; readonly option: HighlightTapeOption };
+
 export function Inbox() {
-  const { state, dispatch } = useWeek();
+  const { state, dispatch, highlightTapeEvent } = useWeek();
   const narrative = deriveNarrativeContext(state.week);
   const messages = visibleInboxMessages(narrative);
   const staffNotes = visibleStaffNotes(narrative);
@@ -65,14 +72,23 @@ export function Inbox() {
     dispatch({ type: 'mark-inbox-read', messageId });
   }
 
-  /** The support option this action records, or null for ordinary Inbox mail. */
-  function academicOptionFor(
+  /** The persisted option this action records, or null for ordinary Inbox mail. */
+  function persistedOptionFor(
     action: InboxAction,
-  ): AcademicResponseOption | null {
-    if (selected.id !== 'kowalski-eligibility') return null;
-    return (
-      ACADEMIC_RESPONSES.find((option) => option.label === action.label) ?? null
-    );
+  ): PersistedInboxOption | null {
+    if (selected.id === 'kowalski-eligibility') {
+      const option =
+        ACADEMIC_RESPONSES.find((entry) => entry.label === action.label) ??
+        null;
+      return option === null ? null : { kind: 'academic', option };
+    }
+    if (selected.id === 'state-u-scout' && action.primary === true) {
+      const option =
+        HIGHLIGHT_TAPE_OPTIONS.find((entry) => entry.label === action.label) ??
+        null;
+      return option === null ? null : { kind: 'highlight-tape', option };
+    }
+    return null;
   }
 
   function runAction(action: InboxAction) {
@@ -86,9 +102,20 @@ export function Inbox() {
       });
       return;
     }
-    const option = academicOptionFor(action);
-    if (option !== null) {
-      dispatch({ type: 'choose-academic-response', response: option.id });
+    const persisted = persistedOptionFor(action);
+    if (persisted?.kind === 'academic') {
+      dispatch({
+        type: 'choose-academic-response',
+        response: persisted.option.id,
+      });
+      return;
+    }
+    if (persisted?.kind === 'highlight-tape') {
+      dispatch({
+        type: 'choose-highlight-tape',
+        request: 'tape',
+        response: persisted.option.id,
+      });
       return;
     }
     setAcknowledged((current) =>
@@ -220,20 +247,27 @@ export function Inbox() {
           ))}
           <div className="mt-7 flex flex-wrap gap-2.5">
             {selected.actions.map((action) => {
-              const option = academicOptionFor(action);
-              // A support plan reads from the decision on file; ordinary mail
+              const persisted = persistedOptionFor(action);
+              // A persisted decision reads from the answer on file; ordinary mail
               // keeps its session-only acknowledgement.
               const onFile =
-                option === null
+                persisted === null
                   ? acknowledged.includes(action.label)
-                  : academic !== null && academic.response === option.id;
+                  : persisted.kind === 'academic'
+                    ? academic !== null &&
+                      academic.response === persisted.option.id
+                    : highlightTapeEvent.response === persisted.option.id;
               const acknowledgedLabel =
-                option === null
+                persisted === null
                   ? ACKNOWLEDGED_LABELS[action.label]
-                  : option.acknowledgedLabel;
+                  : persisted.option.acknowledgedLabel;
               // Once the week is closed the record is final, so the option the
               // coach did not take can no longer be taken.
-              const closed = option !== null && academic?.open !== true;
+              const closed =
+                persisted !== null &&
+                (persisted.kind === 'academic'
+                  ? academic?.open !== true
+                  : highlightTapeEvent.open !== true);
               return (
                 <Button
                   key={action.label}

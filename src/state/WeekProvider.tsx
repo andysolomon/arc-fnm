@@ -11,6 +11,7 @@ import type { WeekScenario } from '../domain/types.ts';
 import { deriveBoosterFundingEvent } from '../domain/boosterFunding.ts';
 import { deriveCohortCarryOver } from '../domain/cohortCarryOver.ts';
 import { deriveDisruptionGate } from '../domain/disruption.ts';
+import { deriveHighlightTapeEvent } from '../domain/filmDeadline.ts';
 import {
   returnScoutDelegateEvent,
   staffFilmDelegateEvent,
@@ -169,6 +170,7 @@ export function WeekProvider({
       staffFilmDelegateEvent: staffFilmDelegateEvent(state.week),
       returnScoutDelegateEvent: returnScoutDelegateEvent(state.week),
       boosterFundingEvent: deriveBoosterFundingEvent(state.week),
+      highlightTapeEvent: deriveHighlightTapeEvent(state.week),
       cohortCarryOver: deriveCohortCarryOver(state.week),
       practiceSummaries: practiceObjectiveSummaries(state.week, scenario),
       views: hypothesisViews(state.week, scenario),

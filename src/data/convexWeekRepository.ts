@@ -188,6 +188,8 @@ function stateFrom(document: StoredWeekDocument): WeekState {
     staffAssignments: { cut: null },
     // Booster funding is not a Convex column yet either; hydrate as seed.
     boosterFunding: { camera: null },
+    // Film-deadline tape is not a Convex column yet; hydrate as seed.
+    filmDeadline: { tape: null },
   };
 }
 

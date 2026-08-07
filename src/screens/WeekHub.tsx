@@ -181,6 +181,7 @@ export function WeekHub() {
     staffFilmDelegateEvent,
     returnScoutDelegateEvent,
     boosterFundingEvent,
+    highlightTapeEvent,
     cohortCarryOver,
     dispatch,
   } = useWeek();
@@ -190,6 +191,7 @@ export function WeekHub() {
   const cutAssigned = staffFilmDelegateEvent.response !== null;
   const returnScoutAssigned = returnScoutDelegateEvent.response !== null;
   const cameraAnswered = boosterFundingEvent.response !== null;
+  const tapeQueued = highlightTapeEvent.response !== null;
   const baseDecision = DECISIONS[week.stage];
   const decision: DecisionCopy = week.reviewClosed
     ? {
@@ -854,6 +856,18 @@ export function WeekHub() {
                   <p className="text-ink-subtle mt-1 mb-0 text-[11px]">
                     M. Soto · Graduate Assistant · Film ·{' '}
                     {boosterFundingEvent.authority}
+                  </p>
+                </div>
+              )}
+              {tapeQueued && (
+                <div>
+                  <p className="text-ink-muted m-0 text-[12.5px] leading-[1.6] text-pretty">
+                    “{highlightTapeEvent.consequence}”
+                  </p>
+                  <p className="text-ink-subtle mt-1 mb-0 text-[11px]">
+                    M. Soto · Graduate Assistant · Film ·{' '}
+                    {highlightTapeEvent.authority} ·{' '}
+                    {highlightTapeEvent.deadline}
                   </p>
                 </div>
               )}

@@ -29,6 +29,10 @@ import {
   ACADEMIC_RESPONSES,
   NO_ACADEMIC_RESPONSE_CONSEQUENCE,
 } from '../domain/programEvents.ts';
+import {
+  HIGHLIGHT_TAPE_OPTIONS,
+  NO_HIGHLIGHT_TAPE_NOTE,
+} from '../domain/filmDeadline.ts';
 import { WEEK_8_SCENARIO } from '../domain/scenario.ts';
 import type {
   AcademicResponse,
@@ -94,6 +98,7 @@ function alertedWeek(): WeekState {
 
 const TUTOR = ACADEMIC_RESPONSES[0];
 const STUDY_HALL = ACADEMIC_RESPONSES[1];
+const HIGHLIGHT_TAPE = HIGHLIGHT_TAPE_OPTIONS[0];
 
 /** The canonical played week: seeded queue, first option every time. */
 function playedWeek(): WeekState {
@@ -320,6 +325,70 @@ describe('Inbox narrative visibility', () => {
     expect(
       screen.getByRole('button', { name: STUDY_HALL.label }),
     ).toBeDisabled();
+  });
+
+  it('records Prep Highlight Tape as a persisted Coaching Decision', async () => {
+    const user = userEvent.setup();
+    render(
+      <WeekProvider repository={repositoryFor(createSeedState())}>
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Unread: State U scout attending Friday’s game',
+      }),
+    );
+    await user.click(
+      screen.getByRole('button', { name: HIGHLIGHT_TAPE.label }),
+    );
+
+    expect(
+      screen.getByRole('button', { name: HIGHLIGHT_TAPE.acknowledgedLabel }),
+    ).toBeDisabled();
+    // Reply stays session-only acknowledgement, not a Coaching Decision.
+    expect(screen.getByRole('button', { name: 'Reply' })).toBeEnabled();
+  });
+
+  it('closes the highlight-tape decision once the week is closed', async () => {
+    const user = userEvent.setup();
+    render(
+      <WeekProvider
+        repository={repositoryFor({
+          ...closedWeek('webb'),
+          filmDeadline: { tape: null },
+        })}
+      >
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Unread: State U scout attending Friday’s game',
+      }),
+    );
+
+    expect(
+      screen.getByRole('button', { name: HIGHLIGHT_TAPE.label }),
+    ).toBeDisabled();
+  });
+
+  it('keeps the unanswered highlight-tape consequence off the Inbox body', async () => {
+    render(
+      <WeekProvider repository={repositoryFor(createSeedState())}>
+        <Inbox />
+      </WeekProvider>,
+    );
+
+    expect(
+      await screen.findByRole('button', {
+        name: 'Unread: State U scout attending Friday’s game',
+      }),
+    ).toBeVisible();
+    expect(screen.queryByText(NO_HIGHLIGHT_TAPE_NOTE)).not.toBeInTheDocument();
+    expect(screen.queryByText(HIGHLIGHT_TAPE.note)).not.toBeInTheDocument();
   });
 
   it.each([[TUTOR], [STUDY_HALL]])(

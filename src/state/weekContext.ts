@@ -17,6 +17,7 @@ import type {
 } from '../domain/types.ts';
 import type { BoosterFundingEvent } from '../domain/boosterFunding.ts';
 import type { CohortCarryOver } from '../domain/cohortCarryOver.ts';
+import type { FilmDeadlineEvent } from '../domain/filmDeadline.ts';
 import type { StaffDelegationEvent } from '../domain/staffDelegation.ts';
 import type { WeekRepository } from '../data/weekRepository.ts';
 import type { AppState, WeekAction } from './weekStore.ts';
@@ -33,6 +34,7 @@ export interface WeekContextValue {
   readonly staffFilmDelegateEvent: StaffDelegationEvent;
   readonly returnScoutDelegateEvent: StaffDelegationEvent;
   readonly boosterFundingEvent: BoosterFundingEvent;
+  readonly highlightTapeEvent: FilmDeadlineEvent;
   readonly cohortCarryOver: CohortCarryOver;
   readonly practiceSummaries: readonly PracticeObjectiveSummary[];
   readonly views: readonly HypothesisView[];
