@@ -63,7 +63,7 @@ const scenario = WEEK_8_SCENARIO;
 
 /** The seeded baseline, serialized. Reset Week must land on exactly this. */
 const SEED_JSON =
-  '{"stage":"evidence","selectedHypotheses":[],"acceptedRisk":null,"dispositions":{},"answers":{},"offenseScheme":"Spread","defenseScheme":"4-2-5","practiceBlocks":[],"practiceUndo":[],"practicePlanLocked":false,"rtStarter":null,"rtFix":null,"disruptionConfirmed":false,"academicResponse":null,"staffAssignments":{"cut":null},"policies":{"fourth":"Chart","pat":"Kick","clock":"Bank","auto":"Ask"},"matchStarted":false,"matchSpeed":"1x","matchEvents":[],"reviewRatings":{},"lessons":[],"reviewLessonMessage":false,"reviewClosed":false}';
+  '{"stage":"evidence","selectedHypotheses":[],"acceptedRisk":null,"dispositions":{},"answers":{},"offenseScheme":"Spread","defenseScheme":"4-2-5","practiceBlocks":[],"practiceUndo":[],"practicePlanLocked":false,"rtStarter":null,"rtFix":null,"disruptionConfirmed":false,"academicResponse":null,"staffAssignments":{"cut":null},"boosterFunding":{"camera":null},"policies":{"fourth":"Chart","pat":"Kick","clock":"Bank","auto":"Ask"},"matchStarted":false,"matchSpeed":"1x","matchEvents":[],"reviewRatings":{},"lessons":[],"reviewLessonMessage":false,"reviewClosed":false}';
 
 /** Clear the shared session store so each test starts from the seeded week. */
 beforeEach(async () => {

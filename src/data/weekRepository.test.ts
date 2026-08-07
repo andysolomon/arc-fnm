@@ -1,6 +1,10 @@
 import { getFunctionName } from 'convex/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  boosterFundingOf,
+  chooseBoosterFunding,
+} from '../domain/boosterFunding.ts';
 import type { WeekState } from '../domain/types.ts';
 import { createSeedState } from '../domain/week.ts';
 import {
@@ -11,6 +15,7 @@ import {
 } from './convexWeekRepository.ts';
 import {
   checkConvexUrl,
+  createLocalWeekRepository,
   localWeekRepository,
   repositoryStatus,
   resolveWeekRepository,
@@ -202,6 +207,7 @@ describe('Convex week adapter', () => {
 
     const persisted = { ...state };
     delete persisted.staffAssignments;
+    delete persisted.boosterFunding;
     expect(mutation).toHaveBeenCalledWith(weekFunctions.save, {
       ...key,
       ...persisted,
@@ -237,6 +243,23 @@ describe('Convex week adapter', () => {
     expect(getFunctionName(weekFunctions.save)).toBe('week:save');
   });
 
+  it('hydrates booster funding as seed, since it is not a Convex column yet', async () => {
+    const state = chooseBoosterFunding(createSeedState(), 'camera', 'approved');
+    const document: StoredWeekDocument = {
+      _id: 'week-document-id',
+      _creationTime: 1234,
+      ...key,
+      ...state,
+    };
+    const { client } = fakeClient({ document });
+    const repository = createConvexWeekRepository(client);
+
+    const loaded = await repository.load(key);
+
+    expect(loaded?.boosterFunding).toEqual({ camera: null });
+    expect(loaded?.staffAssignments).toEqual({ cut: null });
+  });
+
   it('maps repository clear to the Convex reset mutation', async () => {
     const { client, mutation } = fakeClient();
     const repository = createConvexWeekRepository(client);
@@ -245,5 +268,37 @@ describe('Convex week adapter', () => {
 
     expect(mutation).toHaveBeenCalledWith(weekFunctions.reset, key);
     expect(getFunctionName(weekFunctions.reset)).toBe('week:reset');
+  });
+});
+
+describe('local adapter round-trip', () => {
+  it('carries the booster funding answer through save and load for the session', async () => {
+    const repository = createLocalWeekRepository();
+    const decided = chooseBoosterFunding(
+      createSeedState(),
+      'camera',
+      'deferred',
+    );
+
+    await repository.save(key, decided);
+    const loaded = await repository.load(key);
+
+    expect(loaded).toEqual(decided);
+    expect(boosterFundingOf(loaded ?? createSeedState()).camera).toBe(
+      'deferred',
+    );
+  });
+
+  it('drops the answer on clear, so the next load is the seeded week again', async () => {
+    const repository = createLocalWeekRepository();
+    await repository.save(
+      key,
+      chooseBoosterFunding(createSeedState(), 'camera', 'approved'),
+    );
+
+    await repository.clear(key);
+
+    await expect(repository.load(key)).resolves.toBeNull();
+    expect(boosterFundingOf(createSeedState()).camera).toBeNull();
   });
 });

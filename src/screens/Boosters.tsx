@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Button, Card, ScreenHeading, StatusDot } from '../components/ui.tsx';
+import { useWeek } from '../state/weekContext.ts';
 import {
   BOOSTER_EVENTS,
   FUNDING_REQUESTS,
@@ -8,19 +9,32 @@ import {
   type FundingRequestOutcome,
 } from './boostersData.ts';
 
+type RequestId = (typeof FUNDING_REQUESTS)[number]['id'];
+
 type RequestOutcomes = Readonly<
-  Partial<
-    Record<(typeof FUNDING_REQUESTS)[number]['id'], FundingRequestOutcome>
-  >
+  Partial<Record<RequestId, FundingRequestOutcome>>
 >;
 
+/**
+ * The one request that is a Coaching Decision rather than screen state. The
+ * other three stay session UI: the board already voted on the weight room and
+ * the meals, and the charter bus is not this week's call.
+ */
+const PERSISTED_REQUEST_ID = 'end-zone-camera' satisfies RequestId;
+
 export function Boosters() {
+  const { boosterFundingEvent, dispatch } = useWeek();
   const [outcomes, setOutcomes] = useState<RequestOutcomes>({});
 
-  function decide(
-    id: (typeof FUNDING_REQUESTS)[number]['id'],
-    outcome: FundingRequestOutcome,
-  ) {
+  function decide(id: RequestId, outcome: FundingRequestOutcome) {
+    if (id === PERSISTED_REQUEST_ID) {
+      dispatch({
+        type: 'choose-booster-funding',
+        request: 'camera',
+        outcome,
+      });
+      return;
+    }
     setOutcomes((current) => ({ ...current, [id]: outcome }));
   }
 
@@ -75,8 +89,12 @@ export function Boosters() {
           <ul className="m-0 list-none p-0" aria-live="polite">
             {FUNDING_REQUESTS.map((request) => {
               const outcome =
-                outcomes[request.id] ??
-                (request.seedState === 'approved' ? 'approved' : undefined);
+                request.id === PERSISTED_REQUEST_ID
+                  ? (boosterFundingEvent.response ?? undefined)
+                  : (outcomes[request.id] ??
+                    (request.seedState === 'approved'
+                      ? 'approved'
+                      : undefined));
               return (
                 <li
                   key={request.id}

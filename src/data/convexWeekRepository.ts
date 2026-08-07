@@ -186,6 +186,8 @@ function stateFrom(document: StoredWeekDocument): WeekState {
     reviewClosed: document.reviewClosed ?? false,
     // Session film-cut delegation is not a Convex column yet; hydrate as seed.
     staffAssignments: { cut: null },
+    // Booster funding is not a Convex column yet either; hydrate as seed.
+    boosterFunding: { camera: null },
   };
 }
 

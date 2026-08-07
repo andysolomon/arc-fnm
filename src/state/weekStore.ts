@@ -9,6 +9,7 @@ import type {
   AnswerId,
   Disposition,
   DecisionProcessRating,
+  FundingOutcome,
   HypothesisId,
   MatchSpeed,
   PolicyId,
@@ -41,6 +42,10 @@ import {
   skipToDecision,
   takeField,
 } from '../domain/matchDay.ts';
+import {
+  chooseBoosterFunding,
+  type BoosterFundingRequestId,
+} from '../domain/boosterFunding.ts';
 import { chooseAcademicResponse } from '../domain/programEvents.ts';
 import { chooseStaffDelegate } from '../domain/staffDelegation.ts';
 import {
@@ -123,6 +128,11 @@ export type WeekAction =
       type: 'choose-staff-delegate';
       task: StaffAssignmentTaskId;
       delegate: StaffAssignmentId;
+    }
+  | {
+      type: 'choose-booster-funding';
+      request: BoosterFundingRequestId;
+      outcome: FundingOutcome;
     }
   | { type: 'set-policy'; id: PolicyId; value: PolicyValue }
   | { type: 'take-field' }
@@ -324,6 +334,12 @@ export function weekReducer(
       return {
         ...state,
         week: chooseStaffDelegate(state.week, action.task, action.delegate),
+      };
+
+    case 'choose-booster-funding':
+      return {
+        ...state,
+        week: chooseBoosterFunding(state.week, action.request, action.outcome),
       };
 
     case 'set-policy':

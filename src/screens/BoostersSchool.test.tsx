@@ -1,10 +1,18 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from '../App.tsx';
 import shellSource from '../components/AppShell.tsx?raw';
+import type { WeekRepository } from '../data/weekRepository.ts';
 import { localWeekRepository } from '../data/weekRepository.ts';
+import {
+  BOOSTER_CAMERA_AUTHORITY,
+  boosterCameraNote,
+} from '../domain/boosterFunding.ts';
+import type { WeekState } from '../domain/types.ts';
+import { createSeedState } from '../domain/week.ts';
+import { WeekProvider } from '../state/WeekProvider.tsx';
 import boostersSource from './Boosters.tsx?raw';
 import { Boosters } from './Boosters.tsx';
 import schoolSource from './School.tsx?raw';
@@ -13,6 +21,30 @@ import { School } from './School.tsx';
 beforeEach(async () => {
   await localWeekRepository.clear({ careerId: 'demo', weekNumber: 8 });
 });
+
+function repositoryFor(week: WeekState | null): WeekRepository {
+  return {
+    name: 'Boosters fixture',
+    persists: false,
+    async load() {
+      return week;
+    },
+    async save() {},
+    async clear() {},
+  };
+}
+
+/**
+ * The Boosters screen reads the persisted camera answer, so it needs a week.
+ * A null fixture is a repository miss, which leaves the seeded week standing.
+ */
+function renderBoosters(week: WeekState | null = null) {
+  return render(
+    <WeekProvider repository={repositoryFor(week)}>
+      <Boosters />
+    </WeekProvider>,
+  );
+}
 
 describe('Boosters and School shell routes', () => {
   it('makes both main-nav entries active, reachable, and selected', async () => {
@@ -75,7 +107,7 @@ describe('Boosters and School shell routes', () => {
 
 describe('Boosters', () => {
   it('renders the exact club stats, funding requests, key boosters, and upcoming events', () => {
-    render(<Boosters />);
+    renderBoosters();
 
     expect(
       screen.getByText('Westfield Gridiron Club · 214 members'),
@@ -130,7 +162,7 @@ describe('Boosters', () => {
 
   it('gives each pending request independent Approve and Later outcomes', async () => {
     const user = userEvent.setup();
-    render(<Boosters />);
+    renderBoosters();
 
     const requests = screen.getByRole('region', { name: 'Funding Requests' });
     await user.click(
@@ -160,6 +192,89 @@ describe('Boosters', () => {
         name: 'Approve End-zone camera',
       }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('the end-zone camera as a Coaching Decision', () => {
+  it('hydrates the row from the answer already on file, not from screen state', async () => {
+    renderBoosters({
+      ...createSeedState(),
+      boosterFunding: { camera: 'approved' },
+    });
+
+    // The answer arrives with the hydrated week, not with the first paint.
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('button', { name: 'Approve End-zone camera' }),
+      ).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('End-zone camera').closest('li')).toHaveTextContent(
+      'Approved',
+    );
+    // The three session-only requests are untouched by the camera answer.
+    expect(
+      screen.getByText('Charter bus — playoff travel').closest('li'),
+    ).toHaveTextContent('$2,400');
+    expect(
+      screen.getByRole('button', {
+        name: 'Approve Charter bus — playoff travel',
+      }),
+    ).toBeEnabled();
+  });
+
+  it('keeps the camera answer once the coach leaves the screen, unlike the charter bus', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(
+      screen.getByRole('button', { name: /Westfield Wildcats.*Resume/i }),
+    );
+    const nav = () => screen.getByRole('navigation', { name: 'Primary' });
+    await user.click(within(nav()).getByRole('button', { name: 'Boosters' }));
+
+    await user.click(
+      screen.getByRole('button', { name: 'Approve End-zone camera' }),
+    );
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Decide later on Charter bus — playoff travel',
+      }),
+    );
+    await user.click(within(nav()).getByRole('button', { name: 'School' }));
+    await user.click(within(nav()).getByRole('button', { name: 'Boosters' }));
+
+    const requests = screen.getByRole('region', { name: 'Funding Requests' });
+    expect(
+      within(requests).getByText('End-zone camera').closest('li'),
+    ).toHaveTextContent('Approved');
+    // The charter bus was session UI, so remounting returns it to pending.
+    expect(
+      within(requests).getByRole('button', {
+        name: 'Approve Charter bus — playoff travel',
+      }),
+    ).toBeEnabled();
+  });
+
+  it('echoes Soto’s consequence on the Week hub once the camera is answered', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(
+      screen.getByRole('button', { name: /Westfield Wildcats.*Resume/i }),
+    );
+    const nav = () => screen.getByRole('navigation', { name: 'Primary' });
+
+    const staff = () => screen.getByRole('region', { name: 'From the staff' });
+    expect(staff()).not.toHaveTextContent(boosterCameraNote('deferred'));
+
+    await user.click(within(nav()).getByRole('button', { name: 'Boosters' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Decide later on End-zone camera' }),
+    );
+    await user.click(within(nav()).getByRole('button', { name: /^Week/ }));
+
+    expect(staff()).toHaveTextContent(boosterCameraNote('deferred'));
+    expect(staff()).toHaveTextContent(BOOSTER_CAMERA_AUTHORITY.authority);
+    // The note is the coach's answer, never the one he did not give.
+    expect(staff()).not.toHaveTextContent(boosterCameraNote('approved'));
   });
 });
 

@@ -157,6 +157,14 @@ export type StaffAssignmentId = 'soto' | 'pruitt' | 'ames' | 'nobody';
 /** Scout assignment tasks that persist as Coaching Decisions. */
 export type StaffAssignmentTaskId = 'cut' | 'st';
 
+/**
+ * The coach's answer to a Boosters funding request. The tokens are the canonical
+ * UI-3 outcome labels the Boosters screen already renders, so the persisted
+ * decision and the row it came from never drift apart. The board still owns the
+ * fund, the amount, and its calendar; this is only the coaching answer.
+ */
+export type FundingOutcome = 'approved' | 'deferred';
+
 /** A coach may park (`hold`) or discard (`reject`) a hypothesis. */
 export type Disposition = 'hold' | 'reject';
 
@@ -496,6 +504,14 @@ export interface WeekState {
   readonly staffAssignments?: {
     readonly cut: StaffAssignmentId | null;
     readonly st?: StaffAssignmentId | null;
+  };
+  /**
+   * Booster funding answers. Optional so older WeekState literals and the
+   * canonical seed stay valid; an absent request reads as "no answer on file",
+   * which is distinct from a deferral the coach actually recorded.
+   */
+  readonly boosterFunding?: {
+    readonly camera: FundingOutcome | null;
   };
   /** Friday standing policies. Frozen once the coach takes the field. */
   readonly policies: PolicyState;

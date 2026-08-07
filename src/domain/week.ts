@@ -62,6 +62,7 @@ export function createSeedState(): WeekState {
     disruptionConfirmed: false,
     academicResponse: null,
     staffAssignments: { cut: null },
+    boosterFunding: { camera: null },
     policies: { fourth: 'Chart', pat: 'Kick', clock: 'Bank', auto: 'Ask' },
     matchStarted: false,
     matchSpeed: '1x',
