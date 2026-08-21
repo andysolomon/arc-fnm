@@ -37,8 +37,8 @@ Frozen here. A later ship/no-ship uses this table, not a new list invented after
 | R11 | Narrative events reference program state and never contradict rules or roster | Phase 4 AC | **Met** (`deriveNarrativeContext` gated on review + RT starter) |
 | R12 | Target users complete multiple Coaching Weeks, can explain good vs poor choices, and report the experience is fun enough to continue | Phase 4 AC | **Unmet** for a validated product. Week 8 and Week 9 are playable in code. LEARN-4: no telemetry, no observed player. Preview does not require R12. |
 | R13 | Fictional simulation data never mixes with live student/program data | ADR 0001, ADR 0003 | **Met as a rule; unenforced in infrastructure.** One optional unauthenticated Convex `weeks` table. Safe only while no live roster is written. |
-| R14 | Playwright-style journeys cover career, resume, and keyboard-only navigation | Phase 1 deliverable | **Unmet.** No Playwright config or tests in the repo. |
-| R15 | Named owners exist for support, UIL/rule updates, incidents, and rollback | Phase 6 deliverable | **Unmet.** No owners recorded. |
+| R14 | Playwright-style journeys cover career, resume, and keyboard-only navigation | Phase 1 deliverable | **Met.** Chromium journeys in `e2e/journeys.spec.ts` (`npm run test:e2e`). |
+| R15 | Named owners exist for support, UIL/rule updates, incidents, and rollback | Phase 6 deliverable | **Met** for this preview. Solo maintainer Andrew Solomon; GitHub issues and Vercel rollback. Not a 24/7 on-call. |
 | R16 | A shipping change is merged and observable in a production host | Phase 6 AC | **Met** for the preview. Host: https://arc-fnm.vercel.app. Root README and `.github/workflows/ci.yml`. |
 
 **Validated-product ship** requires R1–R13 met, R12 measured (not inferred), R14 or an accepted substitute, R15 named, and R16 done.
@@ -49,14 +49,14 @@ Frozen here. A later ship/no-ship uses this table, not a new list invented after
 
 ## Operational owners
 
-All **unknown** until named.
+Named 2026-08-21. This is a solo-maintainer preview, not a staffed operations roster.
 
-| Duty | Owner | Fallback if unnamed |
+| Duty | Owner | Channel |
 | --- | --- | --- |
-| Product / Decision Model | unknown | Do not ship a validated product |
-| Simulation Experience support | unknown | Issues have no on-call |
-| Jurisdiction Rule Set updates (Texas UIL season rollover) | unknown | 2026–27 provenance will rot |
-| Incidents / rollback | unknown | No runbook |
+| Product / Decision Model | Andrew Solomon | [GitHub issues](https://github.com/andysolomon/arc-fnm/issues) |
+| Simulation Experience support | Andrew Solomon | [GitHub issues](https://github.com/andysolomon/arc-fnm/issues) |
+| Jurisdiction Rule Set updates (Texas UIL season rollover) | Andrew Solomon | Same issues tracker; provenance in `src/domain/jurisdiction.ts` |
+| Incidents / rollback | Andrew Solomon | Vercel project `arc-fnm`; `vercel rollback`. Host: https://arc-fnm.vercel.app |
 | Program Workspace / School Approval | N/A until 5.1 is implemented | ADR 0003 |
 
 ---
@@ -69,12 +69,12 @@ All **unknown** until named.
 
 **How it runs.** https://arc-fnm.vercel.app with no backend. `npm run dev` locally. Optional `VITE_CONVEX_URL` persists decisions only, with no identity. Reload without that URL resets the week. `Reset week` confirms first when lessons are saved (REPLAY-2).
 
-**Known gaps.** A11Y-5 (real AT), browser visual QA, Playwright journeys, session-only persistence. Week 9 has unique Riverside film; unique answers still reuse Westfield’s standing RT/situational objectives.
+**Known gaps.** A11Y-5 (real AT), browser visual QA, session-only persistence. Week 9 has unique Riverside film; unique answers still reuse Westfield’s standing RT/situational objectives.
 
 ---
 
 ## What flipped 6.1 to checked
 
-1. Preview bar: **accepted 2026-08-21.** Validated-product remains NO-GO (R12 observed users, R14 journeys, R15 owners, R2/R3 browser+AT).
+1. Preview bar: **accepted 2026-08-21.** Validated-product remains NO-GO (R12 observed users, R2/R3 browser+AT). R14 Playwright journeys are in `e2e/journeys.spec.ts`. R15 names Andrew Solomon as solo maintainer.
 2. A11Y-1/2 are fixed in jsdom. A11Y-5 (real AT) and browser visual QA remain if the preview is advertised as keyboard-usable on real devices.
 3. Named production host **https://arc-fnm.vercel.app** and merge of the shipping change to `main`. 6.2 archives the plan and tracker with that merge.

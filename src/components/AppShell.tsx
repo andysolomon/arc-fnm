@@ -1,10 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent as ReactKeyboardEvent,
-  type ReactNode,
-} from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import type {
   ScoutingTab,
@@ -16,6 +10,7 @@ import { PREVIEW_NOTICE } from '../domain/simulationPreview.ts';
 import { useWeek } from '../state/weekContext.ts';
 import { repositoryStatus } from '../data/weekRepository.ts';
 import { inboxUnreadCount } from '../screens/inboxData.ts';
+import { queryDialogFocusable, trapTabInside } from '../a11y/dialogFocus.ts';
 import { ResetWeekButton } from './ResetWeekButton.tsx';
 
 type IconId =
@@ -181,9 +176,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!drawerOpen) return;
-    drawer.current
-      ?.querySelector<HTMLElement>('button:not([disabled])')
-      ?.focus();
+    const drawerEl = drawer.current;
+    if (drawerEl) queryDialogFocusable(drawerEl)[0]?.focus();
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -299,25 +293,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     </ul>
   );
 
-  const trapDrawerFocus = (event: ReactKeyboardEvent<HTMLElement>) => {
-    if (event.key !== 'Tab') return;
-    const focusable = Array.from(
-      event.currentTarget.querySelectorAll<HTMLElement>(
-        'button:not([disabled])',
-      ),
-    );
-    if (focusable.length === 0) return;
-    const first = focusable[0];
-    const last = focusable.at(-1);
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last?.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first?.focus();
-    }
-  };
-
   return (
     <div
       data-shell-tiers="1440 1024 768 390"
@@ -408,7 +383,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"
-              onKeyDown={trapDrawerFocus}
+              onKeyDown={trapTabInside}
               className="bg-surface-sunken w-60 shrink-0 overflow-auto px-2.5 py-3 shadow-[1px_0_12px_rgba(0,0,0,0.14)]"
             >
               {renderNav(true)}

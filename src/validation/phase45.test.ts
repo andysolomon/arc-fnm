@@ -28,6 +28,7 @@ import {
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { queryDialogFocusable } from '../a11y/dialogFocus.ts';
 import { App } from '../App.tsx';
 import shellSource from '../components/AppShell.tsx?raw';
 import type { WeekRepository } from '../data/weekRepository.ts';
@@ -172,9 +173,7 @@ async function openDrawer(
 }
 
 function enabledButtonsIn(container: HTMLElement): HTMLElement[] {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>('button:not([disabled])'),
-  );
+  return queryDialogFocusable(container);
 }
 
 describe('Phase 4.5 — keyboard, ARIA, and focus contracts', () => {

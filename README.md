@@ -27,10 +27,22 @@ Vercel, `scripts/ensure-arc-sim.mjs` clones a pinned revision into `vendor/`.
 npm test
 npm run typecheck
 npm run build
+npm run test:e2e
 ```
 
-GitHub Actions runs the same commands against that pinned `arc-sim` checkout
-(`.github/workflows/ci.yml`).
+GitHub Actions runs unit tests, typecheck, and the production build against a
+pinned `arc-sim` checkout, then Chromium Playwright journeys for new career,
+resume, and keyboard-only navigation (`.github/workflows/ci.yml`).
+
+Install the Chromium browser once with `npx playwright install chromium`.
+
+## Owners
+
+Andrew Solomon is the named owner for product, Simulation Experience support,
+Texas UIL rule-set updates, and incidents/rollback. File issues at
+https://github.com/andysolomon/arc-fnm/issues. Rollback is `vercel rollback` on
+project `arc-fnm`. There is no 24/7 on-call. Program Workspace has no owner
+until School Approval exists.
 
 ## What this ships
 

@@ -231,7 +231,7 @@ No vendor adapter exists. That is the correct Phase 5.2 posture. The first integ
 
 **Call.**
 
-- **Simulation Experience:** **GO to Phase 6 release-criteria review.** The playable Coaching Week exists. Remaining simulation follow-ups (browser visual QA, Playwright journeys, A11Y-1/2, LEARN-1) are product-quality work, not operational-privacy work.
+- **Simulation Experience:** **GO to Phase 6 release-criteria review.** The playable Coaching Week exists. Remaining simulation follow-ups (browser visual QA, A11Y-5 real AT) are product-quality work, not operational-privacy work. Playwright journeys now live in `e2e/journeys.spec.ts`.
 - **Program Workspace:** **NO-GO.** Do not store a real Student-Athlete record, do not recruit a live pilot that puts PII in this app, and do not describe the current Convex week table as school-ready.
 
 ### Proven

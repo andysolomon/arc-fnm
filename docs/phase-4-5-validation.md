@@ -54,12 +54,7 @@ and LEARN-1 were later shipped; the rest remain open.
 
 **A11Y-2 · Locked controls are removed from the tab order.** Fixed 2026-08-21 for primary nav. Locked Tactics/Training use `aria-disabled` and a no-op click instead of `disabled`, so a keyboard coach can reach the control and hear why it is shut. Close-out on Decision Review still uses `disabled`; its reason sits in the adjacent `close-review-note`.
 
-**A11Y-3 · The focus trap only knows about buttons.** `trapDrawerFocus` queries
-`button:not([disabled])` (`src/components/AppShell.tsx:298-302`). That is exact
-today — the drawer renders nothing but buttons — and the new test pins the wrap
-against the real rendered set. Any future link, input, or `tabindex` element added
-inside the drawer silently escapes the trap. _Suggested fix: widen the selector
-when the drawer's contents change._
+**A11Y-3 · The focus trap only knows about buttons.** Fixed 2026-08-21. `trapTabInside` (`src/a11y/dialogFocus.ts`) queries links, enabled fields, tabindex nodes, and `button:not([disabled])`, including `aria-disabled` nav. The drawer is still buttons-only; a later link or input cannot Tab out of the wrap.
 
 **A11Y-4 · Content outside the dialog stays focusable.** While the drawer is
 open, `main` is `aria-hidden` but the header controls (menu, Reset week, Continue)
@@ -206,11 +201,10 @@ with REPLAY-2: there are two ways to lose a week and one of them is a refresh.
 
 ## 5. Recommended follow-ups, in priority order
 
-1. **A11Y-3** — widen the focus-trap selector when the drawer gains non-button
-   content.
-2. **A11Y-5 / LEARN-4** — the parts of this audit that need a browser and a
+1. **A11Y-5 / LEARN-4** — the parts of this audit that need a browser and a
    player. Out of reach until someone runs the app with an AT stack.
 
 Done since the audit: LEARN-1 (foregone branches on Decision Review), A11Y-1/2
 (lock reason described; locked nav stays in the tab order), REPLAY-2 (confirm
-Reset week when lessons are saved).
+Reset week when lessons are saved), A11Y-3 (dialog Tab wrap includes
+non-button focusable controls).
