@@ -28,6 +28,11 @@ import {
 } from '../domain/week.ts';
 import { WEEK_8_SCENARIO } from '../domain/scenario.ts';
 import {
+  FOLLOWING_WEEK_NUMBER,
+  canOpenFollowingWeek,
+  followingWeekScenario,
+} from '../domain/followingWeek.ts';
+import {
   resolveWeekRepository,
   type WeekKey,
   type WeekRepository,
@@ -41,7 +46,22 @@ import {
 } from './weekStore.ts';
 
 /** No authentication in this slice; the demo career is a fixed opaque key. */
-const DEMO_WEEK_KEY: WeekKey = { careerId: 'demo', weekNumber: 8 };
+export const DEMO_CAREER_ID = 'demo';
+
+export function demoWeekKey(weekNumber: number): WeekKey {
+  return { careerId: DEMO_CAREER_ID, weekNumber };
+}
+
+function resolveScenario(
+  weekNumber: number,
+  week8Final: AppState['week8Final'],
+  override?: WeekScenario,
+): WeekScenario {
+  if (override !== undefined) return override;
+  return weekNumber === FOLLOWING_WEEK_NUMBER
+    ? followingWeekScenario(week8Final)
+    : WEEK_8_SCENARIO;
+}
 
 /**
  * Persistence is best-effort: the week is fully playable from in-memory state,
@@ -60,7 +80,7 @@ interface WeekProviderProps {
 
 export function WeekProvider({
   children,
-  scenario = WEEK_8_SCENARIO,
+  scenario: scenarioOverride,
   repository,
 }: WeekProviderProps) {
   const repo = useMemo(
@@ -70,15 +90,34 @@ export function WeekProvider({
 
   const [state, rawDispatch] = useReducer(
     (current: AppState, action: WeekAction) =>
-      weekReducer(current, action, scenario),
+      weekReducer(
+        current,
+        action,
+        resolveScenario(
+          action.type === 'open-week' ? action.weekNumber : current.weekNumber,
+          action.type === 'open-week'
+            ? (action.week8Final === undefined
+                ? current.week8Final
+                : action.week8Final)
+            : current.week8Final,
+          scenarioOverride,
+        ),
+      ),
     undefined,
     createInitialState,
   );
+  const scenario = resolveScenario(
+    state.weekNumber,
+    state.week8Final,
+    scenarioOverride,
+  );
 
   const latestWeek = useRef(state.week);
+  const latestWeekNumber = useRef(state.weekNumber);
   useEffect(() => {
     latestWeek.current = state.week;
-  }, [state.week]);
+    latestWeekNumber.current = state.weekNumber;
+  }, [state.week, state.weekNumber]);
   const writeQueue = useRef(Promise.resolve());
   const enqueueWrite = useCallback((write: () => Promise<void>) => {
     // A failed write must not poison the queue or escape as an unhandled
@@ -100,7 +139,7 @@ export function WeekProvider({
     skipNextSave.current = false;
     const hydrateVersion = weekMutationVersion.current;
     let cancelled = false;
-    const loaded = repo.load(DEMO_WEEK_KEY).catch((error: unknown) => {
+    const loaded = repo.load(demoWeekKey(8)).catch((error: unknown) => {
       // A failed read is a miss: the seeded week stands and writes resume.
       reportRepositoryFailure('load', error);
       return null;
@@ -112,7 +151,12 @@ export function WeekProvider({
         if (skipNextSave.current) {
           skipNextSave.current = false;
         } else {
-          enqueueWrite(() => repo.save(DEMO_WEEK_KEY, latestWeek.current));
+          enqueueWrite(() =>
+            repo.save(
+              demoWeekKey(latestWeekNumber.current),
+              latestWeek.current,
+            ),
+          );
         }
         return;
       }
@@ -134,16 +178,58 @@ export function WeekProvider({
       skipNextSave.current = false;
       return;
     }
-    enqueueWrite(() => repo.save(DEMO_WEEK_KEY, state.week));
+    enqueueWrite(() =>
+      repo.save(demoWeekKey(state.weekNumber), state.week),
+    );
   }, [enqueueWrite, repo, state.week]);
 
   const dispatch = useCallback(
     (action: WeekAction) => {
+      if (action.type === 'open-week') {
+        if (action.weekNumber === latestWeekNumber.current) return;
+        if (
+          action.weekNumber === FOLLOWING_WEEK_NUMBER &&
+          !canOpenFollowingWeek(
+            latestWeekNumber.current,
+            latestWeek.current,
+          )
+        ) {
+          return;
+        }
+        const fromKey = demoWeekKey(latestWeekNumber.current);
+        const toKey = demoWeekKey(action.weekNumber);
+        const seed = action.week;
+        const week8Final = action.week8Final;
+        weekMutationVersion.current += 1;
+        skipNextSave.current = true;
+        enqueueWrite(() => repo.save(fromKey, latestWeek.current));
+        void repo
+          .load(toKey)
+          .catch((error: unknown) => {
+            reportRepositoryFailure('load', error);
+            return null;
+          })
+          .then((stored) => {
+            skipNextSave.current = true;
+            rawDispatch({
+              type: 'open-week',
+              weekNumber: action.weekNumber,
+              week: stored ?? seed,
+              ...(week8Final === undefined ? {} : { week8Final }),
+            });
+            if (stored === null) {
+              enqueueWrite(() => repo.save(toKey, seed));
+            }
+          });
+        return;
+      }
       if (action.type === 'reset-week') {
         weekMutationVersion.current += 1;
         skipNextSave.current = true;
         rawDispatch(action);
-        enqueueWrite(() => repo.clear(DEMO_WEEK_KEY));
+        enqueueWrite(() =>
+          repo.clear(demoWeekKey(latestWeekNumber.current)),
+        );
         return;
       }
       if (

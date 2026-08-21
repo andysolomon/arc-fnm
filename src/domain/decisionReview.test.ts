@@ -165,6 +165,16 @@ describe('Decision Review derivation', () => {
     expect(power.evidenceHypothesisId).toBe('h1');
     expect(power.evidenceCta).toBe('Open tagged evidence');
     expect(power.choice).toMatch(/Trust the plan/);
+    expect(power.foregone.map((branch) => branch.name)).toEqual([
+      'Walk Pierce down — sell out against the run',
+      'Bend — soft box, keep everything in front',
+    ]);
+    expect(power.foregone[0]?.outcomes[0]?.t).toBe(
+      'Pierce walks down — eight in the box, power stuffed for nothing',
+    );
+    expect(power.foregone[1]?.result).toBe(
+      'Westfield +0 · Central +3 across the sequence',
+    );
     expect(power.preparation).toEqual([
       expect.objectContaining({
         objectiveId: 'o1',

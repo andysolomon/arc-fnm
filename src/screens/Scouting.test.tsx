@@ -3,8 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from '../App.tsx';
+import type { WeekRepository } from '../data/weekRepository.ts';
 import { localWeekRepository } from '../data/weekRepository.ts';
-import { WEEK_8_SCENARIO } from '../domain/scenario.ts';
+import { WEEK_8_SCENARIO, WEEK_9_SCENARIO } from '../domain/scenario.ts';
+import { createSeedState } from '../domain/week.ts';
+import { WeekProvider } from '../state/WeekProvider.tsx';
+import { Scouting } from './Scouting.tsx';
 
 beforeEach(async () => {
   await localWeekRepository.clear({ careerId: 'demo', weekNumber: 8 });
@@ -317,6 +321,54 @@ describe('canonical Scouting surface', () => {
       screen.getByRole('heading', {
         name: /Tactics · Game Plan/i,
       }),
+    ).toBeVisible();
+  });
+});
+
+describe('Week 9 Riverside film', () => {
+  it('shows Riverside hypotheses and clips, not the Central Catholic board', async () => {
+    const user = userEvent.setup();
+    const repo: WeekRepository = {
+      name: 'Week 9 film fixture',
+      persists: false,
+      async load() {
+        return createSeedState();
+      },
+      async save() {},
+      async clear() {},
+    };
+    render(
+      <WeekProvider repository={repo} scenario={WEEK_9_SCENARIO}>
+        <Scouting />
+      </WeekProvider>,
+    );
+    expect(
+      screen.getByRole('article', { name: /Zone-read keep/i }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole('article', { name: /Power tendency/i }),
+    ).toBeNull();
+
+    await user.click(screen.getByRole('tab', { name: /^Overview$/ }));
+    expect(
+      screen.getByRole('heading', { name: 'Riverside Hawks' }),
+    ).toBeVisible();
+    expect(screen.getByText('C. Bennett')).toBeVisible();
+    expect(screen.queryByText('J. Malone')).toBeNull();
+    expect(screen.getByText(/Run 58 · Pass 42/)).toBeVisible();
+
+    await user.click(screen.getByRole('tab', { name: /Film Room/ }));
+    expect(screen.getByText(/Showing 32 of 32 clips · 3 games/i)).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: /r01.*Zone-read keep.*Supports/i }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: /Assignments/ }));
+    expect(
+      screen.getByRole('region', { name: /Riverside JV game/i }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole('region', { name: /Riverside punt-unit breakdown/i }),
     ).toBeVisible();
   });
 });

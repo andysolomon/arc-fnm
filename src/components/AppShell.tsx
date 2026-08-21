@@ -12,9 +12,11 @@ import type {
   StageId,
   TacticsTab,
 } from '../domain/types.ts';
+import { PREVIEW_NOTICE } from '../domain/simulationPreview.ts';
 import { useWeek } from '../state/weekContext.ts';
 import { repositoryStatus } from '../data/weekRepository.ts';
 import { inboxUnreadCount } from '../screens/inboxData.ts';
+import { ResetWeekButton } from './ResetWeekButton.tsx';
 
 type IconId =
   | 'week'
@@ -248,7 +250,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
       {NAV_ITEMS.map((item) => {
         const selected = screen === item.screen;
-        const disabled = isLocked(item);
+        const locked = isLocked(item);
         const reason = lockReason(item);
         const badge = navBadge(item);
         const reasonId = `nav-reason-${inDrawer ? 'drawer' : 'rail'}-${item.icon}`;
@@ -257,36 +259,40 @@ export function AppShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               aria-current={selected ? 'page' : undefined}
-              aria-describedby={disabled ? reasonId : undefined}
-              disabled={disabled}
+              aria-describedby={locked ? reasonId : undefined}
+              aria-disabled={locked || undefined}
               title={reason}
-              onClick={() => navigate(item)}
+              onClick={() => {
+                if (!locked) navigate(item);
+              }}
               className={`focus-visible:ring-accent flex w-full items-center gap-2.5 rounded-md border-0 px-2.5 text-left font-sans font-normal outline-none focus-visible:ring-2 ${
                 inDrawer ? 'min-h-9 text-[13.5px]' : 'min-h-8 text-[13px]'
               } ${
                 selected
                   ? 'text-ink bg-[#ebebeb]'
-                  : disabled
+                  : locked
                     ? 'text-ink-faint cursor-not-allowed'
                     : 'text-ink-muted hover:text-ink cursor-pointer bg-transparent hover:bg-[#ebebeb]'
               }`}
             >
               <NavIcon icon={item.icon} />
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              {badge !== null && !disabled && (
+              {badge !== null && !locked && (
                 <span className="bg-ink rounded-full px-2 py-px text-[11px] font-medium text-white">
                   {badge}
                 </span>
               )}
-              {disabled && (
-                <span
-                  id={reasonId}
-                  className="max-w-14 truncate font-mono text-[8px] tracking-[0.03em] uppercase"
-                >
+              {locked && (
+                <span className="max-w-14 truncate font-mono text-[8px] tracking-[0.03em] uppercase">
                   Locked
                 </span>
               )}
             </button>
+            {locked && reason !== undefined && (
+              <span id={reasonId} className="sr-only">
+                {reason}
+              </span>
+            )}
           </li>
         );
       })}
@@ -352,14 +358,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={() => dispatch({ type: 'reset-week' })}
-          title="Restore the seeded Week 8 baseline"
+        <ResetWeekButton
+          title="Restore the seeded week baseline"
           className="edge text-ink-subtle hover:text-ink h-8 shrink-0 cursor-pointer rounded-md border-0 bg-white px-[11px] font-sans text-[11.5px] font-medium"
-        >
-          Reset week
-        </button>
+        />
         <button
           type="button"
           title={next.title}
@@ -435,14 +437,19 @@ export function AppShell({ children }: { children: ReactNode }) {
         <span>
           Next:{' '}
           <span className="text-ink font-medium">
-            vs. Central Catholic (Fri)
+            {scenario.weekNumber === 8
+              ? `vs. ${scenario.opponent.name} (Fri)`
+              : `at ${scenario.opponent.name} (Fri)`}
           </span>
         </span>
         <span aria-hidden="true" className="text-hairline">
           ·
         </span>
         <span className="inline-flex items-center gap-1.5">
-          Record <span className="text-ink font-medium">6-1</span>
+          Record{' '}
+          <span className="text-ink font-medium">
+            {scenario.program.record.replace('–', '-')}
+          </span>
           <span
             aria-hidden="true"
             className="bg-good inline-block size-[7px] rounded-full"
@@ -452,7 +459,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           ·
         </span>
         <span>
-          District Rank <span className="text-ink font-medium">#2</span>
+          District Rank{' '}
+          <span className="text-ink font-medium">{scenario.program.rank}</span>
         </span>
         <span className="min-w-0 flex-1" />
         <span className="inline-flex items-center gap-1.5">
@@ -467,6 +475,18 @@ export function AppShell({ children }: { children: ReactNode }) {
         </span>
         <span>
           Booster Fund <span className="text-ink font-medium">$12,400</span>
+        </span>
+        <span aria-hidden="true" className="text-hairline">
+          ·
+        </span>
+        <span
+          className="inline-flex items-center gap-1.5"
+          title={PREVIEW_NOTICE}
+        >
+          Preview{' '}
+          <span className="text-ink font-medium">
+            Fictional · not a school tool
+          </span>
         </span>
         <span aria-hidden="true" className="text-hairline">
           ·

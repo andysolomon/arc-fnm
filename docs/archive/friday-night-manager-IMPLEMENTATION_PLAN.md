@@ -1,6 +1,6 @@
 # Friday Night Manager — Implementation Plan
 
-**Mode:** Gap implementation against an accepted UI-3 prototype. The repository now has a typed Vite/React/Convex production app at the root; remaining work hardens jurisdiction, roster/mastery depth, live persistence/auth, field research, and validated shipping criteria.
+**Mode:** Gap implementation against an accepted UI-3 prototype. The repository now has a typed Vite/React/Convex production app at the root. Phases 0–5 are closed in the tracker (Phase 5 as desk specification, not as a live Program Workspace). Remaining in-flight work is Phase 6 Simulation Experience release criteria, plus product-quality follow-ups that do not block that review.
 
 ## 1. Product goal and scope boundaries
 
@@ -30,7 +30,8 @@ Boundaries:
 - Production app lives at the repository root (`src/`, `convex/`, `package.json`) with Career Start through Decision Review plus Inbox/Schedule/Boosters/School shell routes.
 - Stack is Vite + React + TypeScript, Tailwind CSS v4, Convex, Vitest + Testing Library, and npm-managed dependencies. Domain rules are pure in `src/domain/`; local demo persistence is default; optional Convex HTTP persistence needs a live deployment and auth.
 - UI-3 under `prototypes/Friday Night Manager UI-3/` remains the visual/behavior authority. Prototype plan/tracker are archived under `docs/archive/`. ADRs `0001` and `0002` record the simulation-first Decision Model boundary and production foundation.
-- 133 Vitest/Testing Library tests cover career entry, week gates, film/plan/practice, disruption shell, Match Day, and Decision Review. Browser visual QA at 1440/1024/768/390 and Playwright-style journeys remain open.
+- 133 Vitest/Testing Library tests cover career entry, week gates, film/plan/practice, disruption shell, Match Day, and Decision Review. Later slices raised coverage further; browser visual QA at 1440/1024/768/390 and Playwright-style journeys remain open.
+- Phase 5 is desk-complete as of 2026-08-21: live-data controls, manual workflows, static reviews, and a go/no-go memo in `docs/phase-5-program-workspace.md`; executable 8–12 program protocol in `docs/phase-5-pilot-protocol.md`. Program Workspace remains NO-GO. No live student data and no Convex auth implementation shipped.
 
 ### External v1.4.2 prototype observed on 2026-07-31
 
@@ -189,6 +190,8 @@ Boundaries:
 
 **Dependencies:** Validated Simulation Experience and Decision Model; school approvals; consent/privacy approach; selected integration partners; support capacity.
 
+**Desk artifacts (2026-08-21):** Controls, workflows, reviews, and go/no-go in `docs/phase-5-program-workspace.md`; executable protocol in `docs/phase-5-pilot-protocol.md`; ADR 0003. Program Workspace is NO-GO until those controls are implemented and the protocol runs. This phase's tracker items are desk-complete, not operationally complete.
+
 **Risks:** Integration sprawl, vendor lock-in, selection bias, tiny football samples, overclaiming causality from wins/losses, and unsafe handling of student information.
 
 **Acceptance criteria:**
@@ -210,6 +213,8 @@ Boundaries:
 
 **Dependencies:** Simulation validation, Phase 5 operational go decision, production approvals, and identified owners for both experiences.
 
+**Desk artifact (2026-08-21):** Criteria and ship/no-ship call in `docs/phase-6-release-criteria.md`. Simulation Experience preview is live at https://arc-fnm.vercel.app. Validated-product remains NO-GO. Program Workspace remains NO-GO.
+
 **Risks:** Treating a technically deployable build as a validated product; leaving current planning files in place after completion.
 
 **Acceptance criteria:**
@@ -230,8 +235,7 @@ Boundaries:
 
 ## 6. Immediate next steps
 
-1. Finish Phase 2 hardening: Player Availability/depth/mastery (2.4), versioned Texas Jurisdiction Rule Set provenance (2.5), and tests that prove evidence/roster/rule changes alter the plan (2.6).
-2. Close Phase 3.4 with priority game-state and unavailable-player scenario coverage beyond the seeded Kowalski/McCoy path.
-3. Run browser visual QA against UI-3 at 1440/1024/768/390 and fix remaining look/feel gaps.
-4. Wire a live Convex deployment + ownership/auth boundary when persistence across reload is required.
-5. Recruit contrasting Texas programs for Phase 0.5 field research without blocking simulation hardening.
+1. Preview is live at https://arc-fnm.vercel.app. Do not claim a validated product (R12/R14/R15 unmet; R2/R3 still lack browser+AT).
+2. Remaining validated-product work: observed users (R12), Playwright journeys (R14), named owners (R15), A11Y-5 real AT, and browser visual QA if the preview is advertised as keyboard-usable on real devices.
+3. Do not implement Program Workspace persistence, and do not store a Live Program Record, until School Approval exists and the 5.1 controls in `docs/phase-5-program-workspace.md` are built. The current Convex `weeks` table is simulation-only (ADR 0003).
+4. When a district is willing: execute `docs/phase-5-pilot-protocol.md` against the implemented Workspace, with thresholds frozen before Walk B.

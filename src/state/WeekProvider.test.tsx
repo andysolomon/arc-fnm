@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { WeekRepository } from '../data/weekRepository.ts';
 import type { WeekState } from '../domain/types.ts';
+import { openFollowingWeekFrom } from '../domain/followingWeek.ts';
 import { createSeedState } from '../domain/week.ts';
 import { useWeek } from './weekContext.ts';
 import { WeekProvider } from './WeekProvider.tsx';
@@ -21,18 +22,31 @@ function selectedText(state: WeekState): string {
 }
 
 function WeekProbe() {
-  const { state, dispatch } = useWeek();
+  const { state, scenario, dispatch } = useWeek();
 
   return (
     <>
       <output aria-label="Selected hypotheses">
         {selectedText(state.week)}
       </output>
+      <output aria-label="Career week">
+        {`${state.weekNumber} ${scenario.opponent.name}`}
+      </output>
       <button
         type="button"
         onClick={() => dispatch({ type: 'toggle-priority', id: 'h1' })}
       >
         Toggle H1
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch(
+            openFollowingWeekFrom(state.week, { wScore: 20, cScore: 3 }),
+          )
+        }
+      >
+        Open Week 9
       </button>
       <button type="button" onClick={() => dispatch({ type: 'reset-week' })}>
         Reset
@@ -130,5 +144,52 @@ describe('WeekProvider persistence boundary', () => {
     expect(screen.getByLabelText('Selected hypotheses')).toHaveTextContent(
       'none',
     );
+  });
+
+  it('persists Week 9 under a separate key and carries the lesson cohort', async () => {
+    const user = userEvent.setup();
+    const store = new Map<string, WeekState>([
+      [
+        'demo:8',
+        {
+          ...createSeedState(),
+          reviewClosed: true,
+          lessons: ['l_rt'],
+        },
+      ],
+    ]);
+    const repo: WeekRepository = {
+      name: 'Career persist adapter',
+      persists: true,
+      load: vi.fn(async (key) => store.get(`${key.careerId}:${key.weekNumber}`) ?? null),
+      save: vi.fn(async (key, week) => {
+        store.set(`${key.careerId}:${key.weekNumber}`, week);
+      }),
+      clear: vi.fn(async (key) => {
+        store.delete(`${key.careerId}:${key.weekNumber}`);
+      }),
+    };
+
+    render(
+      <WeekProvider repository={repo}>
+        <WeekProbe />
+      </WeekProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Career week')).toHaveTextContent(
+        '8 Central Catholic',
+      );
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Open Week 9' }));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Career week')).toHaveTextContent(
+        '9 Riverside',
+      );
+    });
+    expect(store.get('demo:9')?.lessons).toEqual(['l_rt']);
+    expect(store.get('demo:8')?.reviewClosed).toBe(true);
   });
 });

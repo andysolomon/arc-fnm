@@ -1,4 +1,6 @@
 import { Button, StatusDot, type StatusTone } from '../components/ui.tsx';
+import { deriveFridayView } from '../domain/playByPlayFriday.ts';
+import { openFollowingWeekFrom } from '../domain/followingWeek.ts';
 import { useWeek } from '../state/weekContext.ts';
 import { scheduleView, type ScheduleResultKind } from './scheduleData.ts';
 
@@ -11,7 +13,10 @@ const RESULT_TONE: Readonly<Record<ScheduleResultKind, StatusTone>> = {
 
 export function Schedule() {
   const { state, scenario, dispatch } = useWeek();
-  const view = scheduleView(state.week, scenario);
+  const view = scheduleView(state.week, scenario, {
+    weekNumber: state.weekNumber,
+    week8Final: state.week8Final,
+  });
 
   return (
     <div
@@ -114,6 +119,37 @@ export function Schedule() {
                   9 opponent board.
                 </p>
               </div>
+            )}
+            {view.canOpenWeek9 && (
+              <Button
+                variant="primary"
+                className="mt-3"
+                onClick={() => {
+                  const match = deriveFridayView(state.week, scenario);
+                  dispatch(
+                    openFollowingWeekFrom(state.week, {
+                      wScore: match.wScore,
+                      cScore: match.cScore,
+                    }),
+                  );
+                }}
+              >
+                Open Week 9
+              </Button>
+            )}
+            {view.onWeek9 && (
+              <Button
+                variant="quiet"
+                className="text-accent mt-3"
+                onClick={() =>
+                  dispatch({
+                    type: 'navigate',
+                    screen: 'week',
+                  })
+                }
+              >
+                Open Week
+              </Button>
             )}
           </article>
 

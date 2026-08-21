@@ -2,12 +2,13 @@
  * Saturday Decision Review, ported from the canonical UI-3 `procOf`,
  * `revRows`, `revRisk`, lesson-candidate, and close-week contracts.
  *
- * Match output is read through `deriveMatch`; this module never edits the
- * final score, play feed, take-the-field snapshot, or decision log.
+ * Match output is read through `deriveFridayView` (Week 8 Match Day, later
+ * weeks play-by-play). This module never edits the final score, play feed,
+ * take-the-field snapshot, or decision log.
  */
 
+import { deriveFridayView, usesPlayByPlayFriday } from './playByPlayFriday.ts';
 import {
-  deriveMatch,
   deriveTakeFieldContext,
   READINESS_WORDS,
   type MatchLogDecision,
@@ -66,6 +67,14 @@ export interface ReviewPreparationTrace {
   readonly allocation: string;
 }
 
+export interface ReviewForegoneBranch {
+  readonly name: string;
+  readonly sub: string;
+  readonly outcomes: MatchLogDecision['out'];
+  readonly result: string;
+  readonly resultTone: 'good' | 'danger' | 'neutral';
+}
+
 export interface ReviewTimelineRow {
   readonly decisionId: string;
   readonly when: string;
@@ -82,6 +91,7 @@ export interface ReviewTimelineRow {
   readonly execution: string;
   readonly result: string;
   readonly resultTone: 'good' | 'danger' | 'neutral';
+  readonly foregone: readonly ReviewForegoneBranch[];
   readonly staffProcess: StaffProcessRead;
   readonly coachRating: DecisionProcessRating | null;
   readonly ratingAgreement: string;
@@ -118,6 +128,23 @@ export interface DecisionReviewModel {
   readonly canClose: boolean;
   readonly closed: boolean;
   readonly story: ReviewStory;
+}
+
+function sequenceResult(
+  points: { readonly w: number; readonly c: number },
+  school: string,
+): {
+  readonly result: string;
+  readonly resultTone: 'good' | 'danger' | 'neutral';
+} {
+  return {
+    result:
+      points.w !== 0 || points.c !== 0
+        ? `${school} +${points.w} · Central +${points.c} across the sequence`
+        : 'No points changed hands on the sequence.',
+    resultTone:
+      points.w > points.c ? 'good' : points.c > points.w ? 'danger' : 'neutral',
+  };
 }
 
 function level(context: TakeFieldContext, objectiveId: string): number {
@@ -409,7 +436,7 @@ export function deriveDecisionReview(
   state: WeekState,
   scenario: WeekScenario,
 ): DecisionReviewModel {
-  const match = deriveMatch(state, scenario);
+  const match = deriveFridayView(state, scenario);
   const empty = match.phase !== 'final';
   const context = deriveTakeFieldContext(state, scenario);
   const decisions = match.log.filter(
@@ -446,7 +473,7 @@ export function deriveDecisionReview(
       },
     );
     const tagged = decision.out.filter((outcome) => outcome.tag !== '');
-    const points = decision.pts;
+    const sequence = sequenceResult(decision.pts, scenario.program.school);
     return {
       decisionId: decision.id,
       when: decision.when,
@@ -465,16 +492,18 @@ export function deriveDecisionReview(
       outcomes: decision.out,
       execution:
         tagged[0]?.tag ?? 'Ran as called — nothing for the booth to flag.',
-      result:
-        points.w !== 0 || points.c !== 0
-          ? `${scenario.program.school} +${points.w} · Central +${points.c} across the sequence`
-          : 'No points changed hands on the sequence.',
-      resultTone:
-        points.w > points.c
-          ? 'good'
-          : points.c > points.w
-            ? 'danger'
-            : 'neutral',
+      result: sequence.result,
+      resultTone: sequence.resultTone,
+      foregone: decision.foregone.map((branch) => {
+        const other = sequenceResult(branch.pts, scenario.program.school);
+        return {
+          name: branch.name,
+          sub: branch.sub,
+          outcomes: branch.out,
+          result: other.result,
+          resultTone: other.resultTone,
+        };
+      }),
       staffProcess,
       coachRating,
       ratingAgreement:
@@ -499,9 +528,11 @@ export function deriveDecisionReview(
   const savedLessons = lessonCandidates.filter((candidate) => candidate.saved);
   const won = match.wScore > match.cScore;
   const starter = context.rtName;
+  const playByPlayFriday = usesPlayByPlayFriday(scenario);
+  const opponent = scenario.opponent.name;
   return {
     empty,
-    score: `${scenario.program.school} ${match.wScore} — ${match.cScore} ${scenario.opponent.name}`,
+    score: `${scenario.program.school} ${match.wScore} — ${match.cScore} ${opponent}`,
     result: won ? 'WIN' : 'LOSS',
     rows,
     risk: {
@@ -510,7 +541,7 @@ export function deriveDecisionReview(
       statement: riskHypothesis?.statement ?? '',
       verdict:
         riskCash.length >= 2
-          ? `It cashed ${riskCash.length} times. The bet was real, and Central collected on it.`
+          ? `It cashed ${riskCash.length} times. The bet was real, and ${playByPlayFriday ? opponent : 'Central'} collected on it.`
           : riskCash.length === 1
             ? 'It cashed once — about the price you accepted Monday.'
             : 'It never cashed. A quiet night on the bet is luck, not proof it was free.',
@@ -524,14 +555,23 @@ export function deriveDecisionReview(
     lessonMessage: state.reviewLessonMessage,
     canClose: savedLessons.length > 0,
     closed: state.reviewClosed,
-    story: {
-      headline: won
-        ? `Wildcats seize the district’s front seat, ${match.wScore}–${match.cScore}`
-        : `Central holds the top seed as Westfield falls, ${match.cScore}–${match.wScore}`,
-      body: won
-        ? `A sold-out Wildcat Stadium watched ${scenario.program.school} hand previously unbeaten Central Catholic its first loss, ${match.wScore}–${match.cScore}. With Ryan Kowalski sidelined by grades, Thursday’s call handing right tackle to ${starter} quietly held the evening together. ${scenario.program.school} (7-1) travels to Riverside next Friday with the tiebreaker in its pocket.`
-        : `Central Catholic left Wildcat Stadium with the district lead Friday night, ${match.cScore}–${match.wScore}. Playing without Ryan Kowalski, ineligible since Thursday, ${scenario.program.school} got steady work from ${starter} at right tackle but couldn’t close. Riverside is next, Friday on the road.`,
-    },
+    story: playByPlayFriday
+      ? {
+          headline: won
+            ? `Wildcats take the road win at ${opponent}, ${match.wScore}–${match.cScore}`
+            : `${opponent} holds serve, ${match.cScore}–${match.wScore}`,
+          body: won
+            ? `${scenario.program.school} left ${scenario.venue} with a ${match.wScore}–${match.cScore} win. The scoreboard is one output of the week’s process — injuries stayed off, and Saturday still grades the chain.`
+            : `${opponent} sent ${scenario.program.school} home ${match.cScore}–${match.wScore}. The scoreboard is one output of the week’s process — injuries stayed off, and Saturday still grades the chain.`,
+        }
+      : {
+          headline: won
+            ? `Wildcats seize the district’s front seat, ${match.wScore}–${match.cScore}`
+            : `Central holds the top seed as Westfield falls, ${match.cScore}–${match.wScore}`,
+          body: won
+            ? `A sold-out Wildcat Stadium watched ${scenario.program.school} hand previously unbeaten Central Catholic its first loss, ${match.wScore}–${match.cScore}. With Ryan Kowalski sidelined by grades, Thursday’s call handing right tackle to ${starter} quietly held the evening together. ${scenario.program.school} (7-1) travels to Riverside next Friday with the tiebreaker in its pocket.`
+            : `Central Catholic left Wildcat Stadium with the district lead Friday night, ${match.cScore}–${match.wScore}. Playing without Ryan Kowalski, ineligible since Thursday, ${scenario.program.school} got steady work from ${starter} at right tackle but couldn’t close. Riverside is next, Friday on the road.`,
+        },
   };
 }
 

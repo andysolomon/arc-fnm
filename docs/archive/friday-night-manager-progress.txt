@@ -3,7 +3,7 @@ Generated: 2026-08-05 15:24:00 EDT
 On completion, move this file and docs/friday-night-manager-IMPLEMENTATION_PLAN.md to docs/archive/.
 
 Synced 2026-08-05 against production commit on main (UI-3 port + 133 Vitest tests).
-Still open outside this sync: field research (0.5), live Convex/auth, browser visual QA,
+Still open outside this sync: live Convex/auth implementation, browser visual QA,
 full jurisdiction provenance, deeper roster/mastery/development, and Playwright-style journeys.
 
 Updated 2026-08-05: Phase 2.4, 2.5, and 2.6 marked complete after shipping
@@ -56,12 +56,62 @@ Updated 2026-08-05: Phase 4.1 closed. Film-deadline slice shipped
 emergency-process slice shipped (district reseed persisted under
 District Office, cdbd497). All five 4.1 event types now in place.
 
-[ ] 0.0 - Phase 0 - Define boundaries and the real workflow
+Updated 2026-08-21: Phase 0 marked complete. Live 8-12 program
+observation (0.5) waived as a Phase 0 blocker by operator; the
+executable protocol lives in docs/phase-5-pilot-protocol.md. Desk
+journey/inventory remains the 2026-07-31 research plus the shipped
+Week 8 loop. ADR 0003 and CONTEXT.md Data Context terms added.
+
+Updated 2026-08-21: Phase 5 desk-complete. Spec, reviews, and
+go/no-go in docs/phase-5-program-workspace.md; pilot protocol in
+docs/phase-5-pilot-protocol.md. No live student data, no Convex
+auth implementation, no school piloted. Program Workspace is NO-GO;
+Simulation Experience may proceed to Phase 6 release-criteria review.
+
+Updated 2026-08-21: Phase 6.1 release-criteria memo written in
+docs/phase-6-release-criteria.md. Simulation Experience is a
+CONDITIONAL GO for a playable preview and NO-GO as a validated
+product (R12 users, R14 Playwright, R15 owners, R16 production
+host unmet). 6.1 and 6.2 remain unchecked until criteria are
+satisfied and a shipping change is merged.
+
+Updated 2026-08-21: Non-canonical Friday adapter in
+src/domain/arcSimAdapter.ts (ADR 0004). Seed is execSeedFor;
+injuries stay off; Week 8 Match Day is untouched. Engine not
+called yet.
+
+Updated 2026-08-21: simulateNonCanonicalFriday in
+src/domain/playByPlayFriday.ts calls @arc-sim/core for week !== 8
+and throws CanonicalWeekMatchDayError for Week 8. Injuries stay
+unmodelled. Match Day is unchanged.
+
+Updated 2026-08-21: Preview polish. A11Y-1/2 — locked primary nav uses
+aria-disabled, keeps tab order, and describes the lock reason. LEARN-1 —
+Decision Review shows unchosen Friday branches from the same snapshot.
+6.1/6.2 stay open.
+
+Updated 2026-08-21: Week 9 Riverside film authored in
+src/domain/week9Scenario.ts — unique hypotheses, 32 clips, and
+answers. Week 8 Central Catholic board is unchanged. 6.1/6.2 stay open.
+
+Updated 2026-08-21: Operator accepted the preview ship bar in writing
+(docs/phase-6-release-criteria.md). Public notice on Career Start and
+the program-context footer. REPLAY-2 — Reset week confirms when lessons
+are saved. 6.1/6.2 stay open until a production merge.
+
+Updated 2026-08-21: Preview live at https://arc-fnm.vercel.app. Root
+README and GitHub Actions CI. R16 met for the preview. Validated product
+still NO-GO.
+
+[x] 0.0 - Phase 0 - Define boundaries and the real workflow
     [x] 0.1 - Exercise and critique the shared v1.4.2 artifact on desktop and mobile
     [x] 0.2 - Research evidence-backed coaching decisions and safety/rules boundaries
     [x] 0.3 - Initialize the domain glossary and Wayfinder decision map
     [x] 0.4 - Resolve the simulation-first product promise and Program Workspace sequencing
-    [ ] 0.5 - Observe 8-12 programs and produce the Coaching Week journey and decision inventory
+    [x] 0.5 - Observe 8-12 programs and produce the Coaching Week journey and decision inventory
+        - live observation waived as a Phase 0 blocker (operator 2026-08-21)
+        - protocol: docs/phase-5-pilot-protocol.md (not executed)
+        - desk proxy: docs/research/high-school-football-coach-decision-support.md + shipped Week 8
     [x] 0.6 - Build and run the clickable Coaching Week vertical slice
     [x] 0.7 - Defer General Manager authority and center the first playable on the Head Coach
     [x] 0.8 - Define the shared Decision Model and separate experience/data boundaries
@@ -72,19 +122,19 @@ District Office, cdbd497). All five 4.1 event types now in place.
     [x] 1.3 - Implement responsive and semantic menu, team, coach, and weekly workspaces
     [x] 1.4 - Remove or repair every dead prototype affordance and broken linked page
     [x] 1.5 - Add behavior and end-to-end coverage for career entry, resume, responsive layout, and keyboard use
-[ ] 2.0 - Phase 2 - Build the first playable Coaching Week
+[x] 2.0 - Phase 2 - Build the first playable Coaching Week
     [x] 2.1 - Implement sourced play Evidence and conditional tagging
     [x] 2.2 - Implement Scouting Hypotheses and Evidence-backed Game Plan answers
     [x] 2.3 - Implement constrained Practice Plan, reps, contact level, and plan-versus-actual
     [x] 2.4 - Implement Player Availability, eligibility, package depth, mastery, and development
     [x] 2.5 - Implement versioned Texas Jurisdiction Rule Set validation and provenance
     [x] 2.6 - Add user-focused tests proving evidence, roster, and rule changes alter the plan
-[ ] 3.0 - Phase 3 - Make Friday decisions and post-game learning playable
+[x] 3.0 - Phase 3 - Make Friday decisions and post-game learning playable
     [x] 3.1 - Implement coach-owned situational policies and legal game-day presentation
     [x] 3.2 - Implement the uncertainty-aware game simulation slice
     [x] 3.3 - Implement Decision Review separating choice, execution, randomness, and outcome
     [x] 3.4 - Test priority game-state and unavailable-player scenarios
-[ ] 4.0 - Phase 4 - Complete and validate the Simulation Experience
+[x] 4.0 - Phase 4 - Complete and validate the Simulation Experience
     [x] 4.1 - Implement fictional eligibility, staff, film deadline, environment, and emergency-process events
         - eligibility: done (Kowalski academic response, ab3084c)
         - staff responsibility: done (Soto/Pruitt cut task, 24b7af9 + st task bafd5aa)
@@ -95,12 +145,22 @@ District Office, cdbd497). All five 4.1 event types now in place.
     [x] 4.3 - Implement multi-season cohort development and succession
     [x] 4.4 - Tie small-town narrative events to real program state and decisions
     [x] 4.5 - Validate simulation fun, replayability, accessibility, and decision-learning transfer
-[ ] 5.0 - Phase 5 - Build and pilot the Program Workspace
-    [ ] 5.1 - Establish separate live-data authorization, audit, retention, and school-approval controls
-    [ ] 5.2 - Build manual operational workflows before prioritized vendor adapters
-    [ ] 5.3 - Pilot with 8-12 contrasting programs using predeclared decision-process measures
-    [ ] 5.4 - Complete privacy, security, accessibility, rules, safety, and integration reviews
-    [ ] 5.5 - Publish operational go/no-go memo with proven, inferred, disproven, and unknown findings
-[ ] 6.0 - Phase 6 - Ship and archive
-    [ ] 6.1 - Verify release criteria and merge the shipping change
-    [ ] 6.2 - On merge: move docs/friday-night-manager-IMPLEMENTATION_PLAN.md + docs/friday-night-manager-progress.txt to docs/archive/
+[x] 5.0 - Phase 5 - Build and pilot the Program Workspace
+    [x] 5.1 - Establish separate live-data authorization, audit, retention, and school-approval controls
+        - desk spec only: docs/phase-5-program-workspace.md §2; ADR 0003
+        - not implemented in convex/ or src/data/
+    [x] 5.2 - Build manual operational workflows before prioritized vendor adapters
+        - desk spec only: docs/phase-5-program-workspace.md §3
+    [x] 5.3 - Pilot with 8-12 contrasting programs using predeclared decision-process measures
+        - protocol only: docs/phase-5-pilot-protocol.md (not executed)
+    [x] 5.4 - Complete privacy, security, accessibility, rules, safety, and integration reviews
+        - static review: docs/phase-5-program-workspace.md §4
+    [x] 5.5 - Publish operational go/no-go memo with proven, inferred, disproven, and unknown findings
+        - Simulation Experience: GO to Phase 6 review
+        - Program Workspace: NO-GO until 5.1 is implemented and the pilot runs
+[x] 6.0 - Phase 6 - Ship and archive
+    [x] 6.1 - Verify release criteria and merge the shipping change
+        - criteria recorded: docs/phase-6-release-criteria.md
+        - preview bar accepted 2026-08-21; still not a validated product
+        - host: https://arc-fnm.vercel.app
+    [x] 6.2 - On merge: move docs/friday-night-manager-IMPLEMENTATION_PLAN.md + docs/friday-night-manager-progress.txt to docs/archive/

@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: arc-fnm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: arc-fnm
+      - uses: actions/checkout@v4
+        with:
+          repository: andysolomon/arc-sim
+          ref: f787a5e676125300356e5772d76cbfb1cde84d7d
+          path: arc-sim
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: arc-fnm/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build

@@ -47,26 +47,12 @@ behaviour.
 
 ### 1.2 Findings — open gaps
 
-These are recorded, not fixed. Fixing any of them means editing shipped
-production code, which is outside this slice's scope.
+These were recorded as open in the original audit. A11Y-1, A11Y-2 (primary nav),
+and LEARN-1 were later shipped; the rest remain open.
 
-**A11Y-1 · The lock reason is not in the accessibility tree.** A locked nav
-control is `aria-describedby` a span whose entire text is `Locked`
-(`src/components/AppShell.tsx:281-288`). The sentence that actually explains the
-lock — "Set exactly three priorities and one accepted risk first." — lives only in
-`title` (`:262`). `title` is not reliably announced, and a `disabled` button is not
-hoverable by keyboard, so the reason is effectively sighted-mouse-only. The
-description resolves and is unique (pinned in the new test), so the wiring is
-sound; only the content is thin. _Suggested fix: put `lockReason` text in the
-described element (visually hidden), leaving the visible `Locked` chip as-is._
+**A11Y-1 · The lock reason is not in the accessibility tree.** Fixed 2026-08-21. Locked nav keeps a visible `Locked` chip; `aria-describedby` now points at a visually hidden `lockReason` sentence on the same nav item. `title` remains a mouse hint, not the only channel.
 
-**A11Y-2 · Locked controls are removed from the tab order.** `disabled`
-(`src/components/AppShell.tsx:261`) makes the control unfocusable, so its
-description is rarely reached at all; a coach tabbing the nav cannot discover
-that Tactics exists and why it is shut. `aria-disabled="true"` plus a no-op
-handler would keep it discoverable. The same caveat applies to the Close-out
-button in the review (`src/screens/DecisionReview.tsx:495`), though there the note
-sits adjacent in the reading order, so the reason is still reachable.
+**A11Y-2 · Locked controls are removed from the tab order.** Fixed 2026-08-21 for primary nav. Locked Tactics/Training use `aria-disabled` and a no-op click instead of `disabled`, so a keyboard coach can reach the control and hear why it is shut. Close-out on Decision Review still uses `disabled`; its reason sits in the adjacent `close-review-note`.
 
 **A11Y-3 · The focus trap only knows about buttons.** `trapDrawerFocus` queries
 `button:not([disabled])` (`src/components/AppShell.tsx:298-302`). That is exact
@@ -127,12 +113,7 @@ week, or does it only teach this week's answers?
 
 ### 2.2 Findings — open gaps
 
-**LEARN-1 · No counterfactual is ever shown.** Each decision's alternatives carry
-full result branches (`MatchDecisionOption.res`, `src/domain/matchDay.ts:92-96`),
-but the review shows only the branch taken. A coach cannot see what the other two
-options would have produced, so the strongest available teaching artifact — a
-side-by-side of chosen versus foregone — is computed and discarded. This is the
-highest-value learning gap found.
+**LEARN-1 · No counterfactual is ever shown.** Fixed 2026-08-21 on Week 8 Match Day. Each Decision Review row now lists the unchosen options with their immediate sequence from the same snapshot (`MatchLogDecision.foregone`). Copy frames those branches as counterfactuals, not as proof the other call was better. Play-by-play later weeks still have no keyed decisions, so they have nothing to contrast.
 
 **LEARN-2 · Process calibration does not accumulate.** `reviewRatings` are per
 week and do not carry over; only `lessons` do (`src/domain/week.ts:69-70`,
@@ -191,11 +172,11 @@ different Friday must change a decision, not retry. That is the intended lesson,
 but it means "replay" here means "re-plan", and there is exactly one week to
 re-plan.
 
-**REPLAY-2 · Reset is unguarded and total.** The header's Reset week button
-(`src/components/AppShell.tsx:355-362`) discards the entire week — including saved
-lessons — on a single click, with only a `title` as warning. The prototype behaves
-the same way (`UI-3:37,3751`), so this is canonical, not a regression; it is still
-the single most destructive control in the shell.
+**REPLAY-2 · Reset is total; confirm when lessons are saved.** Reset week still
+restores the full seeded baseline, including saved lessons. A fresh week resets on
+one click. Once `state.week.lessons.length > 0`, the control opens a dialog
+(`src/components/ResetWeekButton.tsx`) so a misclick does not wipe the cohort.
+The prototype remains unguarded (`UI-3:37,3751`); production is stricter.
 
 **REPLAY-3 · A reload is an unannounced reset.** The local adapter does not
 persist (`src/data/weekRepository.ts`), and the footer says so ("Session only",
@@ -225,13 +206,11 @@ with REPLAY-2: there are two ways to lose a week and one of them is a refresh.
 
 ## 5. Recommended follow-ups, in priority order
 
-1. **LEARN-1** — surface the foregone branch in the Decision Review. Highest
-   learning value, and the data already exists.
-2. **A11Y-1 / A11Y-2** — move the lock reason into the described element and
-   switch locked nav controls to `aria-disabled`. Small, contained, high impact
-   for keyboard and screen-reader users.
-3. **REPLAY-2** — confirm before Reset week once lessons are saved.
-4. **A11Y-3** — widen the focus-trap selector when the drawer gains non-button
+1. **A11Y-3** — widen the focus-trap selector when the drawer gains non-button
    content.
-5. **A11Y-5 / LEARN-4** — the parts of this audit that need a browser and a
+2. **A11Y-5 / LEARN-4** — the parts of this audit that need a browser and a
    player. Out of reach until someone runs the app with an AT stack.
+
+Done since the audit: LEARN-1 (foregone branches on Decision Review), A11Y-1/2
+(lock reason described; locked nav stays in the tab order), REPLAY-2 (confirm
+Reset week when lessons are saved).

@@ -157,7 +157,7 @@ export function Scouting() {
       <div className="flex flex-wrap items-end gap-3">
         <ScreenHeading
           title={`Scouting · ${scenario.opponent.name}`}
-          subtitle="32 clips cut from the last three games · film exchange complete"
+          subtitle={`${scenario.clips.length} clips cut from the last three games · film exchange complete`}
         />
         <span className="flex-1" />
         <StatusChip tone={gate.ready ? 'good' : 'neutral'}>
@@ -231,20 +231,54 @@ export function Scouting() {
 }
 
 function Overview({ onOpen }: { readonly onOpen: (tab: ScoutingTab) => void }) {
+  const { scenario } = useWeek();
+  const week8 = scenario.weekNumber === 8;
+  const initials = scenario.opponent.name
+    .split(' ')
+    .map((part) => part[0] ?? '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+  const title = week8 ? 'Central Catholic Crusaders' : 'Riverside Hawks';
+  const recordLine = `${scenario.opponent.record} · ${scenario.opponent.rank} in ${scenario.opponent.district} · Region II`;
+  const identity = week8
+    ? 'Offense: I-formation power, pulls both guards, leans on the sprint-out pass when behind. Defense: Cover 3 shell, walks the eighth man down on early downs.'
+    : 'Offense: empty and 11-personnel zone-read, jet/orbit to the boundary on first down. Defense: Cover 2 man under, post window between the safeties.';
+  const keyPlayers = week8
+    ? ([
+        ['RB #3', 'J. Malone', '1,240 yds · 14 TD · 6.8 per carry'],
+        ['QB #12', 'T. Herrera', '58% comp · runs the sprint-out well'],
+        ['LB #44', 'M. Buck', '92 tackles · 4 sacks · calls the front'],
+      ] as const)
+    : ([
+        ['QB #7', 'C. Bennett', 'Zone-read keep · 612 rush yds'],
+        ['RB/WR #22', 'D. Parish', 'Jet/orbit · 8.1 per touch'],
+        ['P #9', 'R. Hale', 'Rugby punt · 1 fake conversion'],
+      ] as const);
+  const watchName = week8 ? 'T. Herrera' : 'C. Bennett';
+  const runPass = week8 ? 'Run 62 · Pass 38' : 'Run 58 · Pass 42';
+  const blitz = week8 ? '28%' : '22%';
+  const playAction = week8 ? '31%' : '19%';
+  const filmIn = week8
+    ? 'CC Week 7 film (vs Millbrook)'
+    : 'RV Week 8 film (vs Clear Creek)';
+  const scoutNote = week8
+    ? "Coach Tillman attends Central Catholic's JV game Thursday — fronts and personnel packages."
+    : "Coach Tillman attends Riverside's JV game Thursday — fronts and personnel packages.";
   return (
     <div className="flex flex-wrap items-start gap-4">
       <div className="min-w-0 flex-[1_1_480px] space-y-4">
         <Card>
           <div className="flex flex-wrap items-center gap-3">
             <div className="bg-surface-raised text-ink-muted flex size-10 items-center justify-center rounded-full text-[13px] font-semibold">
-              CC
+              {initials}
             </div>
             <div className="flex-1">
               <h2 className="m-0 text-[15px] font-semibold">
-                Central Catholic Crusaders
+                {title}
               </h2>
               <p className="text-ink-subtle mt-1 mb-0 text-[12px]">
-                7–0 · #1 in District 7-5A · Region II
+                {recordLine}
               </p>
             </div>
             <span className="text-ink-muted inline-flex items-center gap-2 text-[11.5px]">
@@ -269,25 +303,27 @@ function Overview({ onOpen }: { readonly onOpen: (tab: ScoutingTab) => void }) {
           <div className="mt-4 space-y-3">
             <TendencyBar
               label="Run / pass split"
-              width="62%"
-              value="Run 62 · Pass 38"
+              width={week8 ? '62%' : '58%'}
+              value={runPass}
             />
-            <TendencyBar label="Blitz rate" width="28%" value="28%" />
-            <TendencyBar label="Play-action rate" width="31%" value="31%" />
+            <TendencyBar
+              label="Blitz rate"
+              width={week8 ? '28%' : '22%'}
+              value={blitz}
+            />
+            <TendencyBar
+              label="Play-action rate"
+              width={week8 ? '31%' : '19%'}
+              value={playAction}
+            />
           </div>
           <p className="text-ink-muted mt-4 mb-0 border-t border-black/5 pt-3 text-[12.5px] leading-relaxed">
-            Offense: I-formation power, pulls both guards, leans on the
-            sprint-out pass when behind. Defense: Cover 3 shell, walks the
-            eighth man down on early downs.
+            {identity}
           </p>
         </Card>
         <Card>
           <SectionLabel>Key players</SectionLabel>
-          {[
-            ['RB #3', 'J. Malone', '1,240 yds · 14 TD · 6.8 per carry'],
-            ['QB #12', 'T. Herrera', '58% comp · runs the sprint-out well'],
-            ['LB #44', 'M. Buck', '92 tackles · 4 sacks · calls the front'],
-          ].map(([position, name, stat]) => (
+          {keyPlayers.map(([position, name, stat]) => (
             <div
               key={name}
               className="flex flex-wrap items-center gap-3 border-b border-black/5 py-2 last:border-0"
@@ -301,7 +337,7 @@ function Overview({ onOpen }: { readonly onOpen: (tab: ScoutingTab) => void }) {
               <span className="text-ink-subtle flex-1 text-[12.5px]">
                 {stat}
               </span>
-              <StatusDot tone={name === 'T. Herrera' ? 'risk' : 'good'} />
+              <StatusDot tone={name === watchName ? 'risk' : 'good'} />
             </div>
           ))}
         </Card>
@@ -309,10 +345,7 @@ function Overview({ onOpen }: { readonly onOpen: (tab: ScoutingTab) => void }) {
       <div className="max-w-[440px] min-w-0 flex-[1_1_280px] space-y-4">
         <Card>
           <SectionLabel>Film exchange</SectionLabel>
-          <ExchangeRow
-            text="CC Week 7 film (vs Millbrook)"
-            status="Received Mon"
-          />
+          <ExchangeRow text={filmIn} status="Received Mon" />
           <ExchangeRow text="Our Week 7 film" status="Sent Sat" />
           <Button
             className="mt-3 w-full justify-center"
@@ -324,8 +357,7 @@ function Overview({ onOpen }: { readonly onOpen: (tab: ScoutingTab) => void }) {
         <Card>
           <SectionLabel>Scout assignment</SectionLabel>
           <p className="text-ink-muted m-0 text-[12.5px] leading-relaxed">
-            Coach Tillman attends Central Catholic&apos;s JV game Thursday —
-            fronts and personnel packages.
+            {scoutNote}
           </p>
           <Button className="mt-3" onClick={() => onOpen('Assignments')}>
             Reassign
@@ -799,51 +831,61 @@ function evidenceConfidence(
   return supporting >= Math.max(3, contradicting * 2) ? 'Strong' : 'Moderate';
 }
 
-const ASSIGNMENTS = [
-  {
-    id: 'jv',
-    task: 'Central Catholic JV game — fronts and personnel',
-    when: 'THU 5:30 PM',
-    detail:
-      'An in-person look at what the varsity staff is teaching. Whoever goes is not at Thursday practice.',
-    options: ['B. Tillman', 'K. Ames', 'M. Soto'],
-    costs: {
-      'B. Tillman':
-        'Tillman misses Thursday special-teams walkthrough. Ames covers the defense script.',
-      'K. Ames':
-        'Ames misses Thursday special teams entirely. Units run by script only.',
-      'M. Soto':
-        'Soto goes, but he is the one cutting Friday-morning film. The tape lands late.',
+function scoutAssignments(opponent: string, weekNumber: number) {
+  const week8 = weekNumber === 8;
+  return [
+    {
+      id: 'jv' as const,
+      task: `${opponent} JV game — fronts and personnel`,
+      when: 'THU 5:30 PM',
+      detail:
+        'An in-person look at what the varsity staff is teaching. Whoever goes is not at Thursday practice.',
+      options: ['B. Tillman', 'K. Ames', 'M. Soto'],
+      costs: {
+        'B. Tillman':
+          'Tillman misses Thursday special-teams walkthrough. Ames covers the defense script.',
+        'K. Ames':
+          'Ames misses Thursday special teams entirely. Units run by script only.',
+        'M. Soto':
+          'Soto goes, but he is the one cutting Friday-morning film. The tape lands late.',
+      },
     },
-  },
-  {
-    id: 'cut',
-    task: 'Cut and tag the Friday-morning walkthrough reel',
-    when: 'THU 9:00 PM',
-    detail:
-      'Ten clips of whatever you prioritized, ready for the pregame meeting.',
-    options: ['M. Soto', 'D. Pruitt'],
-    costs: {
-      'M. Soto': 'Standard. Soto has done it every week this season.',
-      'D. Pruitt':
-        'Pruitt cuts it himself and shortens his own install review.',
+    {
+      id: 'cut' as const,
+      task: 'Cut and tag the Friday-morning walkthrough reel',
+      when: 'THU 9:00 PM',
+      detail:
+        'Ten clips of whatever you prioritized, ready for the pregame meeting.',
+      options: ['M. Soto', 'D. Pruitt'],
+      costs: {
+        'M. Soto': 'Standard. Soto has done it every week this season.',
+        'D. Pruitt':
+          'Pruitt cuts it himself and shortens his own install review.',
+      },
     },
-  },
-  {
-    id: 'st',
-    task: 'Central Catholic return-unit breakdown',
-    when: 'WED 4:00 PM',
-    detail:
-      'Six returns is a small sample. Somebody has to decide whether it is real.',
-    options: ['K. Ames', 'M. Soto', 'Nobody'],
-    costs: {
-      'K. Ames':
-        'Ames builds a lane-by-lane report. Costs him a coverage period.',
-      'M. Soto': 'Soto adds it to his plate. Clip tagging slips to Thursday.',
-      Nobody: 'You go into Friday with six returns and no breakdown.',
+    {
+      id: 'st' as const,
+      task: week8
+        ? 'Central Catholic return-unit breakdown'
+        : `${opponent} punt-unit breakdown`,
+      when: 'WED 4:00 PM',
+      detail: week8
+        ? 'Six returns is a small sample. Somebody has to decide whether it is real.'
+        : 'Five rugby punts and one fake. Somebody has to decide whether the fake is a rule.',
+      options: ['K. Ames', 'M. Soto', 'Nobody'],
+      costs: {
+        'K. Ames': week8
+          ? 'Ames builds a lane-by-lane report. Costs him a coverage period.'
+          : 'Ames builds a look-by-look report. Costs him a coverage period.',
+        'M. Soto':
+          'Soto adds it to his plate. Clip tagging slips to Thursday.',
+        Nobody: week8
+          ? 'You go into Friday with six returns and no breakdown.'
+          : 'You go into Friday with five punts and no breakdown.',
+      },
     },
-  },
-] as const;
+  ];
+}
 
 /**
  * UI-3 keeps the staff's own pick visually selected until the coach puts a
@@ -866,8 +908,12 @@ function delegatedLabel(
 }
 
 function Assignments({ onOpenFilm }: { readonly onOpenFilm: () => void }) {
-  const { dispatch, staffFilmDelegateEvent, returnScoutDelegateEvent } =
+  const { scenario, dispatch, staffFilmDelegateEvent, returnScoutDelegateEvent } =
     useWeek();
+  const assignments = scoutAssignments(
+    scenario.opponent.name,
+    scenario.weekNumber,
+  );
   const [assigned, setAssigned] = useState<Readonly<Record<string, string>>>({
     jv: 'B. Tillman',
   });
@@ -882,7 +928,7 @@ function Assignments({ onOpenFilm }: { readonly onOpenFilm: () => void }) {
         <h2 className="m-0 border-b border-black/5 px-4 py-3 text-[13px] font-medium">
           Scout assignments · this week
         </h2>
-        {ASSIGNMENTS.map((assignment) => {
+        {assignments.map((assignment) => {
           const selected =
             assignment.id === 'jv'
               ? assigned[assignment.id]
@@ -947,11 +993,29 @@ function Assignments({ onOpenFilm }: { readonly onOpenFilm: () => void }) {
         <Card>
           <SectionLabel>Film exchange</SectionLabel>
           <ExchangeRow
-            text="CC Week 7 film (vs Millbrook)"
+            text={
+              scenario.weekNumber === 8
+                ? 'CC Week 7 film (vs Millbrook)'
+                : 'RV Week 8 film (vs Clear Creek)'
+            }
             status="Received Mon"
           />
-          <ExchangeRow text="CC Weeks 5–6 film" status="Received Sun" />
-          <ExchangeRow text="Our Week 7 film" status="Sent Sat" />
+          <ExchangeRow
+            text={
+              scenario.weekNumber === 8
+                ? 'CC Weeks 5–6 film'
+                : 'RV Weeks 6–7 film'
+            }
+            status="Received Sun"
+          />
+          <ExchangeRow
+            text={
+              scenario.weekNumber === 8
+                ? 'Our Week 7 film'
+                : 'Our Week 8 film'
+            }
+            status="Sent Sat"
+          />
           <Button className="mt-3 w-full justify-center" onClick={onOpenFilm}>
             Open the Film Room
           </Button>

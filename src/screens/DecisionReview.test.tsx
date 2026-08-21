@@ -162,10 +162,11 @@ describe('Decision Review screen', () => {
       screen.getAllByRole('region', { name: 'Practice at kickoff' }),
     ).toHaveLength(6);
     expect(
-      screen.getAllByRole('region', {
-        name: 'Decision, execution, and result',
-      }),
+      screen.getAllByRole('region', { name: 'If you had chosen otherwise' }),
     ).toHaveLength(6);
+    expect(
+      screen.getByText('Walk Pierce down — sell out against the run'),
+    ).toBeVisible();
     expect(
       screen.getByRole('heading', {
         name: 'The risk you accepted — Return-game threat',

@@ -102,6 +102,7 @@ describe('Boosters and School shell routes', () => {
     expect(context).toHaveTextContent('District Rank #2');
     expect(context).toHaveTextContent('Team Morale High');
     expect(context).toHaveTextContent('Booster Fund $12,400');
+    expect(context).toHaveTextContent('Fictional · not a school tool');
   });
 });
 

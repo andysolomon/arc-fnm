@@ -25,7 +25,10 @@
     "erasableSyntaxOnly": true,
 
     "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"],
+      "@arc-sim/core": ["./src/shims/arc-sim-core.d.ts"]
+    }
   },
   "include": ["src"]
 }

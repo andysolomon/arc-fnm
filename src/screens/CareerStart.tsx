@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { PREVIEW_NOTICE } from '../domain/simulationPreview.ts';
 import { useWeek } from '../state/weekContext.ts';
 import { careerStartResponsiveFields } from './careerStartResponsive.ts';
 
@@ -376,6 +377,12 @@ export function CareerStart() {
           <p className="text-ink-muted mt-2.5 mb-0 text-[14px] text-pretty">
             Take over a Texas high school football program. Win Fridays, keep
             them eligible, hang a banner.
+          </p>
+          <p
+            role="note"
+            className="text-ink-subtle mt-2 mb-0 text-[12.5px] text-pretty"
+          >
+            {PREVIEW_NOTICE}
           </p>
           <div
             className="mt-9 grid items-stretch gap-4"

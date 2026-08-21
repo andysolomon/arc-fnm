@@ -9,8 +9,14 @@ import type {
 } from '../domain/types.ts';
 import { RT_FIXES } from '../domain/disruption.ts';
 import { deriveDecisionReview } from '../domain/decisionReview.ts';
+import { deriveFridayView } from '../domain/playByPlayFriday.ts';
+import {
+  canOpenFollowingWeek,
+  openFollowingWeekFrom,
+} from '../domain/followingWeek.ts';
 import { evidenceCounts, stageIndex } from '../domain/week.ts';
 import { useWeek } from '../state/weekContext.ts';
+import { ResetWeekButton } from '../components/ResetWeekButton.tsx';
 import { StatusDot, type StatusTone } from '../components/ui.tsx';
 
 type StageProgress = 'done' | 'current' | 'upcoming';
@@ -195,11 +201,22 @@ export function WeekHub() {
   const tapeQueued = highlightTapeEvent.response !== null;
   const reseedAnswered = emergencyProcessEvent.response !== null;
   const baseDecision = DECISIONS[week.stage];
+  const evidenceBody =
+    scenario.weekNumber === 8
+      ? baseDecision.body
+      : `Coach Soto cut ${scenario.clips.length} clips from ${scenario.opponent.name}’s last three games and put four candidate tendencies on the board. You have practice time for three. The fourth becomes a risk you accept on purpose.`;
   const decision: DecisionCopy = week.reviewClosed
     ? {
         due: `Final · ${review.score.replace(`${scenario.program.school} `, '').replace(` ${scenario.opponent.name}`, '')}`,
-        title: `${review.result === 'WIN' ? 'Beat' : 'Fell to'} Central Catholic — Riverside is next`,
-        body: 'The review is on file and your saved lessons are pinned to the Riverside board. Away, Friday Oct 23 — Soto’s first cut of film arrives Sunday night.',
+        title: `${review.result === 'WIN' ? 'Beat' : 'Fell to'} ${scenario.opponent.name}${
+          scenario.weekNumber === 8
+            ? ' — Riverside is next'
+            : ' — Millbrook is next'
+        }`,
+        body:
+          scenario.weekNumber === 8
+            ? 'The review is on file and your saved lessons are pinned to the Riverside board. Away, Friday Oct 23 — Soto’s first cut of film arrives Sunday night.'
+            : 'The review is on file. Week 9 is closed — Millbrook, home, Friday Oct 30.',
         why: 'A week is closed when its lessons are written down, not when the clock hits zero.',
         cta: 'Reopen the review',
         screen: 'review' as const,
@@ -214,7 +231,9 @@ export function WeekHub() {
             ? 'Review resolution'
             : 'Open Depth Chart',
         }
-      : baseDecision;
+      : week.stage === 'evidence'
+        ? { ...baseDecision, body: evidenceBody }
+        : baseDecision;
   const currentStage = scenario.stages.find((stage) => stage.id === week.stage);
   const risk =
     gate.acceptedRisk === null
@@ -300,17 +319,16 @@ export function WeekHub() {
       <div className="mb-4 flex flex-wrap items-end gap-3.5">
         <div className="min-w-0">
           <h1 className="m-0 text-base font-semibold tracking-[-0.32px]">
-            Coaching Week · Central Catholic
+            Coaching Week · {scenario.opponent.name}
           </h1>
           <p className="text-ink-subtle mt-1 mb-0 text-[12.5px] text-pretty">
-            Westfield 6–1 (#2) vs Central Catholic 7–0 (#1) · Friday Oct 16,
-            7:30 PM · Wildcat Stadium
+            {`${scenario.program.school} ${scenario.program.record} (${scenario.program.rank}) vs ${scenario.opponent.name} ${scenario.opponent.record} (${scenario.opponent.rank}) · ${scenario.kickoff} · ${scenario.venue}`}
           </p>
         </div>
         <span className="min-w-3 flex-1" />
         <span className="edge text-ink-muted inline-flex items-center gap-2 rounded-full bg-white px-3 py-[5px] text-[11.5px] font-medium whitespace-nowrap">
           <StatusDot tone="risk" />
-          Winner takes the district title and the home seed
+          {scenario.stakes}
         </span>
       </div>
 
@@ -380,7 +398,9 @@ export function WeekHub() {
             <div className="flex flex-wrap items-center gap-2">
               <StatusDot tone="accent" />
               <span className="text-accent font-mono text-[10.5px] font-medium tracking-[0.6px] uppercase">
-                {week.reviewClosed ? 'Week 8 complete' : 'Next decision · '}
+                {week.reviewClosed
+                  ? `Week ${scenario.weekNumber} complete`
+                  : 'Next decision · '}
                 {!week.reviewClosed &&
                   (week.stage === 'evidence'
                     ? 'Monday'
@@ -429,6 +449,23 @@ export function WeekHub() {
               >
                 {decision.cta}
               </button>
+              {canOpenFollowingWeek(state.weekNumber, week) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const match = deriveFridayView(week, scenario);
+                    dispatch(
+                      openFollowingWeekFrom(week, {
+                        wScore: match.wScore,
+                        cScore: match.cScore,
+                      }),
+                    );
+                  }}
+                  className="edge text-ink-muted hover:bg-surface-raised hover:text-ink h-[34px] cursor-pointer rounded-md border-0 bg-white px-[15px] font-sans text-[13px] font-medium"
+                >
+                  Open Week 9
+                </button>
+              )}
               {decision.alt !== '' && (
                 <button
                   type="button"
@@ -822,8 +859,9 @@ export function WeekHub() {
             <div className="flex flex-col gap-3">
               <div>
                 <p className="text-ink-muted m-0 text-[12.5px] leading-[1.6] text-pretty">
-                  “Thirty-two clips are cut and tagged. Two of them argue
-                  against the power read — I left them in.”
+                  {scenario.weekNumber === 8
+                    ? '“Thirty-two clips are cut and tagged. Two of them argue against the power read — I left them in.”'
+                    : `“${scenario.clips.length} clips are cut and tagged. ${evidenceCounts(scenario.hypotheses[0]!.id, scenario).contradicting} of them argue against the ${scenario.hypotheses[0]!.short.toLowerCase()} — I left them in.”`}
                 </p>
                 <p className="text-ink-subtle mt-1 mb-0 text-[11px]">
                   M. Soto · Graduate Assistant · Film
@@ -915,13 +953,7 @@ export function WeekHub() {
           v1.5.0 — Coaching Week
         </span>
         <span className="flex-1" />
-        <button
-          type="button"
-          onClick={() => dispatch({ type: 'reset-week' })}
-          className="edge text-ink-subtle hover:text-ink h-7 cursor-pointer rounded-md border-0 bg-white px-[11px] font-sans text-[11.5px] font-medium"
-        >
-          Reset week
-        </button>
+        <ResetWeekButton className="edge text-ink-subtle hover:text-ink h-7 cursor-pointer rounded-md border-0 bg-white px-[11px] font-sans text-[11.5px] font-medium" />
       </footer>
       <span className="sr-only">Current date: {currentStage?.date}, 2026.</span>
     </div>

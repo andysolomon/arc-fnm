@@ -210,7 +210,11 @@ describe('career start → week hub → hypotheses', () => {
       }),
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Reset week/i }));
+    await user.click(
+      within(screen.getByRole('banner')).getByRole('button', {
+        name: /Reset week/i,
+      }),
+    );
 
     expect(
       screen.getByRole('heading', {
@@ -254,9 +258,9 @@ describe('Game Plan → Practice Plan', () => {
     render(<App />);
 
     await enterWeek(user);
-    expect(
-      screen.getByRole('button', { name: /Tactics.*Locked/i }),
-    ).toBeDisabled();
+    const tactics = screen.getByRole('button', { name: /Tactics.*Locked/i });
+    expect(tactics).toHaveAttribute('aria-disabled', 'true');
+    expect(tactics).not.toHaveAttribute('disabled');
 
     await completeEvidence(user);
     await user.click(
@@ -279,7 +283,7 @@ describe('Game Plan → Practice Plan', () => {
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Training.*Locked/i }),
-    ).toBeDisabled();
+    ).toHaveAttribute('aria-disabled', 'true');
 
     await completeGamePlan(user);
 
@@ -476,7 +480,11 @@ describe('Game Plan → Practice Plan', () => {
       'Plan incomplete · 1/3 answers set',
     );
 
-    await user.click(screen.getByRole('button', { name: /Reset week/i }));
+    await user.click(
+      within(screen.getByRole('banner')).getByRole('button', {
+        name: /Reset week/i,
+      }),
+    );
 
     expect(
       screen.getByRole('heading', {
@@ -486,7 +494,7 @@ describe('Game Plan → Practice Plan', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Tactics.*Locked/i }),
-    ).toBeDisabled();
+    ).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText(/Nothing prioritized yet/i)).toBeInTheDocument();
   });
 });
@@ -607,7 +615,7 @@ describe('canonical management shell and Week Hub parity', () => {
     expect(screen.getByText('No risk accepted yet.')).toBeVisible();
     expect(
       screen.getByRole('button', { name: /Tactics.*Locked/i }),
-    ).toBeDisabled();
+    ).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('implements the drawer dialog, focus containment, main hiding, and Escape contract', async () => {

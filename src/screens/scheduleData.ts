@@ -1,4 +1,6 @@
-import { deriveMatch } from '../domain/matchDay.ts';
+import { deriveFridayView } from '../domain/playByPlayFriday.ts';
+import { FOLLOWING_WEEK_NUMBER } from '../domain/followingWeek.ts';
+import type { Week8FinalSnapshot } from '../domain/followingWeek.ts';
 import type { WeekScenario, WeekState } from '../domain/types.ts';
 
 export type ScheduleResultKind = 'win' | 'loss' | 'current' | 'future';
@@ -134,29 +136,60 @@ export interface ScheduleView {
   readonly heroStatus: 'Next game' | 'Final';
   readonly heroWon: boolean | null;
   readonly heroAction: 'Game Plan →' | 'Decision Review →';
+  readonly canOpenWeek9: boolean;
+  readonly onWeek9: boolean;
+}
+
+export interface CareerScheduleContext {
+  readonly weekNumber: number;
+  readonly week8Final: Week8FinalSnapshot | null;
 }
 
 export function scheduleView(
   state: WeekState,
   scenario: WeekScenario,
+  career: CareerScheduleContext = {
+    weekNumber: scenario.weekNumber,
+    week8Final: null,
+  },
 ): ScheduleView {
-  const match = deriveMatch(state, scenario);
-  const final = match.phase === 'final';
-  const won = final ? match.wScore > match.cScore : null;
+  const onWeek9 = career.weekNumber === FOLLOWING_WEEK_NUMBER;
+  const match = deriveFridayView(state, scenario);
+  const week8Final = onWeek9
+    ? career.week8Final
+    : match.phase === 'final'
+      ? {
+          wScore: match.wScore,
+          cScore: match.cScore,
+          lessons: state.lessons,
+        }
+      : career.week8Final;
+  const week8Done = week8Final !== null;
+  const week8Won = week8Done ? week8Final.wScore > week8Final.cScore : null;
+  const week9Final = onWeek9 && match.phase === 'final';
+  const week9Won = week9Final ? match.wScore > match.cScore : null;
+
   const games = SEASON_GAMES.map((game) => {
-    if (game.week === 8 && final) {
+    if (game.week === 8 && week8Done) {
       return {
         ...game,
-        result: `${won ? 'W' : 'L'} ${match.wScore}–${match.cScore}`,
-        kind: won ? ('win' as const) : ('loss' as const),
+        result: `${week8Won ? 'W' : 'L'} ${week8Final.wScore}–${week8Final.cScore}`,
+        kind: week8Won ? ('win' as const) : ('loss' as const),
       };
     }
-    if (game.week === 9 && final) return { ...game, kind: 'current' as const };
+    if (game.week === 9 && week9Final) {
+      return {
+        ...game,
+        result: `${week9Won ? 'W' : 'L'} ${match.wScore}–${match.cScore}`,
+        kind: week9Won ? ('win' as const) : ('loss' as const),
+      };
+    }
+    if (game.week === 9 && week8Done) return { ...game, kind: 'current' as const };
     return game;
   });
-  const standings = final
+  const standings = week8Done
     ? [
-        ...(won
+        ...(week8Won
           ? [
               { rank: 1, team: 'Westfield', overall: '7-1', district: '5-0' },
               {
@@ -179,23 +212,40 @@ export function scheduleView(
       ]
     : DISTRICT_STANDINGS;
 
+  const heroOnWeek9 = onWeek9;
+  const week9HeroFinal = heroOnWeek9 && week9Final;
+
   return {
     games,
     standings,
-    record: final
-      ? won
+    record: week8Done
+      ? week8Won
         ? '7-1 overall · 5-0 district · #1 in District 7-5A'
         : '6-2 overall · 4-1 district · #2 in District 7-5A'
       : '6-1 overall · 4-0 district · #2 in District 7-5A',
-    currentWeek: final ? 9 : 8,
-    heroTitle: final
-      ? `Week 8 — ${scenario.program.school} ${match.wScore}, Central Catholic ${match.cScore}`
-      : 'Week 8 — vs Central Catholic',
-    heroSubtitle: final
-      ? `Final · Fri Oct 16 · Wildcat Stadium · ${won ? 'head-to-head tiebreak in hand' : 'Central holds the tiebreak'}`
-      : 'Fri Oct 16 · 7:30 PM · Wildcat Stadium · winner controls the district',
-    heroStatus: final ? 'Final' : 'Next game',
-    heroWon: won,
-    heroAction: final ? 'Decision Review →' : 'Game Plan →',
+    currentWeek: week8Done ? 9 : 8,
+    heroTitle: heroOnWeek9
+      ? week9HeroFinal
+        ? `Week 9 — ${scenario.program.school} ${match.wScore}, Riverside ${match.cScore}`
+        : 'Week 9 — at Riverside'
+      : week8Done
+        ? `Week 8 — ${scenario.program.school} ${week8Final.wScore}, Central Catholic ${week8Final.cScore}`
+        : 'Week 8 — vs Central Catholic',
+    heroSubtitle: heroOnWeek9
+      ? week9HeroFinal
+        ? `Final · Fri Oct 23 · Riverside Stadium`
+        : 'Fri Oct 23 · 7:30 PM · Riverside Stadium · district road game'
+      : week8Done
+        ? `Final · Fri Oct 16 · Wildcat Stadium · ${week8Won ? 'head-to-head tiebreak in hand' : 'Central holds the tiebreak'}`
+        : 'Fri Oct 16 · 7:30 PM · Wildcat Stadium · winner controls the district',
+    heroStatus: (heroOnWeek9 ? week9HeroFinal : week8Done)
+      ? 'Final'
+      : 'Next game',
+    heroWon: heroOnWeek9 ? week9Won : week8Won,
+    heroAction: (heroOnWeek9 ? week9HeroFinal : week8Done)
+      ? 'Decision Review →'
+      : 'Game Plan →',
+    canOpenWeek9: !onWeek9 && state.reviewClosed,
+    onWeek9,
   };
 }

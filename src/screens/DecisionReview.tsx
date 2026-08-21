@@ -252,6 +252,46 @@ function DecisionRow({ row }: { readonly row: ReviewTimelineRow }) {
         </div>
       </section>
 
+      {row.foregone.length > 0 && (
+        <section
+          aria-label="If you had chosen otherwise"
+          className="edge px-4 py-[11px]"
+        >
+          <h3 className="text-ink-subtle m-0 font-mono text-[10px] font-medium tracking-[0.5px] uppercase">
+            If you had chosen otherwise
+          </h3>
+          <p className="text-ink-subtle mt-[7px] mb-0 text-[11px] leading-[1.5] text-pretty">
+            These are the other Friday branches from the same snapshot — not
+            proof those calls were better.
+          </p>
+          <ul className="mt-2 mb-0 flex list-none flex-col gap-2.5 p-0">
+            {row.foregone.map((branch) => (
+              <li
+                key={branch.name}
+                className="edge bg-surface-sunken rounded-lg px-[11px] py-2"
+              >
+                <p className="mt-0 mb-0 text-[12px] leading-[1.45] font-medium text-pretty">
+                  {branch.name}
+                </p>
+                {branch.sub !== '' && (
+                  <p className="text-ink-subtle mt-0.5 mb-0 text-[11px] leading-[1.45] text-pretty">
+                    {branch.sub}
+                  </p>
+                )}
+                {branch.outcomes[0] !== undefined && (
+                  <p className="text-ink-muted mt-[7px] mb-0 text-[11.5px] leading-[1.5] text-pretty">
+                    {branch.outcomes[0].t}
+                  </p>
+                )}
+                <p className="text-ink-subtle mt-1 mb-0 text-[11px] leading-[1.45]">
+                  {branch.result}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section
         aria-label="Decision, execution, and result"
         className="flex flex-col gap-[9px] px-4 py-3"
@@ -454,6 +494,7 @@ function LessonsCard() {
 function NextOpponentCard() {
   const { state, scenario, dispatch, cohortCarryOver } = useWeek();
   const review = deriveDecisionReview(state.week, scenario);
+  const week8 = scenario.weekNumber === 8;
   return (
     <div data-cohort-note={cohortCarryOver.note}>
       <Card aria-labelledby="next-opponent-heading" className="p-[15px_16px]">
@@ -463,18 +504,20 @@ function NextOpponentCard() {
             id="next-opponent-heading"
             className="m-0 text-[12.5px] font-semibold"
           >
-            Next — Week 9 · at Riverside
+            {week8
+              ? 'Next — Week 9 · at Riverside'
+              : 'Next — Week 10 · vs Millbrook'}
           </h2>
         </div>
         <p className="text-ink-subtle mt-[5px] mb-0 text-[11.5px] leading-[1.55] text-pretty">
-          Fri Oct 23 · away · 5-2 and winners of three straight. Soto’s first
-          cut of film arrives Sunday night with your saved lessons pinned to the
-          board.
+          {week8
+            ? 'Fri Oct 23 · away · 5-2 and winners of three straight. Soto’s first cut of film arrives Sunday night with your saved lessons pinned to the board.'
+            : 'Fri Oct 30 · home · district closer. Saved lessons stay on the board.'}
         </p>
         {review.savedLessons.length > 0 && (
           <div className="mt-2.5 flex flex-col gap-1.5 pt-[9px] shadow-[0_-1px_0_0_rgba(0,0,0,0.06)]">
             <h3 className="text-ink-subtle m-0 font-mono text-[10px] font-medium tracking-[0.5px] uppercase">
-              Pinned to Riverside
+              {week8 ? 'Pinned to Riverside' : 'Pinned to Millbrook'}
             </h3>
             {review.savedLessons.map((lesson) => (
               <p

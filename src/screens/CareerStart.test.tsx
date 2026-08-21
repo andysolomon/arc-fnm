@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from '../App.tsx';
 import { localWeekRepository } from '../data/weekRepository.ts';
+import { PREVIEW_NOTICE } from '../domain/simulationPreview.ts';
 import { careerStartResponsiveFields } from './careerStartResponsive.ts';
 
 beforeEach(async () => {
@@ -33,6 +34,7 @@ describe('canonical Career Start flow', () => {
     expect(
       screen.getByRole('heading', { name: 'Friday Night Manager', level: 1 }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('note')).toHaveTextContent(PREVIEW_NOTICE);
     expect(
       screen.getByRole('button', { name: /Start New Career/i }),
     ).toBeEnabled();

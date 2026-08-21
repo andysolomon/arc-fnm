@@ -6,22 +6,26 @@
  * game (scoreboard, field, key-situation decisions, Quick Adjust, execution
  * feed, playback controls, final state).
  *
- * All game state is derived in `src/domain/matchDay.ts`. The only timer here
- * paces playback of already-deterministic advances — it mirrors the
+ * All game state is derived in `src/domain/matchDay.ts` for Week 8, and
+ * through `deriveFridayView` for later weeks. The only timer here paces
+ * playback of already-deterministic Match Day advances — it mirrors the
  * prototype's `loop()` delays and never feeds a value back into state.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import {
   MATCH_SPEED_DELAY_MS,
   QUICK_ADJUST_CALLS,
   deriveFieldSnapshot,
-  deriveMatch,
   type FeedPlay,
   type MatchView,
   type SnapshotItem,
 } from '../domain/matchDay.ts';
+import {
+  deriveFridayView,
+  usesPlayByPlayFriday,
+} from '../domain/playByPlayFriday.ts';
 import type { MatchSpeed } from '../domain/types.ts';
 import { useWeek } from '../state/weekContext.ts';
 import {
@@ -51,7 +55,10 @@ const PLAY_TONE: Record<FeedPlay['k'], StatusTone> = {
 export function MatchDay() {
   const { state, scenario, dispatch } = useWeek();
   const week = state.week;
-  const view = deriveMatch(week, scenario);
+  const view = useMemo(
+    () => deriveFridayView(week, scenario),
+    [week, scenario],
+  );
   const lockedOut = week.stage !== 'friday' && week.stage !== 'review';
 
   // Presentation-only pacing, mirroring the canonical loop() delays. State
@@ -75,15 +82,17 @@ export function MatchDay() {
 }
 
 function LockedOut() {
-  const { next, dispatch } = useWeek();
+  const { next, dispatch, scenario } = useWeek();
+  const kicker =
+    scenario.weekNumber === 8
+      ? 'Friday · Oct 16 · 7:30 PM · Wildcat Stadium'
+      : `${scenario.kickoff} · ${scenario.venue}`;
   return (
     <div className="flex min-h-[60%] items-center justify-center p-6">
       <Card className="max-w-[520px]">
         <div className="flex items-center gap-2">
           <StatusDot />
-          <Kicker tone="neutral">
-            Friday · Oct 16 · 7:30 PM · Wildcat Stadium
-          </Kicker>
+          <Kicker tone="neutral">{kicker}</Kicker>
         </div>
         <h1 className="m-0 mt-2.5 text-[16px] font-semibold tracking-[-0.32px]">
           Kickoff is Friday night
@@ -309,6 +318,10 @@ function Pregame() {
 function LiveGame({ view }: { view: MatchView }) {
   const { state, scenario, dispatch } = useWeek();
   const week = state.week;
+  const playByPlayFriday = usesPlayByPlayFriday(scenario);
+  const opponent = scenario.opponent.name;
+  const opponentShort =
+    opponent === 'Central Catholic' ? 'Central' : opponent;
   const isFinal = view.phase === 'final';
   const pending = view.pending;
   const running =
@@ -340,7 +353,8 @@ function LiveGame({ view }: { view: MatchView }) {
               {school}
             </div>
             <div className="text-ink-subtle flex items-center justify-end gap-1.5 text-[11px]">
-              6-1 · Home <StatusDot tone="accent" />
+              {scenario.weekNumber === 8 ? '6-1 · Home' : `${scenario.program.record.replace('–', '-')} · Away`}{' '}
+              <StatusDot tone="accent" />
             </div>
           </div>
           <div
@@ -360,16 +374,20 @@ function LiveGame({ view }: { view: MatchView }) {
         </div>
         <div className="flex items-center gap-4">
           <div
-            aria-label="Central score"
+            aria-label={`${opponentShort} score`}
             className="text-ink-subtle text-[40px] leading-none font-semibold tracking-[-1.8px]"
           >
             {view.cScore}
           </div>
           <div>
             <div className="text-ink-muted text-[14px] font-medium tracking-[-0.28px]">
-              Central
+              {opponentShort}
             </div>
-            <div className="text-ink-subtle text-[11px]">7-0 · Away</div>
+            <div className="text-ink-subtle text-[11px]">
+              {scenario.weekNumber === 8
+                ? '7-0 · Away'
+                : `${scenario.opponent.record.replace('–', '-')} · Home`}
+            </div>
           </div>
         </div>
       </div>
@@ -393,7 +411,7 @@ function LiveGame({ view }: { view: MatchView }) {
               className="absolute inset-y-0 right-0 flex w-[8%] items-center justify-center bg-[#f2f2f2] shadow-[inset_1px_0_0_rgba(0,0,0,0.12)]"
             >
               <span className="text-ink-subtle font-mono text-[12px] font-medium tracking-[0.3em] [writing-mode:vertical-rl]">
-                CENTRAL
+                {opponentShort.toUpperCase()}
               </span>
             </div>
             <div
@@ -455,7 +473,7 @@ function LiveGame({ view }: { view: MatchView }) {
                   <div className="mt-2.5 flex flex-wrap gap-1.5">
                     {[
                       ...pending.chips,
-                      `${school} ${view.wScore} – ${view.cScore} Central`,
+                      `${school} ${view.wScore} – ${view.cScore} ${opponentShort}`,
                     ].map((chip) => (
                       <span
                         key={chip}
@@ -516,7 +534,7 @@ function LiveGame({ view }: { view: MatchView }) {
               <span className="text-accent font-mono">
                 Key moments · {view.keyCount}
               </span>
-              <span>Central</span>
+              <span>{opponentShort}</span>
             </div>
             <div
               role="img"
@@ -575,27 +593,31 @@ function LiveGame({ view }: { view: MatchView }) {
               </li>
             ))}
           </ol>
-          <div className="edge shrink-0 px-4 pt-3 pb-3.5">
-            <h2 className="text-ink-subtle m-0 mb-2 text-[11px] font-medium tracking-[0.04em] uppercase">
-              Quick Adjust
-            </h2>
-            <div
-              role="group"
-              aria-label="Quick Adjust"
-              className="grid grid-cols-2 gap-2"
-            >
-              {QUICK_ADJUST_CALLS.map((call) => (
-                <PillButton
-                  key={call}
-                  pressed={view.qt === call}
-                  className="justify-center rounded-[6px]"
-                  onClick={() => dispatch({ type: 'match-quick-adjust', call })}
-                >
-                  {call}
-                </PillButton>
-              ))}
+          {!playByPlayFriday && (
+            <div className="edge shrink-0 px-4 pt-3 pb-3.5">
+              <h2 className="text-ink-subtle m-0 mb-2 text-[11px] font-medium tracking-[0.04em] uppercase">
+                Quick Adjust
+              </h2>
+              <div
+                role="group"
+                aria-label="Quick Adjust"
+                className="grid grid-cols-2 gap-2"
+              >
+                {QUICK_ADJUST_CALLS.map((call) => (
+                  <PillButton
+                    key={call}
+                    pressed={view.qt === call}
+                    className="justify-center rounded-[6px]"
+                    onClick={() =>
+                      dispatch({ type: 'match-quick-adjust', call })
+                    }
+                  >
+                    {call}
+                  </PillButton>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </section>
       </div>
 
@@ -604,25 +626,28 @@ function LiveGame({ view }: { view: MatchView }) {
         aria-label="Playback"
         className="mt-3 flex flex-wrap items-center justify-center gap-2 pb-1"
       >
-        {SPEED_CONTROLS.map((control) => (
-          <PillButton
-            key={control.id}
-            pressed={week.matchSpeed === control.id}
-            className="min-w-[84px] justify-center rounded-[6px]"
-            onClick={() =>
-              dispatch({ type: 'match-set-speed', speed: control.id })
-            }
+        {!playByPlayFriday &&
+          SPEED_CONTROLS.map((control) => (
+            <PillButton
+              key={control.id}
+              pressed={week.matchSpeed === control.id}
+              className="min-w-[84px] justify-center rounded-[6px]"
+              onClick={() =>
+                dispatch({ type: 'match-set-speed', speed: control.id })
+              }
+            >
+              {control.label}
+            </PillButton>
+          ))}
+        {!playByPlayFriday && (
+          <Button
+            disabled={isFinal || pending !== null}
+            onClick={() => dispatch({ type: 'match-skip' })}
+            className="min-w-[84px] justify-center"
           >
-            {control.label}
-          </PillButton>
-        ))}
-        <Button
-          disabled={isFinal || pending !== null}
-          onClick={() => dispatch({ type: 'match-skip' })}
-          className="min-w-[84px] justify-center"
-        >
-          ⏭ Next call
-        </Button>
+            ⏭ Next call
+          </Button>
+        )}
         {isFinal && (
           <Button
             variant="primary"

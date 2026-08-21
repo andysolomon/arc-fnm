@@ -9,7 +9,7 @@ import {
   skipToDecision,
   takeField,
 } from '../domain/matchDay.ts';
-import { WEEK_8_SCENARIO } from '../domain/scenario.ts';
+import { WEEK_8_SCENARIO, WEEK_9_SCENARIO } from '../domain/scenario.ts';
 import type { WeekState } from '../domain/types.ts';
 import { createSeedState } from '../domain/week.ts';
 import { WeekProvider } from '../state/WeekProvider.tsx';
@@ -111,6 +111,40 @@ describe('Match Day / Decision Room', () => {
     );
 
     expect(await screen.findByRole('status')).toHaveTextContent('FINAL');
+    expect(
+      screen.getByRole('button', { name: 'Final — Decision review →' }),
+    ).toBeEnabled();
+  });
+
+  it('kicks off a later week to a play-by-play final, not the teaching queue', async () => {
+    const user = userEvent.setup();
+    render(
+      <WeekProvider
+        repository={repositoryFor(fridayState())}
+        scenario={WEEK_9_SCENARIO}
+      >
+        <MatchDay />
+      </WeekProvider>,
+    );
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Four calls are yours before kickoff',
+      }),
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole('button', { name: 'Take the field · kickoff' }),
+    );
+    expect(screen.getByRole('status')).toHaveTextContent('FINAL');
+    expect(
+      screen.queryByRole('dialog', { name: /I-formation, twin tight ends/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('group', { name: 'Quick Adjust' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Play-by-play' })).toHaveTextContent(
+      /Injuries off/,
+    );
     expect(
       screen.getByRole('button', { name: 'Final — Decision review →' }),
     ).toBeEnabled();

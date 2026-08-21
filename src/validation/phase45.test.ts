@@ -5,8 +5,9 @@
  * (`docs/phase-4-5-validation.md`) leans on, so a later refactor cannot quietly
  * retract them:
  *
- *   1. Keyboard / ARIA / focus — the drawer's Tab wrap, the locked-nav
- *      `aria-describedby` wiring, and the two-state close-review note.
+ *   1. Keyboard / ARIA / focus — the drawer's Tab wrap, locked-nav
+ *      `aria-describedby` (the lock sentence, not the chip), `aria-disabled`
+ *      tab order, and the two-state close-review note.
  *   2. Replayability — Reset Week restores the seeded baseline byte-for-byte,
  *      and a replayed round produces a byte-identical result.
  *   3. Canonical Week 8 determinism — seed string, `execSeedFor`, and the 20–3
@@ -222,24 +223,43 @@ describe('Phase 4.5 — keyboard, ARIA, and focus contracts', () => {
       [rail, 'rail'],
       [dialog, 'drawer'],
     ] as const) {
-      for (const [label, icon] of [
-        ['Tactics', 'tactics'],
-        ['Training', 'training'],
+      for (const [label, icon, reason] of [
+        [
+          'Tactics',
+          'tactics',
+          'Set exactly three priorities and one accepted risk first.',
+        ],
+        [
+          'Training',
+          'training',
+          'Set one valid answer for every priority first.',
+        ],
       ] as const) {
         const button = within(container).getByRole('button', {
           name: new RegExp(`${label}.*Locked`, 'i'),
         });
         const reasonId = `nav-reason-${suffix}-${icon}`;
-        expect(button).toBeDisabled();
+        expect(button).toHaveAttribute('aria-disabled', 'true');
+        expect(button).not.toHaveAttribute('disabled');
         expect(button).toHaveAttribute('aria-describedby', reasonId);
-        // The id resolves, resolves inside this control, and is unique in the
-        // document — the rail and the drawer render the same nav twice.
+        // The id resolves, is unique in the document, and lives on this
+        // nav item — the rail and the drawer render the same nav twice.
         expect(document.querySelectorAll(`#${reasonId}`)).toHaveLength(1);
-        expect(button.querySelector(`#${reasonId}`)).toHaveTextContent(
-          'Locked',
-        );
+        expect(
+          button.parentElement?.querySelector(`#${reasonId}`),
+        ).toHaveTextContent(reason);
+        button.focus();
+        expect(button).toHaveFocus();
       }
     }
+
+    const tactics = within(rail).getByRole('button', {
+      name: /Tactics.*Locked/i,
+    });
+    const week = within(rail).getByRole('button', { name: /^Week/ });
+    expect(week).toHaveAttribute('aria-current', 'page');
+    await user.click(tactics);
+    expect(week).toHaveAttribute('aria-current', 'page');
 
     // Enabled controls carry no description at all.
     expect(

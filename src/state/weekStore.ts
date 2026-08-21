@@ -36,6 +36,12 @@ import {
   toggleReviewLesson,
 } from '../domain/decisionReview.ts';
 import {
+  FOLLOWING_WEEK_NUMBER,
+  canOpenFollowingWeek,
+  seedFollowingWeek,
+  type Week8FinalSnapshot,
+} from '../domain/followingWeek.ts';
+import {
   advanceMatch,
   chooseMatchOption,
   setMatchSpeed,
@@ -93,6 +99,8 @@ export interface NavState {
 
 export interface AppState {
   readonly week: WeekState;
+  readonly weekNumber: number;
+  readonly week8Final: Week8FinalSnapshot | null;
   readonly nav: NavState;
   /** Session-only allocator draft; intentionally outside persisted WeekState. */
   readonly practiceDraftBlocks: readonly PracticeBlock[] | null;
@@ -169,7 +177,13 @@ export type WeekAction =
   | { type: 'review-toggle-lesson'; lessonId: string }
   | { type: 'review-close' }
   | { type: 'reset-week' }
-  | { type: 'hydrate'; week: WeekState };
+  | { type: 'hydrate'; week: WeekState }
+  | {
+      type: 'open-week';
+      weekNumber: number;
+      week: WeekState;
+      week8Final?: Week8FinalSnapshot | null;
+    };
 
 export const INITIAL_NAV: NavState = {
   screen: 'career',
@@ -181,6 +195,8 @@ export const INITIAL_NAV: NavState = {
 export function createInitialState(): AppState {
   return {
     week: createSeedState(),
+    weekNumber: 8,
+    week8Final: null,
     nav: INITIAL_NAV,
     practiceDraftBlocks: null,
   };
@@ -445,7 +461,10 @@ export function weekReducer(
       // Week landing surface while preserving only viewport-owned shell state.
       return {
         ...state,
-        week: resetWeek(),
+        week:
+          state.weekNumber === FOLLOWING_WEEK_NUMBER
+            ? seedFollowingWeek(state.week8Final?.lessons ?? [])
+            : resetWeek(),
         nav: {
           screen: 'week',
           scoutingTab: 'Overview',
@@ -457,5 +476,31 @@ export function weekReducer(
 
     case 'hydrate':
       return { ...state, week: action.week };
+
+    case 'open-week': {
+      if (action.weekNumber === state.weekNumber) return state;
+      if (
+        action.weekNumber === FOLLOWING_WEEK_NUMBER &&
+        !canOpenFollowingWeek(state.weekNumber, state.week)
+      ) {
+        return state;
+      }
+      return {
+        ...state,
+        weekNumber: action.weekNumber,
+        week: action.week,
+        week8Final:
+          action.week8Final === undefined
+            ? state.week8Final
+            : action.week8Final,
+        nav: {
+          screen: 'week',
+          scoutingTab: 'Overview',
+          tacticsTab: 'Game Plan',
+          scoutingHypothesis: null,
+        },
+        practiceDraftBlocks: null,
+      };
+    }
   }
 }

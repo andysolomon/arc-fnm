@@ -40,6 +40,10 @@ _Avoid_: Simulation engine, recommendation algorithm
 The recurring cycle of reviewing evidence, forming opponent hypotheses, allocating practice reps, confirming availability, preparing game-day policies, competing, and learning from the result.
 _Avoid_: Turn, content cycle
 
+**Match Day**:
+The Friday contest inside a Coaching Week. In the Simulation Experience it is derived from the week's Coaching Decisions; in the Program Workspace it is the real game.
+_Avoid_: Game engine, sim result as the product
+
 **Coaching Decision**:
 A choice among meaningful options made by the Head Coach under football, time, roster, safety, and rules constraints.
 _Avoid_: Task, click
@@ -73,3 +77,21 @@ _Avoid_: Injury penalty
 **Jurisdiction Rule Set**:
 The versioned rules and policies that apply to a specific state association, season, competition, and level.
 _Avoid_: NFHS mode, universal rules
+
+## Data contexts
+
+**Data Context**:
+The security and permission envelope that holds either fictional Simulation Experience data or live Program Workspace data, never both.
+_Avoid_: Shared database, mixed environment
+
+**Live Program Record**:
+A Program Workspace record that identifies a real Student-Athlete or staff member and is an education record when a school maintains it.
+_Avoid_: Player card, CRM record, user profile
+
+**School Approval**:
+The documented district or school authorization required before any Live Program Record enters the Program Workspace.
+_Avoid_: Terms of service click, implied consent
+
+**Audit Event**:
+A durable record of who accessed or changed a Live Program Record or Coaching Decision, when, and under which authority.
+_Avoid_: Log line, analytics event

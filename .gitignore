@@ -7,7 +7,9 @@
 node_modules/
 *.log
 .cursor/
+.vercel/
 
 # Build and tooling output
 dist/
 convex/_generated/
+vendor/arc-sim/

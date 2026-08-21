@@ -420,8 +420,8 @@ export function PracticePlan() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
         <ScreenHeading
-          title="Practice · Week 8"
-          subtitle="Monday–Thursday script · preparing for Central Catholic (Fri)"
+          title={`Practice · Week ${scenario.weekNumber}`}
+          subtitle={`Monday–Thursday script · preparing for ${scenario.opponent.name} (Fri)`}
         />
         <span className="flex-1" />
         <p role="status" aria-live="polite" aria-atomic="true" className="m-0">

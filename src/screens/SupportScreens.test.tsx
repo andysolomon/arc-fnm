@@ -16,6 +16,7 @@ import { Schedule } from './Schedule.tsx';
 
 beforeEach(async () => {
   await localWeekRepository.clear({ careerId: 'demo', weekNumber: 8 });
+  await localWeekRepository.clear({ careerId: 'demo', weekNumber: 9 });
 });
 
 function repositoryFor(week: WeekState): WeekRepository {
@@ -237,6 +238,57 @@ describe('Schedule', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Open Week' }));
     expect(await screen.findByText('Week source')).toBeVisible();
+  });
+
+  it('opens Week 9 from the schedule after Week 8 is closed', async () => {
+    const user = userEvent.setup();
+    const store = new Map<number, WeekState>([
+      [
+        8,
+        {
+          ...createSeedState(),
+          reviewClosed: true,
+          lessons: ['l_rt'],
+          matchStarted: true,
+        },
+      ],
+    ]);
+    const repo: WeekRepository = {
+      name: 'Career week fixture',
+      persists: false,
+      async load(key) {
+        return store.get(key.weekNumber) ?? null;
+      },
+      async save(key, week) {
+        store.set(key.weekNumber, week);
+      },
+      async clear(key) {
+        store.delete(key.weekNumber);
+      },
+    };
+
+    function ScheduleThenWeek() {
+      const { state, scenario } = useWeek();
+      if (state.weekNumber === 9) {
+        return (
+          <h1>{`Coaching Week · ${scenario.opponent.name}`}</h1>
+        );
+      }
+      return <Schedule />;
+    }
+
+    render(
+      <WeekProvider repository={repo}>
+        <ScheduleThenWeek />
+      </WeekProvider>,
+    );
+    await act(async () => {});
+
+    await user.click(screen.getByRole('button', { name: 'Open Week 9' }));
+    expect(
+      await screen.findByRole('heading', { name: 'Coaching Week · Riverside' }),
+    ).toBeVisible();
+    expect(store.get(9)?.lessons).toEqual(['l_rt']);
   });
 
   it('uses semantic responsive state without entropy or unsafe rendering sinks', () => {

@@ -1293,7 +1293,9 @@ export function nextStep(state: WeekState, scenario: WeekScenario): NextStep {
           ? 'Week complete · Reopen review'
           : 'Continue · Decision review',
         title: state.reviewClosed
-          ? 'Week 8 is closed — Riverside, away, Friday Oct 23'
+          ? scenario.weekNumber === 8
+            ? 'Week 8 is closed — Riverside, away, Friday Oct 23'
+            : `Week ${scenario.weekNumber} is closed`
           : 'Walk the chain — decision, execution, outcome',
         screen: 'review',
         blocker: false,

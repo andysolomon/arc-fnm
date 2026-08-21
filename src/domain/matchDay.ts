@@ -127,6 +127,13 @@ export interface MatchLogOutcome {
   readonly key: boolean;
 }
 
+export interface MatchLogForegone {
+  readonly name: string;
+  readonly sub: string;
+  readonly out: readonly MatchLogOutcome[];
+  readonly pts: { readonly w: number; readonly c: number };
+}
+
 export interface MatchLogDecision {
   readonly kind: 'decision';
   readonly id: string;
@@ -141,6 +148,7 @@ export interface MatchLogDecision {
   readonly scC: number;
   readonly out: readonly MatchLogOutcome[];
   readonly pts: { readonly w: number; readonly c: number };
+  readonly foregone: readonly MatchLogForegone[];
   readonly when: string;
   readonly title: string;
   readonly note: string;
@@ -2930,6 +2938,36 @@ function applyAdvance(sim: Simulation, n: number): void {
   if (sim.queue.length === 0 && sim.pending === null) sim.phase = 'final';
 }
 
+function optionBranch(
+  opt: MatchDecisionOption,
+  score: MatchScore,
+): {
+  readonly steps: QueueItem[];
+  readonly out: readonly MatchLogOutcome[];
+  readonly pts: { readonly w: number; readonly c: number };
+} {
+  const steps = opt.res !== undefined ? [...(opt.res(score) ?? [])] : [];
+  const plays = steps.filter(
+    (item): item is Extract<QueueItem, { play: MatchPlay }> => 'play' in item,
+  );
+  return {
+    steps,
+    out: plays.map((item) => ({
+      t: item.play.t,
+      tag: item.play.tag ?? '',
+      tagC: item.play.tagC ?? '#D6D6D6',
+      key: item.play.key ?? false,
+    })),
+    pts: plays.reduce(
+      (acc, item) => ({
+        w: acc.w + (item.play.w ?? 0),
+        c: acc.c + (item.play.cw ?? 0),
+      }),
+      { w: 0, c: 0 },
+    ),
+  };
+}
+
 /** Canonical `choose(opt)` plus its scheduled `advance(1)`. */
 function applyDecision(sim: Simulation, optionIndex: number): void {
   const dec = sim.pending;
@@ -2937,12 +2975,9 @@ function applyDecision(sim: Simulation, optionIndex: number): void {
   const opt = dec.opts[optionIndex];
   if (opt === undefined) return;
   const score: MatchScore = { w: sim.wScore, c: sim.cScore, qt: sim.qt };
-  const steps = opt.res !== undefined ? [...(opt.res(score) ?? [])] : [];
-  const outs = steps.filter(
-    (item): item is Extract<QueueItem, { play: MatchPlay }> => 'play' in item,
-  );
+  const chosen = optionBranch(opt, score);
   sim.pending = null;
-  sim.queue = [...steps, ...sim.queue];
+  sim.queue = [...chosen.steps, ...sim.queue];
   const entry: MatchLogDecision = {
     kind: 'decision',
     id: dec.id,
@@ -2955,19 +2990,20 @@ function applyDecision(sim: Simulation, optionIndex: number): void {
     sub: opt.sub,
     scW: score.w,
     scC: score.c,
-    out: outs.map((item) => ({
-      t: item.play.t,
-      tag: item.play.tag ?? '',
-      tagC: item.play.tagC ?? '#D6D6D6',
-      key: item.play.key ?? false,
-    })),
-    pts: outs.reduce(
-      (acc, item) => ({
-        w: acc.w + (item.play.w ?? 0),
-        c: acc.c + (item.play.cw ?? 0),
-      }),
-      { w: 0, c: 0 },
-    ),
+    out: chosen.out,
+    pts: chosen.pts,
+    foregone: dec.opts.flatMap((other, index) => {
+      if (index === optionIndex) return [];
+      const branch = optionBranch(other, score);
+      return [
+        {
+          name: other.name,
+          sub: other.sub,
+          out: branch.out,
+          pts: branch.pts,
+        },
+      ];
+    }),
     when: dec.when,
     title: dec.title,
     note: 'You chose — ' + opt.name,

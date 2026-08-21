@@ -37,6 +37,7 @@ import {
   setQuickAdjust,
   skipToDecision,
   takeField,
+  type MatchLogDecision,
   type MatchView,
   type TakeFieldContext,
 } from './matchDay.ts';
@@ -456,18 +457,28 @@ describe('six canonical situations and golden paths', () => {
           optionIndex,
         );
         const log = deriveMatch(fork, scenario).log.filter(
-          (entry) => entry.kind === 'decision',
+          (entry): entry is MatchLogDecision => entry.kind === 'decision',
         );
+        const decided = log.at(-1);
         const result =
           expected[pending.id as keyof typeof expected][optionIndex];
-        expect(log.at(-1)).toMatchObject({
+        expect(decided).toMatchObject({
           id: pending.id,
           oi: optionIndex,
           choice: result?.[0],
           pts: result?.[1],
         });
-        expect(log.at(-1)?.out[0]?.t).toBe(result?.[2]);
-        expect(log.at(-1)?.out).toHaveLength(result?.[3] ?? 0);
+        expect(decided?.out[0]?.t).toBe(result?.[2]);
+        expect(decided?.out).toHaveLength(result?.[3] ?? 0);
+        const others = expected[pending.id as keyof typeof expected].filter(
+          (_option, index) => index !== optionIndex,
+        );
+        expect(decided?.foregone.map((branch) => branch.name)).toEqual(
+          others.map(([name]) => name),
+        );
+        expect(decided?.foregone.map((branch) => branch.out[0]?.t)).toEqual(
+          others.map((option) => option[2]),
+        );
       });
       state = chooseMatchOption(state, scenario, pending.id, 0);
     }

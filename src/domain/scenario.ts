@@ -15,6 +15,14 @@ import type {
 } from './types.ts';
 import { GAME_PLAN_ANSWERS, GAME_PLAN_OBJECTIVES } from './gamePlanScenario.ts';
 import { WEEK_8_RT_PROTECTION } from './roster.ts';
+import {
+  WEEK_9_ANSWERS,
+  WEEK_9_CLIPS,
+  WEEK_9_HYPOTHESES,
+  WEEK_9_OBJECTIVES,
+  WEEK_9_PRACTICE_DAYS,
+  WEEK_9_STAGES,
+} from './week9Scenario.ts';
 
 const STAGES: readonly Stage[] = [
   {
@@ -826,3 +834,40 @@ export const WEEK_8_SCENARIO: WeekScenario = {
   jurisdictionRuleSet: TEXAS_UIL_2026_27_RULE_SET,
   priorityCapacity: 3,
 };
+
+/**
+ * Week 9 — at Riverside. Soto’s board is unique film (zone-read keep, jet
+ * sweep, Cover 2 post, rugby punt). Friday is the play-by-play engine, not
+ * Match Day. Standing RT / situational objectives stay Westfield’s.
+ */
+export const WEEK_9_SCENARIO: WeekScenario = {
+  weekNumber: 9,
+  program: {
+    school: 'Westfield',
+    mascot: 'Wildcats',
+    record: '6–1',
+    rank: '#2',
+  },
+  opponent: {
+    name: 'Riverside',
+    record: '5–2',
+    rank: '#3',
+    district: 'District 7-5A',
+  },
+  kickoff: 'Friday Oct 23, 7:30 PM',
+  venue: 'Riverside Stadium',
+  stakes: 'District road game — keep the tiebreak alive',
+  stages: WEEK_9_STAGES,
+  hypotheses: WEEK_9_HYPOTHESES,
+  clips: WEEK_9_CLIPS,
+  objectives: WEEK_9_OBJECTIVES,
+  answers: WEEK_9_ANSWERS,
+  practiceDays: WEEK_9_PRACTICE_DAYS,
+  rosterPlanning: WEEK_8_RT_PROTECTION,
+  jurisdictionRuleSet: TEXAS_UIL_2026_27_RULE_SET,
+  priorityCapacity: 3,
+};
+
+export function scenarioFor(weekNumber: number): WeekScenario {
+  return weekNumber === 9 ? WEEK_9_SCENARIO : WEEK_8_SCENARIO;
+}
