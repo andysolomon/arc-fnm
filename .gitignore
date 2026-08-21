@@ -13,3 +13,6 @@ node_modules/
 dist/
 convex/_generated/
 vendor/arc-sim/
+playwright-report/
+test-results/
+blob-report/

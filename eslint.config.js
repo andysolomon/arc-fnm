@@ -12,10 +12,13 @@ export default tseslint.config(
       'prototypes',
       'docs',
       'convex/_generated',
+      'playwright-report',
+      'test-results',
     ],
   },
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['e2e/**/*.ts', 'playwright.config.ts'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 2023,
@@ -35,7 +38,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['convex/**/*.ts'],
+    files: ['convex/**/*.ts', 'e2e/**/*.ts', 'playwright.config.ts'],
     languageOptions: { globals: globals.node },
   },
 );

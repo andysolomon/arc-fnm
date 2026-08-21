@@ -235,7 +235,7 @@ Boundaries:
 
 ## 6. Immediate next steps
 
-1. Preview is live at https://arc-fnm.vercel.app. Do not claim a validated product (R12/R14/R15 unmet; R2/R3 still lack browser+AT).
-2. Remaining validated-product work: observed users (R12), Playwright journeys (R14), named owners (R15), A11Y-5 real AT, and browser visual QA if the preview is advertised as keyboard-usable on real devices.
+1. Preview is live at https://arc-fnm.vercel.app. Do not claim a validated product (R12 unmet; R2/R3 still lack browser+AT). R14 Playwright journeys cover career, resume, and keyboard-only navigation. R15 names Andrew Solomon as solo maintainer.
+2. Remaining validated-product work: observed users (R12), A11Y-5 real AT, and browser visual QA if the preview is advertised as keyboard-usable on real devices.
 3. Do not implement Program Workspace persistence, and do not store a Live Program Record, until School Approval exists and the 5.1 controls in `docs/phase-5-program-workspace.md` are built. The current Convex `weeks` table is simulation-only (ADR 0003).
 4. When a district is willing: execute `docs/phase-5-pilot-protocol.md` against the implemented Workspace, with thresholds frozen before Walk B.

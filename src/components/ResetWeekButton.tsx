@@ -1,23 +1,7 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
+import { trapTabInside } from '../a11y/dialogFocus.ts';
 import { useWeek } from '../state/weekContext.ts';
-
-function trapDialogFocus(event: KeyboardEvent<HTMLElement>) {
-  if (event.key !== 'Tab') return;
-  const focusable = Array.from(
-    event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled])'),
-  );
-  if (focusable.length === 0) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last?.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first?.focus();
-  }
-}
 
 export function ResetWeekButton({
   className,
@@ -76,7 +60,7 @@ export function ResetWeekButton({
             aria-modal="true"
             aria-labelledby={titleId}
             aria-describedby={bodyId}
-            onKeyDown={trapDialogFocus}
+            onKeyDown={trapTabInside}
             className="edge-raised relative z-10 w-full max-w-[420px] rounded-xl bg-white p-4"
           >
             <h2
